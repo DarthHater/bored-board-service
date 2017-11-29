@@ -16,6 +16,8 @@ limitations under the License.
 
 # Bored Board Service
 
+[![Build Status](https://travis-ci.org/DarthHater/bored-board-service.svg?branch=master)](https://travis-ci.org/DarthHater/bored-board-service)
+
 ## Was Ist Das?
 
 It's the start of a Service/REST API/Whatever you want to call it for the front of the new Bored Board to consume.
