@@ -21,3 +21,10 @@ services:
       - '8000:8000'
     volumes:
       - ./code:/~/go/src/github.com/darthhater/bored-board-service
+  database:
+    image: postgres:latest
+    container_name: database
+    volumes:
+      - ./.sql:/docker-entrypoint-initdb.d/
+    ports:
+      - '5432:5432'
