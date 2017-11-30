@@ -26,6 +26,7 @@ CREATE TABLE board.thread(
 
 CREATE TABLE board.thread_post(
     Id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    ThreadId UUID REFERENCES board.thread (Id),
     UserId UUID,
     Body text,
     PostedAt TIMESTAMP DEFAULT now()

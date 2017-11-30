@@ -15,29 +15,47 @@ limitations under the License. */
 package main
 
 import (
+	"github.com/darthhater/bored-board-service/database"
 	"net/http"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 	"github.com/toorop/gin-logrus"
 )
 
+var db database.IDatabase
+
 func main() {
-	r := setupRouter()
+	d := database.Database{}
+	db = &d
+	r := setupRouter(db)
 	r.Use(gin.Logger())
 	r.Run(":8000")
 }
 
-func setupRouter() *gin.Engine {
+func setupRouter(d database.IDatabase) *gin.Engine {
 	log := log.New()
 	r := gin.New()
 	r.Use(ginlogrus.Logger(log), gin.Recovery())
 
-	r.GET("/thread", getThread)
+	err := d.InitDb("development", "./.environment")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	r.GET("/thread/:threadid", func (c *gin.Context) {
+		threadId := c.Param("threadid")
+		getThread(c, d, threadId)
+	})
 
 	return r
 }
 
 // Handlers
-func getThread(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"Test": "Test Response"})
+func getThread(c *gin.Context, d database.IDatabase, threadId string) {
+	thread, err := d.GetThread(threadId)
+	if err != nil {
+		log.Error(err)
+		c.JSON(http.StatusBadRequest, "Uh oh")
+	}
+	c.JSON(http.StatusOK, thread)
 }
