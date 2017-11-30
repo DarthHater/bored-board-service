@@ -20,7 +20,7 @@ services:
     ports:
       - '8000:8000'
     volumes:
-      - ./code:/~/go/src/github.com/darthhater/bored-board-service
+      - .:/go/src/github.com/darthhater/bored-board-service
   database:
     image: postgres:latest
     container_name: database
