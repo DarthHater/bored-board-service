@@ -47,8 +47,8 @@ func setupRouter() *gin.Engine {
 
 // Handlers
 func getThread(c *gin.Context) {
-	/* id := c.Param("id") */
-	c.JSON(http.StatusOK, gin.H{"Test": "Test Response"})
+	id := c.Param("id")
+	c.JSON(http.StatusOK, gin.H{"Test": "Test Response" + id})
 }
 
 func getThreads(c *gin.Context) {
