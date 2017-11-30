@@ -9,14 +9,15 @@ import (
 
 func TestInitDb(t *testing.T) {
 	m := MockDatabase{}
-	err := m.InitDb("development", ".environment")
+	err := m.InitDb("development", "../.environment")
 	assert.Equal(t, err, nil)
 }
 
 func TestConnectionString(t *testing.T) {
 	d := Database{}
+	d.setupViper("development", "../.environment")
 	assert.Equal(t, 
-		"postgres://admin:admin123@db:5432/db?sslmode=disable", 
+		"postgres://admin:admin123@database:5432/db?sslmode=disable", 
 		d.connectionString("development"),
 	)
 }
