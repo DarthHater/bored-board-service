@@ -15,6 +15,8 @@ limitations under the License. */
 package main
 
 import (	
+	"fmt"
+	"github.com/darthhater/bored-board-service/model"
 	"net/http"
 	
 	"github.com/darthhater/bored-board-service/database"
@@ -48,6 +50,10 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 		getThread(c, d, threadId)
 	})
 
+	r.POST("/thread", func(c *gin.Context) {
+		postThread(c, d)
+	})
+
 	return r
 }
 
@@ -59,4 +65,16 @@ func getThread(c *gin.Context, d database.IDatabase, threadId string) {
 		c.JSON(http.StatusBadRequest, "Uh oh")
 	}
 	c.JSON(http.StatusOK, thread)
+}
+
+func postThread(c *gin.Context, d database.IDatabase) {
+	var newThread model.NewThread
+	c.BindJSON(&newThread)
+	fmt.Println(&newThread.P)
+	id, err := d.PostThread(&newThread)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+	} else {
+		c.JSON(201, gin.H{"id": id})
+	}
 }

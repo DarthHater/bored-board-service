@@ -12,7 +12,7 @@ import (
 type IDatabase interface {
 	InitDb(s string, e string) error
 	GetThread(s string) (model.Thread, error)
-	PostThread(t model.Thread, p model.Post) error
+	PostThread(t *model.NewThread) (string, error)
 }
 
 type Database struct {
@@ -43,7 +43,7 @@ func (d *Database) GetThread(threadId string) (model.Thread, error) {
 	return thread, nil 
 }
 
-func (d *Database) PostThread(thread *model.Thread, post *model.Post) (threadid string, err error) {
+func (d *Database) PostThread(newThread *model.NewThread) (threadid string, err error) {
 	var id string
 	sqlStatement := `
 		INSERT INTO board.thread
@@ -51,9 +51,9 @@ func (d *Database) PostThread(thread *model.Thread, post *model.Post) (threadid 
 		VALUES ($1, $2, $3)
 		RETURNING Id`
 	err = DB.QueryRow(sqlStatement, 
-		thread.UserId, 
-		thread.Title,
-		thread.PostedAt).Scan(&id)
+		newThread.T.UserId, 
+		newThread.T.Title,
+		newThread.T.PostedAt).Scan(&id)
 	if err != nil {
 		return "", err
 	}
@@ -64,9 +64,9 @@ func (d *Database) PostThread(thread *model.Thread, post *model.Post) (threadid 
 		VALUES ($1, $2, $3, $4)`
 	_, err = DB.Exec(sqlStatement,
 		id,
-		post.Body,
-		thread.UserId,
-		post.PostedAt)
+		newThread.T.UserId,
+		newThread.P.Body,
+		newThread.P.PostedAt)
 	if err != nil {
 		return "", err
 	}

@@ -53,8 +53,7 @@ func TestPostThread(t *testing.T) {
 	d := Database{}
 	var mock sqlmock.Sqlmock
 	var err error
-	var thread model.Thread
-	var post model.Post
+	var newThread model.NewThread
 	DB, mock, err = sqlmock.New()
 	if err != nil {
 		t.Fatalf("An error %s occurred when opening stub database connection", err)
@@ -62,19 +61,19 @@ func TestPostThread(t *testing.T) {
 	defer DB.Close()
 
 	mock.ExpectQuery("INSERT INTO board.thread").WithArgs(
-		thread.Title,
-		thread.UserId,
-		thread.PostedAt).
+		newThread.T.Title,
+		newThread.T.UserId,
+		newThread.T.PostedAt).
 			WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow("1"))
 
 	mock.ExpectExec("INSERT INTO board.thread_post").WithArgs(
 		"1",
-		post.Body,
-		post.UserId,
-		post.PostedAt).
+		newThread.T.UserId,
+		newThread.P.Body,
+		newThread.P.PostedAt).
 			WillReturnResult(sqlmock.NewResult(1,1))
 	
-	if id, err := d.PostThread(&thread, &post); err != nil {
+	if id, err := d.PostThread(&newThread); err != nil {
 		t.Errorf("Error was not expected while inserting thread: %s", err)
 	} else {
 		t.Logf("Thread inserted with id: %s", id)
