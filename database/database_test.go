@@ -68,14 +68,16 @@ func TestPostThread(t *testing.T) {
 			WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow("1"))
 
 	mock.ExpectExec("INSERT INTO board.thread_post").WithArgs(
-		post.ThreadId,
+		"1",
 		post.Body,
 		post.UserId,
 		post.PostedAt).
 			WillReturnResult(sqlmock.NewResult(1,1))
 	
-	if err = d.PostThread(&thread, &post); err != nil {
+	if id, err := d.PostThread(&thread, &post); err != nil {
 		t.Errorf("Error was not expected while inserting thread: %s", err)
+	} else {
+		t.Logf("Thread inserted with id: %s", id)
 	}
 
 	if err = mock.ExpectationsWereMet(); err != nil {

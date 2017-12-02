@@ -43,8 +43,35 @@ func (d *Database) GetThread(threadId string) (model.Thread, error) {
 	return thread, nil 
 }
 
-func (d *Database) PostThread(thread *model.Thread, post *model.Post) error {
-	return nil
+func (d *Database) PostThread(thread *model.Thread, post *model.Post) (threadid string, err error) {
+	var id string
+	sqlStatement := `
+		INSERT INTO board.thread
+		(UserId, Title, PostedAt)
+		VALUES ($1, $2, $3)
+		RETURNING Id`
+	err = DB.QueryRow(sqlStatement, 
+		thread.UserId, 
+		thread.Title,
+		thread.PostedAt).Scan(&id)
+	if err != nil {
+		return "", err
+	}
+
+	sqlStatement = `
+		INSERT INTO board.thread_post
+		(ThreadId, UserId, Body, PostedAt)
+		VALUES ($1, $2, $3, $4)`
+	_, err = DB.Exec(sqlStatement,
+		id,
+		post.Body,
+		thread.UserId,
+		post.PostedAt)
+	if err != nil {
+		return "", err
+	}
+
+	return id, nil
 }
 
 // Internal methods
