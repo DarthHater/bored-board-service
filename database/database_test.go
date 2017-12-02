@@ -1,6 +1,7 @@
 package database
 
 import (
+	"github.com/darthhater/bored-board-service/model"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -39,7 +40,7 @@ func TestGetThread(t *testing.T) {
 
 	result, err := d.GetThread("a thread")
 
-	expected := Thread{ Id: "", UserId: "admin", Title: "What the heck", PostedAt: "A time" }
+	expected := model.Thread{ Id: "", UserId: "admin", Title: "What the heck", PostedAt: "A time" }
 	
 	assert.Equal(t, result, expected)
 
@@ -52,8 +53,8 @@ func TestPostThread(t *testing.T) {
 	d := Database{}
 	var mock sqlmock.Sqlmock
 	var err error
-	var thread Thread
-	var post Post
+	var thread model.Thread
+	var post model.Post
 	DB, mock, err = sqlmock.New()
 	if err != nil {
 		t.Fatalf("An error %s occurred when opening stub database connection", err)

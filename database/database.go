@@ -4,34 +4,19 @@ import (
 	"fmt"
 	"database/sql"
 
+	"github.com/darthhater/bored-board-service/model"
 	"github.com/spf13/viper"
 	_ "github.com/lib/pq"
 )
 
 type IDatabase interface {
 	InitDb(s string, e string) error
-	GetThread(s string) (Thread, error)
-	PostThread(t Thread, p Post) error
+	GetThread(s string) (model.Thread, error)
+	PostThread(t model.Thread, p model.Post) error
 }
 
 type Database struct {
 }
-
-type Thread struct {
-	Id string
-	UserId string
-	Title string
-	PostedAt string
-}
-
-type Post struct {
-	Id string
-	ThreadId string
-	UserId string
-	Body string
-	PostedAt string
-}
-
 var DB *sql.DB
 
 // Public methods
@@ -48,8 +33,8 @@ func (d *Database) InitDb(environment string, configPath string) error {
 	return nil
 }
 
-func (d *Database) GetThread(threadId string) (Thread, error) {
-	thread := Thread{}
+func (d *Database) GetThread(threadId string) (model.Thread, error) {
+	thread := model.Thread{}
 	err := DB.QueryRow("SELECT Id, UserId, Title, PostedAt FROM board.thread WHERE Id = $1", threadId).
 		Scan(&thread.Id, &thread.UserId, &thread.Title, &thread.PostedAt)
 	if err != nil {
