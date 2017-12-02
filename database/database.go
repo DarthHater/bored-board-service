@@ -43,6 +43,10 @@ func (d *Database) GetThread(threadId string) (model.Thread, error) {
 	return thread, nil 
 }
 
+func (d *Database) PostThread(thread *model.Thread, post *model.Post) error {
+	return nil
+}
+
 // Internal methods
 
 func (d *Database) setupViper(environment string, configPath string) {
