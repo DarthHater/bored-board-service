@@ -15,7 +15,6 @@ limitations under the License. */
 package main
 
 import (	
-	"fmt"
 	"github.com/darthhater/bored-board-service/model"
 	"net/http"
 	
@@ -70,11 +69,10 @@ func getThread(c *gin.Context, d database.IDatabase, threadId string) {
 func postThread(c *gin.Context, d database.IDatabase) {
 	var newThread model.NewThread
 	c.BindJSON(&newThread)
-	fmt.Println(&newThread.P)
 	id, err := d.PostThread(&newThread)
 	if err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	} else {
-		c.JSON(201, gin.H{"id": id})
+		c.JSON(http.StatusCreated, gin.H{"id": id})
 	}
 }
