@@ -11,6 +11,7 @@ import (
 type IDatabase interface {
 	InitDb(s string, e string) error
 	GetThread(s string) (Thread, error)
+	PostThread(t Thread, p Post) error
 }
 
 type Database struct {
@@ -20,6 +21,14 @@ type Thread struct {
 	Id string
 	UserId string
 	Title string
+	PostedAt string
+}
+
+type Post struct {
+	Id string
+	ThreadId string
+	UserId string
+	Body string
 	PostedAt string
 }
 

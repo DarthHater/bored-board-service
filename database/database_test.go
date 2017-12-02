@@ -47,3 +47,37 @@ func TestGetThread(t *testing.T) {
 		t.Errorf("there were unfulfilled expections: %s", err)
 	}
 }
+
+func TestPostThread(t *testing.T) {
+	d := Database{}
+	var mock sqlmock.Sqlmock
+	var err error
+	var thread Thread
+	var post Post
+	DB, mock, err = sqlmock.New()
+	if err != nil {
+		t.Fatalf("An error %s occurred when opening stub database connection", err)
+	}
+	defer DB.Close()
+
+	mock.ExpectQuery("INSERT INTO board.thread").WithArgs(
+		thread.Title,
+		thread.UserId,
+		thread.PostedAt).
+			WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow("1"))
+
+	mock.ExpectExec("INSERT INTO board.thread_post").WithArgs(
+		post.ThreadId,
+		post.Body,
+		post.UserId,
+		post.PostedAt).
+			WillReturnResult(sqlmock.NewResult(1,1))
+	
+	if err = d.PostThread(&thread, &post); err != nil {
+		t.Errorf("Error was not expected while inserting thread: %s", err)
+	}
+
+	if err = mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("There were unfulfilled expectations: %s", err)
+	}
+}

@@ -14,9 +14,10 @@ limitations under the License. */
 
 package main
 
-import (
-	"github.com/darthhater/bored-board-service/database"
+import (	
 	"net/http"
+	
+	"github.com/darthhater/bored-board-service/database"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 	"github.com/toorop/gin-logrus"
