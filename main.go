@@ -20,6 +20,7 @@ import (
 	
 	"github.com/darthhater/bored-board-service/database"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-contrib/cors"
 	log "github.com/sirupsen/logrus"
 	"github.com/toorop/gin-logrus"
 )
@@ -31,6 +32,8 @@ func main() {
 	db = &d
 	r := setupRouter(db)
 	r.Use(gin.Logger())
+	// TODO: We will need to set this to something sane
+	r.Use(cors.Default())
 	r.Run(":8000")
 }
 
@@ -49,6 +52,10 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 		getThread(c, d, threadId)
 	})
 
+	r.GET("/threads", func(c *gin.Context) {
+		getThreads(c, d, 20)
+	})
+
 	r.POST("/thread", func(c *gin.Context) {
 		postThread(c, d)
 	})
@@ -64,6 +71,15 @@ func getThread(c *gin.Context, d database.IDatabase, threadId string) {
 		c.JSON(http.StatusBadRequest, "Uh oh")
 	}
 	c.JSON(http.StatusOK, thread)
+}
+
+func getThreads(c *gin.Context, d database.IDatabase, num int) {
+	threads, err := d.GetThreads(num)
+	if err != nil {
+		log.Error(err)
+		c.JSON(http.StatusBadRequest, "Uh oh")
+	}
+	c.JSON(http.StatusOK, threads)
 }
 
 func postThread(c *gin.Context, d database.IDatabase) {

@@ -1,5 +1,5 @@
 [database]
-Port = 
-User = ""
-Password = ""
-Database = ""
+Port = 5432
+User = "admin"
+Password = "admin123"
+Database = "db"
