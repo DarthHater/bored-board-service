@@ -1,26 +1,26 @@
 /* Copyright 2017 Jeffry Hesse
 
-Licensed under the Apache License, Version 2.0 (the "License"); 
-you may not use this file except in compliance with the License. 
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
 http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software 
-distributed under the License is distributed on an "AS IS" BASIS, 
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-See the License for the specific language governing permissions and 
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
 limitations under the License. */
 
 package main
 
-import (	
+import (
 	"github.com/darthhater/bored-board-service/model"
 	"net/http"
-	
+
 	"github.com/darthhater/bored-board-service/database"
-	"github.com/gin-gonic/gin"
 	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 	"github.com/toorop/gin-logrus"
 )
@@ -65,6 +65,10 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 		postThread(c, d)
 	})
 
+	r.POST("/post", func(c *gin.Context) {
+		postPost(c, d)
+	})
+
 	return r
 }
 
@@ -102,6 +106,17 @@ func postThread(c *gin.Context, d database.IDatabase) {
 	var newThread model.NewThread
 	c.BindJSON(&newThread)
 	id, err := d.PostThread(&newThread)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	} else {
+		c.JSON(http.StatusCreated, gin.H{"id": id})
+	}
+}
+
+func postPost(c *gin.Context, d database.IDatabase) {
+	var post model.Post
+	c.BindJSON(&post)
+	id, err := d.PostPost(&post)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	} else {
