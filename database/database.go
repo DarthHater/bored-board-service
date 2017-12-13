@@ -12,6 +12,7 @@ import (
 type IDatabase interface {
 	InitDb(s string, e string) error
 	GetThread(s string) (model.Thread, error)
+	GetPosts(s string) ([]model.Post, error)
 	GetThreads(i int) ([]model.Thread, error)
 	PostThread(t *model.NewThread) (string, error)
 }
@@ -64,6 +65,28 @@ func (d *Database) GetThreads(num int) ([]model.Thread, error) {
 	}
 
 	return threads, nil 
+}
+
+func (d *Database) GetPosts(threadId string) ([]model.Post, error) {
+	var posts []model.Post
+	rows, err := DB.Query("SELECT Id, ThreadId, UserId, Body, PostedAt FROM board.thread_post WHERE ThreadId = $1", threadId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		p := model.Post{}
+        if err := rows.Scan(&p.Id, &p.ThreadId, &p.UserId, &p.Body, &p.PostedAt); err != nil {
+                return nil, err
+		}
+		posts = append(posts, p)
+	}
+	if rows.Err() != nil {
+		panic(rows.Err())
+	}
+
+	return posts, nil 
 }
 
 func (d *Database) PostThread(newThread *model.NewThread) (threadid string, err error) {

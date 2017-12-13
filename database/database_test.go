@@ -79,6 +79,36 @@ func TestGetThreads(t *testing.T) {
 	}
 }
 
+func TestGetPosts(t *testing.T) {
+	d := Database{}
+	var mock sqlmock.Sqlmock
+	var err error
+	DB, mock, err = sqlmock.New()
+	if err != nil {
+		t.Fatalf("An error %s occurred when opening stub database connection", err)
+	}
+	defer DB.Close()
+
+	row := sqlmock.NewRows([]string{"id", "threadid", "userid", "body", "postedat"}).
+		AddRow("", "", "", "Post Body", "A time").
+		AddRow("", "", "", "Post Body 2", "A time")
+
+	mock.ExpectQuery("SELECT (.+) FROM board.thread_post").WillReturnRows(row)
+
+	result, err := d.GetPosts("A thread")
+
+	expected := []model.Post{
+		{ Id: "", ThreadId: "", UserId: "", Body: "Post Body", PostedAt: "A time" },
+		{ Id: "", ThreadId: "", UserId: "", Body: "Post Body 2", PostedAt: "A time"},
+	}
+	
+	assert.Equal(t, result, expected)
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expections: %s", err)
+	}
+}
+
 func TestPostThread(t *testing.T) {
 	d := Database{}
 	var mock sqlmock.Sqlmock
