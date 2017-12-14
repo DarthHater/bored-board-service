@@ -12,6 +12,7 @@ import (
 type IDatabase interface {
 	InitDb(s string, e string) error
 	GetThread(s string) (model.Thread, error)
+	GetPost(s string) (model.Post, error)
 	GetPosts(s string) ([]model.Post, error)
 	GetThreads(i int) ([]model.Thread, error)
 	PostThread(t *model.NewThread) (string, error)
@@ -45,6 +46,16 @@ func (d *Database) GetThread(threadId string) (model.Thread, error) {
 		return thread, err
 	}
 	return thread, nil
+}
+
+func (d *Database) GetPost(postId string) (post model.Post, err error) {
+	post = model.Post{}
+	err = DB.QueryRow("SELECT Id, ThreadId, UserId, Body, PostedAt FROM board.thread_post WHERE Id = $1", postId).
+		Scan(&post.Id, &post.ThreadId, &post.UserId, &post.Body, &post.PostedAt)
+	if err != nil {
+		return post, err
+	}
+	return post, nil
 }
 
 func (d *Database) GetThreads(num int) ([]model.Thread, error) {
