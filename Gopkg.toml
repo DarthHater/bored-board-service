@@ -51,3 +51,7 @@
 [[constraint]]
   name = "github.com/gin-contrib/cors"
   version = "v1.2"
+  
+[[constraint]]
+  name = "github.com/gorilla/websocket"
+  version = "1.2.0"

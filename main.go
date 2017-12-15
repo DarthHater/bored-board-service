@@ -21,11 +21,17 @@ import (
 	"github.com/darthhater/bored-board-service/database"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
 	log "github.com/sirupsen/logrus"
 	"github.com/toorop/gin-logrus"
 )
 
 var db database.IDatabase
+
+var webSocketUpgrade = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+}
 
 func main() {
 	d := database.Database{}
@@ -46,6 +52,10 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	r.GET("/ws", func(c *gin.Context) {
+		webSocketHandler(c.Writer, c.Request)
+	})
 
 	r.GET("/thread/:threadid", func(c *gin.Context) {
 		threadId := c.Param("threadid")
@@ -75,6 +85,23 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 	})
 
 	return r
+}
+
+// Websocket Handler
+func webSocketHandler(w http.ResponseWriter, r *http.Request) {
+	conn, err := webSocketUpgrade.Upgrade(w, r, nil)
+	if err != nil {
+		log.Infoln("Failed to set websocket upgrade: %+v", err)
+		return
+	}
+
+	for {
+		t, msg, err := conn.ReadMessage()
+		if err != nil {
+			break
+		}
+		conn.WriteMessage(t, msg)
+	}
 }
 
 // Handlers
