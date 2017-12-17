@@ -14,6 +14,12 @@
   version = "v1.4.2"
 
 [[projects]]
+  name = "github.com/garyburd/redigo"
+  packages = ["internal","redis"]
+  revision = "47dc60e71eed504e3ef8e77ee3c6fe720f3be57f"
+  version = "v1.3.0"
+
+[[projects]]
   name = "github.com/gin-contrib/cors"
   packages = ["."]
   revision = "cf4846e6a636a76237a28d9286f163c132e841bc"
@@ -178,6 +184,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "6e7f5e911a74f546f5104dbe3b6e6a5d83891c8a15d54a231e1dae6d2903edda"
+  inputs-digest = "f82ef3c860ef3a3dfa113d6b9be1ed7c10ea027ef2ca216ec48253e3e8b3f281"
   solver-name = "gps-cdcl"
   solver-version = 1

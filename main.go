@@ -19,6 +19,8 @@ import (
 	"net/http"
 
 	"github.com/darthhater/bored-board-service/database"
+	"github.com/darthhater/bored-board-service/redis"
+	redigo "github.com/garyburd/redigo/redis"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -26,11 +28,19 @@ import (
 	"github.com/toorop/gin-logrus"
 )
 
-var db database.IDatabase
+var (
+	db           database.IDatabase
+	rr           redis.RedisReciever
+	rw           redis.RedisWriter
+	redisAddress string
+)
 
 var webSocketUpgrade = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
 }
 
 func main() {
@@ -38,9 +48,50 @@ func main() {
 	db = &d
 	r := setupRouter(db)
 	r.Use(gin.Logger())
+
+	// Redis
+
+	redisAddress = "redis_db:6379"
+
+	redisPool := redigo.NewPool(func() (redigo.Conn, error) {
+		c, err := redigo.Dial("tcp", redisAddress)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return c, nil
+	}, 10)
+
+	defer redisPool.Close()
+
+	rr = redis.NewRedisReciever(redisPool)
+	rw = redis.NewRedisWriter(redisPool)
+
+	go func() {
+		for {
+			err := rr.Run("posts")
+			if err == nil {
+				break
+			}
+			log.Print(err)
+		}
+	}()
+
+	go func() {
+		for {
+			err := rw.Run("posts")
+			if err == nil {
+				break
+			}
+			log.Print(err)
+		}
+	}()
+
 	// TODO: We will need to set this to something sane
 	r.Use(cors.Default())
 	r.Run(":8000")
+
 }
 
 func setupRouter(d database.IDatabase) *gin.Engine {
@@ -95,13 +146,25 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	rr.Register(conn)
+
 	for {
 		t, msg, err := conn.ReadMessage()
 		if err != nil {
 			break
 		}
-		conn.WriteMessage(t, msg)
+		switch t {
+		case websocket.TextMessage:
+			log.Printf("Made it here: %s", msg)
+			rw.Publish(msg)
+		default:
+			log.Warning("Unknown message")
+		}
 	}
+
+	rr.DeRegister(conn)
+
+	conn.WriteMessage(websocket.CloseMessage, []byte{})
 }
 
 // Handlers
