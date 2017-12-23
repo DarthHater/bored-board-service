@@ -17,6 +17,7 @@ package main
 import (
 	"encoding/json"
 	"github.com/darthhater/bored-board-service/model"
+	"github.com/garyburd/redigo/redis"
 	"net/http"
 
 	"github.com/darthhater/bored-board-service/database"
@@ -29,30 +30,34 @@ import (
 )
 
 var (
-	db database.IDatabase
+	db          database.IDatabase
+	gPubSubConn *redis.PubSubConn
+	gRedisConn  = func() (redis.Conn, error) {
+		return redis.Dial("tcp", "redis_db:6379")
+	}
 )
 
-type ClientManager struct {
-	clients    map[*Client]bool
+type clientManager struct {
+	clients    map[*client]bool
 	broadcast  chan []byte
-	register   chan *Client
-	unregister chan *Client
+	register   chan *client
+	unregister chan *client
 }
 
-type Client struct {
+type client struct {
 	id     string
 	socket *websocket.Conn
 	send   chan []byte
 }
 
-var manager = ClientManager{
+var manager = clientManager{
 	broadcast:  make(chan []byte),
-	register:   make(chan *Client),
-	unregister: make(chan *Client),
-	clients:    make(map[*Client]bool),
+	register:   make(chan *client),
+	unregister: make(chan *client),
+	clients:    make(map[*client]bool),
 }
 
-func (manager *ClientManager) start() {
+func (manager *clientManager) start() {
 	for {
 		select {
 		case conn := <-manager.register:
@@ -76,13 +81,31 @@ func (manager *ClientManager) start() {
 	}
 }
 
-func (manager *ClientManager) send(message []byte) {
+func (manager *clientManager) send(message []byte) {
 	for conn := range manager.clients {
 		conn.send <- message
 	}
 }
 
-func (c *Client) write() {
+func (c *client) read() {
+	defer func() {
+		manager.unregister <- c
+		c.socket.Close()
+	}()
+
+	for {
+		switch v := gPubSubConn.Receive().(type) {
+		case redis.Message:
+			manager.broadcast <- v.Data
+		case error:
+			manager.unregister <- c
+			c.socket.Close()
+			break
+		}
+	}
+}
+
+func (c *client) write() {
 	defer func() {
 		c.socket.Close()
 	}()
@@ -112,6 +135,16 @@ func main() {
 	db = &d
 	r := setupRouter(db)
 	r.Use(gin.Logger())
+
+	gRedisConn, err := gRedisConn()
+	if err != nil {
+		panic(err)
+	}
+	defer gRedisConn.Close()
+
+	gPubSubConn = &redis.PubSubConn{Conn: gRedisConn}
+	gPubSubConn.Subscribe("posts")
+	defer gPubSubConn.Close()
 
 	go manager.start()
 
@@ -173,10 +206,11 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	client := &Client{id: uuid.NewV4().String(), socket: conn, send: make(chan []byte)}
+	client := &client{id: uuid.NewV4().String(), socket: conn, send: make(chan []byte)}
 
 	manager.register <- client
 
+	go client.read()
 	go client.write()
 }
 
@@ -241,7 +275,11 @@ func postPost(c *gin.Context, d database.IDatabase) {
 			return
 		} else {
 			c.JSON(http.StatusCreated, gin.H{"id": id})
-			manager.send(bytes)
+			if c, err := gRedisConn(); err != nil {
+				log.Printf("Error on redis conn. %s", err)
+			} else {
+				c.Do("PUBLISH", "posts", bytes)
+			}
 		}
 	}
 }

@@ -40,7 +40,7 @@ func (d *Database) InitDb(environment string, configPath string) error {
 
 func (d *Database) GetThread(threadId string) (model.Thread, error) {
 	thread := model.Thread{}
-	err := DB.QueryRow("SELECT Id, UserId, Title, PostedAt FROM board.thread WHERE Id = $1", threadId).
+	err := DB.QueryRow("SELECT Id, UserId, Title, PostedAt FROM board.thread WHERE Id = $1 ORDER BY PostedAt DESC limit 20", threadId).
 		Scan(&thread.Id, &thread.UserId, &thread.Title, &thread.PostedAt)
 	if err != nil {
 		return thread, err
