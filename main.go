@@ -15,25 +15,89 @@ limitations under the License. */
 package main
 
 import (
+	"encoding/json"
 	"github.com/darthhater/bored-board-service/model"
 	"net/http"
 
 	"github.com/darthhater/bored-board-service/database"
-	"github.com/darthhater/bored-board-service/redis"
-	redigo "github.com/garyburd/redigo/redis"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+	"github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
 	"github.com/toorop/gin-logrus"
 )
 
 var (
-	db           database.IDatabase
-	rr           redis.RedisReciever
-	rw           redis.RedisWriter
-	redisAddress string
+	db database.IDatabase
 )
+
+type ClientManager struct {
+	clients    map[*Client]bool
+	broadcast  chan []byte
+	register   chan *Client
+	unregister chan *Client
+}
+
+type Client struct {
+	id     string
+	socket *websocket.Conn
+	send   chan []byte
+}
+
+var manager = ClientManager{
+	broadcast:  make(chan []byte),
+	register:   make(chan *Client),
+	unregister: make(chan *Client),
+	clients:    make(map[*Client]bool),
+}
+
+func (manager *ClientManager) start() {
+	for {
+		select {
+		case conn := <-manager.register:
+			manager.clients[conn] = true
+			log.Print("New connection registered")
+		case conn := <-manager.unregister:
+			if _, ok := manager.clients[conn]; ok {
+				close(conn.send)
+				delete(manager.clients, conn)
+			}
+		case message := <-manager.broadcast:
+			for conn := range manager.clients {
+				select {
+				case conn.send <- message:
+				default:
+					close(conn.send)
+					delete(manager.clients, conn)
+				}
+			}
+		}
+	}
+}
+
+func (manager *ClientManager) send(message []byte) {
+	for conn := range manager.clients {
+		conn.send <- message
+	}
+}
+
+func (c *Client) write() {
+	defer func() {
+		c.socket.Close()
+	}()
+
+	for {
+		select {
+		case message, ok := <-c.send:
+			if !ok {
+				c.socket.WriteMessage(websocket.CloseMessage, []byte{})
+				return
+			}
+			c.socket.WriteMessage(websocket.TextMessage, message)
+		}
+	}
+}
 
 var webSocketUpgrade = websocket.Upgrader{
 	ReadBufferSize:  1024,
@@ -49,44 +113,7 @@ func main() {
 	r := setupRouter(db)
 	r.Use(gin.Logger())
 
-	// Redis
-
-	redisAddress = "redis_db:6379"
-
-	redisPool := redigo.NewPool(func() (redigo.Conn, error) {
-		c, err := redigo.Dial("tcp", redisAddress)
-
-		if err != nil {
-			return nil, err
-		}
-
-		return c, nil
-	}, 10)
-
-	defer redisPool.Close()
-
-	rr = redis.NewRedisReciever(redisPool)
-	rw = redis.NewRedisWriter(redisPool)
-
-	go func() {
-		for {
-			err := rr.Run("posts")
-			if err == nil {
-				break
-			}
-			log.Print(err)
-		}
-	}()
-
-	go func() {
-		for {
-			err := rw.Run("posts")
-			if err == nil {
-				break
-			}
-			log.Print(err)
-		}
-	}()
+	go manager.start()
 
 	// TODO: We will need to set this to something sane
 	r.Use(cors.Default())
@@ -146,25 +173,11 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rr.Register(conn)
+	client := &Client{id: uuid.NewV4().String(), socket: conn, send: make(chan []byte)}
 
-	for {
-		t, msg, err := conn.ReadMessage()
-		if err != nil {
-			break
-		}
-		switch t {
-		case websocket.TextMessage:
-			log.Printf("Made it here: %s", msg)
-			rw.Publish(msg)
-		default:
-			log.Warning("Unknown message")
-		}
-	}
+	manager.register <- client
 
-	rr.DeRegister(conn)
-
-	conn.WriteMessage(websocket.CloseMessage, []byte{})
+	go client.write()
 }
 
 // Handlers
@@ -224,6 +237,11 @@ func postPost(c *gin.Context, d database.IDatabase) {
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	} else {
-		c.JSON(http.StatusCreated, gin.H{"id": id})
+		if bytes, err := json.Marshal(&post); err != nil {
+			return
+		} else {
+			c.JSON(http.StatusCreated, gin.H{"id": id})
+			manager.send(bytes)
+		}
 	}
 }
