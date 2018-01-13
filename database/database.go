@@ -11,6 +11,7 @@ import (
 
 type IDatabase interface {
 	InitDb(s string, e string) error
+	CreateUser(u *model.User) (string, error)
 	GetUser(s string) (model.User, error)
 	GetThread(s string) (model.Thread, error)
 	GetPost(s string) (model.Post, error)
@@ -155,6 +156,24 @@ func (d *Database) PostPost(post *model.Post) (postid string, err error) {
 		post.ThreadId,
 		post.UserId,
 		post.Body).Scan(&id)
+	if err != nil {
+		return "", err
+	}
+
+	return id, nil
+}
+
+func (d *Database) CreateUser(user *model.User) (userid string, err error) {
+	var id string
+	sqlStatement := `
+		INSERT INTO board.user
+		(Username, EmailAddress, UserPassword)
+		VALUES ($1, $2, $3)
+		RETURNING Id`
+	err = DB.QueryRow(sqlStatement,
+		user.Username,
+		user.EmailAddress,
+		user.UserPassword).Scan(&id)
 	if err != nil {
 		return "", err
 	}

@@ -190,6 +190,10 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 		checkCredentials(c, d)
 	})
 
+	r.POST("/register", func(c *gin.Context) {
+		createUser(c, d)
+	})
+
 	r.GET("/ws", func(c *gin.Context) {
 		webSocketHandler(c.Writer, c.Request)
 	})
@@ -325,5 +329,19 @@ func checkCredentials(c *gin.Context, d database.IDatabase) {
 		c.JSON(http.StatusUnauthorized, gin.H{"err": err.Error()})
 	} else {
 		c.JSON(http.StatusAccepted, "OK")
+	}
+}
+
+func createUser(c *gin.Context, d database.IDatabase) {
+	var registration model.Registration
+	c.BindJSON(&registration)
+
+	user := model.User{Username: registration.Username, EmailAddress: registration.EmailAddress}
+	_ = user.HashPassword(registration.UserPassword)
+	id, err := d.CreateUser(&user)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
+	} else {
+		c.JSON(http.StatusCreated, id)
 	}
 }

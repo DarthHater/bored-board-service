@@ -223,3 +223,31 @@ func TestGetUser(t *testing.T) {
 		t.Errorf("there were unfulfilled expections: %s", err)
 	}
 }
+
+func TestCreateUser(t *testing.T) {
+	d := Database{}
+	var mock sqlmock.Sqlmock
+	var err error
+	var user model.User
+	DB, mock, err = sqlmock.New()
+	if err != nil {
+		t.Fatalf("An error %s occurred when opening stub database connection", err)
+	}
+	defer DB.Close()
+
+	mock.ExpectQuery("INSERT INTO board.user").WithArgs(
+		user.Username,
+		user.EmailAddress,
+		user.UserPassword).
+		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow("1"))
+
+	if id, err := d.CreateUser(&user); err != nil {
+		t.Errorf("Error was not expected while inserting user: %s", err)
+	} else {
+		t.Logf("User inserted with id: %s", id)
+	}
+
+	if err = mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("There were unfulfilled expectations: %s", err)
+	}
+}
