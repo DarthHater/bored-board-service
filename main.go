@@ -213,6 +213,16 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 		postPost(c, d)
 	})
 
+	authorized.GET("/logout/:username", func(c *gin.Context) {
+		username := c.Param("username")
+		err := removeSession(username, c)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
+		} else {
+			c.JSON(http.StatusAccepted, gin.H{"message": "Successfully logged out"})
+		}
+	})
+
 	return r
 }
 
@@ -335,6 +345,19 @@ func setSession(username string, c *gin.Context) (err error) {
 			"Username": username,
 		}).Error("Error setting session")
 		c.JSON(http.StatusUnauthorized, gin.H{"err": err.Error()})
+	}
+	return
+}
+
+func removeSession(username string, c *gin.Context) (err error) {
+	session := sessions.Default(c)
+	session.Clear()
+	err = session.Save()
+	if err != nil {
+		log.WithFields(log.Fields{
+			"Error":    err.Error(),
+			"Username": username,
+		}).Error("Error deleting session")
 	}
 	return
 }
