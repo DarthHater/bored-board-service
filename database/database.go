@@ -67,6 +67,7 @@ func (d *Database) GetUser(username string) (user model.User, err error) {
 	if err != nil {
 		return user, err
 	}
+
 	return user, nil
 }
 

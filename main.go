@@ -21,6 +21,7 @@ import (
 	"github.com/gin-contrib/sessions"
 	"golang.org/x/crypto/bcrypt"
 	"net/http"
+	"os"
 
 	"github.com/darthhater/bored-board-service/database"
 	"github.com/gin-contrib/cors"
@@ -162,29 +163,14 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 	log := log.New()
 	r := gin.New()
 
-	store, _ := sessions.NewRedisStore(10, "tcp", redisURL, "", []byte("secret"))
-	r.Use(sessions.Sessions("mysession", store))
+	store, _ := sessions.NewRedisStore(10, "tcp", redisURL, "", []byte(os.Getenv("SECRET_KEY")))
+	r.Use(sessions.Sessions("boredboard", store))
 	r.Use(ginlogrus.Logger(log), gin.Recovery())
 
 	err := d.InitDb("development", "./.environment")
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	r.GET("/incr", func(c *gin.Context) {
-		session := sessions.Default(c)
-		var count int
-		v := session.Get("count")
-		if v == nil {
-			count = 0
-		} else {
-			count = v.(int)
-			count++
-		}
-		session.Set("count", count)
-		session.Save()
-		c.JSON(200, gin.H{"count": count})
-	})
 
 	r.POST("/login", func(c *gin.Context) {
 		checkCredentials(c, d)
@@ -217,11 +203,13 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 		getThreads(c, d, 20)
 	})
 
-	r.POST("/thread", func(c *gin.Context) {
+	authorized := r.Group("/protected", AuthorizeRequest())
+
+	authorized.POST("/thread", func(c *gin.Context) {
 		postThread(c, d)
 	})
 
-	r.POST("/post", func(c *gin.Context) {
+	authorized.POST("/post", func(c *gin.Context) {
 		postPost(c, d)
 	})
 
@@ -328,8 +316,27 @@ func checkCredentials(c *gin.Context, d database.IDatabase) {
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"err": err.Error()})
 	} else {
-		c.JSON(http.StatusAccepted, "OK")
+		err = setSession(user.Username, c)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"err": err.Error()})
+		} else {
+			c.JSON(http.StatusAccepted, "OK")
+		}
 	}
+}
+
+func setSession(username string, c *gin.Context) (err error) {
+	session := sessions.Default(c)
+	session.Set("user-id", username)
+	err = session.Save()
+	if err != nil {
+		log.WithFields(log.Fields{
+			"Error":    err.Error(),
+			"Username": username,
+		}).Error("Error setting session")
+		c.JSON(http.StatusUnauthorized, gin.H{"err": err.Error()})
+	}
+	return
 }
 
 func createUser(c *gin.Context, d database.IDatabase) {
@@ -343,5 +350,17 @@ func createUser(c *gin.Context, d database.IDatabase) {
 		c.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
 	} else {
 		c.JSON(http.StatusCreated, id)
+	}
+}
+
+func AuthorizeRequest() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		session := sessions.Default(c)
+		v := session.Get("user-id")
+		if v == nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"err": "Please log in."})
+			c.Abort()
+		}
+		c.Next()
 	}
 }

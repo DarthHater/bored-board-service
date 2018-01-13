@@ -22,5 +22,6 @@ func (u *User) HashPassword(password string) (err error) {
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
