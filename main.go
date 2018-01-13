@@ -18,6 +18,8 @@ import (
 	"encoding/json"
 	"github.com/darthhater/bored-board-service/model"
 	"github.com/garyburd/redigo/redis"
+	"github.com/gin-contrib/sessions"
+	"golang.org/x/crypto/bcrypt"
 	"net/http"
 
 	"github.com/darthhater/bored-board-service/database"
@@ -29,11 +31,13 @@ import (
 	"github.com/toorop/gin-logrus"
 )
 
+const redisURL = "redis_db:6379"
+
 var (
 	db          database.IDatabase
 	gPubSubConn *redis.PubSubConn
 	gRedisConn  = func() (redis.Conn, error) {
-		return redis.Dial("tcp", "redis_db:6379")
+		return redis.Dial("tcp", redisURL)
 	}
 )
 
@@ -157,12 +161,34 @@ func main() {
 func setupRouter(d database.IDatabase) *gin.Engine {
 	log := log.New()
 	r := gin.New()
+
+	store, _ := sessions.NewRedisStore(10, "tcp", redisURL, "", []byte("secret"))
+	r.Use(sessions.Sessions("mysession", store))
 	r.Use(ginlogrus.Logger(log), gin.Recovery())
 
 	err := d.InitDb("development", "./.environment")
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	r.GET("/incr", func(c *gin.Context) {
+		session := sessions.Default(c)
+		var count int
+		v := session.Get("count")
+		if v == nil {
+			count = 0
+		} else {
+			count = v.(int)
+			count++
+		}
+		session.Set("count", count)
+		session.Save()
+		c.JSON(200, gin.H{"count": count})
+	})
+
+	r.POST("/login", func(c *gin.Context) {
+		checkCredentials(c, d)
+	})
 
 	r.GET("/ws", func(c *gin.Context) {
 		webSocketHandler(c.Writer, c.Request)
@@ -281,5 +307,23 @@ func postPost(c *gin.Context, d database.IDatabase) {
 				c.Do("PUBLISH", "posts", bytes)
 			}
 		}
+	}
+}
+
+func checkCredentials(c *gin.Context, d database.IDatabase) {
+	var credentials model.Credentials
+	c.BindJSON(&credentials)
+	var user model.User
+
+	user, err := d.GetUser(credentials.Username)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
+	}
+
+	err = bcrypt.CompareHashAndPassword(user.UserPassword, []byte(credentials.Password))
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"err": err.Error()})
+	} else {
+		c.JSON(http.StatusAccepted, "OK")
 	}
 }

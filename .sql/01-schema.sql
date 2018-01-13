@@ -14,7 +14,8 @@ CREATE SCHEMA board AUTHORIZATION admin;
 CREATE TABLE board.user(
     Id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     Username varchar(250),
-    Emailaddress varchar(250)
+    Emailaddress varchar(250),
+    UserPassword bytea
 );
 
 CREATE TABLE board.thread(

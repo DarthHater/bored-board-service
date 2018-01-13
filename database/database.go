@@ -11,6 +11,7 @@ import (
 
 type IDatabase interface {
 	InitDb(s string, e string) error
+	GetUser(s string) (model.User, error)
 	GetThread(s string) (model.Thread, error)
 	GetPost(s string) (model.Post, error)
 	GetPosts(s string) ([]model.Post, error)
@@ -56,6 +57,16 @@ func (d *Database) GetPost(postId string) (post model.Post, err error) {
 		return post, err
 	}
 	return post, nil
+}
+
+func (d *Database) GetUser(username string) (user model.User, err error) {
+	user = model.User{}
+	err = DB.QueryRow("SELECT Id, Username, EmailAddress, UserPassword FROM board.user WHERE Username = $1", username).
+		Scan(&user.ID, &user.Username, &user.EmailAddress, &user.UserPassword)
+	if err != nil {
+		return user, err
+	}
+	return user, nil
 }
 
 func (d *Database) GetThreads(num int) ([]model.Thread, error) {
