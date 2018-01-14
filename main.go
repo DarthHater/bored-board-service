@@ -18,11 +18,9 @@ import (
 	"encoding/json"
 	"github.com/darthhater/bored-board-service/model"
 	"github.com/garyburd/redigo/redis"
-	"github.com/gin-contrib/sessions"
 	"golang.org/x/crypto/bcrypt"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"time"
 
 	"crypto/rsa"
@@ -227,8 +225,6 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 	log := log.New()
 	r := gin.New()
 
-	store, _ := sessions.NewRedisStore(10, "tcp", redisURL, "", []byte(os.Getenv("SECRET_KEY")))
-	r.Use(sessions.Sessions("boredboard", store))
 	r.Use(ginlogrus.Logger(log), gin.Recovery())
 
 	err := d.InitDb("development", "./.environment")
@@ -423,46 +419,6 @@ func checkCredentials(c *gin.Context, d database.IDatabase) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"token": tokenString})
-}
-
-func revoke(username string, c *gin.Context) (err error) {
-	session := sessions.Default(c)
-	session.Clear()
-	err = session.Save()
-	if err != nil {
-		log.WithFields(log.Fields{
-			"Error":    err.Error(),
-			"Username": username,
-		}).Error("Error deleting session")
-	}
-	return
-}
-
-func setSession(username string, c *gin.Context) (err error) {
-	session := sessions.Default(c)
-	session.Set("user-id", username)
-	err = session.Save()
-	if err != nil {
-		log.WithFields(log.Fields{
-			"Error":    err.Error(),
-			"Username": username,
-		}).Error("Error setting session")
-		c.JSON(http.StatusUnauthorized, gin.H{"err": err.Error()})
-	}
-	return
-}
-
-func removeSession(username string, c *gin.Context) (err error) {
-	session := sessions.Default(c)
-	session.Clear()
-	err = session.Save()
-	if err != nil {
-		log.WithFields(log.Fields{
-			"Error":    err.Error(),
-			"Username": username,
-		}).Error("Error deleting session")
-	}
-	return
 }
 
 func createUser(c *gin.Context, d database.IDatabase) {
