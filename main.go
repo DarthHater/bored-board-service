@@ -438,6 +438,33 @@ func revoke(username string, c *gin.Context) (err error) {
 	return
 }
 
+func setSession(username string, c *gin.Context) (err error) {
+	session := sessions.Default(c)
+	session.Set("user-id", username)
+	err = session.Save()
+	if err != nil {
+		log.WithFields(log.Fields{
+			"Error":    err.Error(),
+			"Username": username,
+		}).Error("Error setting session")
+		c.JSON(http.StatusUnauthorized, gin.H{"err": err.Error()})
+	}
+	return
+}
+
+func removeSession(username string, c *gin.Context) (err error) {
+	session := sessions.Default(c)
+	session.Clear()
+	err = session.Save()
+	if err != nil {
+		log.WithFields(log.Fields{
+			"Error":    err.Error(),
+			"Username": username,
+		}).Error("Error deleting session")
+	}
+	return
+}
+
 func createUser(c *gin.Context, d database.IDatabase) {
 	var registration model.Registration
 	c.BindJSON(&registration)
