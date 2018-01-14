@@ -20,10 +20,14 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"github.com/gin-contrib/sessions"
 	"golang.org/x/crypto/bcrypt"
+	"io/ioutil"
 	"net/http"
 	"os"
+	"time"
 
+	"crypto/rsa"
 	"github.com/darthhater/bored-board-service/database"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -34,12 +38,19 @@ import (
 
 const redisURL = "redis_db:6379"
 
+const (
+	privKeyPath = ".keys/app.rsa"
+	pubKeyPath  = ".keys/app.rsa.pub"
+)
+
 var (
 	db          database.IDatabase
 	gPubSubConn *redis.PubSubConn
 	gRedisConn  = func() (redis.Conn, error) {
 		return redis.Dial("tcp", redisURL)
 	}
+	signKey   *rsa.PrivateKey
+	verifyKey *rsa.PublicKey
 )
 
 type clientManager struct {
@@ -60,6 +71,28 @@ var manager = clientManager{
 	register:   make(chan *client),
 	unregister: make(chan *client),
 	clients:    make(map[*client]bool),
+}
+
+func initKeys() {
+	signBytes, err := ioutil.ReadFile(privKeyPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	signKey, err = jwt.ParseRSAPrivateKeyFromPEM(signBytes)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	verifyBytes, err := ioutil.ReadFile(pubKeyPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	verifyKey, err = jwt.ParseRSAPublicKeyFromPEM(verifyBytes)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func (manager *clientManager) start() {
@@ -135,9 +168,41 @@ var webSocketUpgrade = websocket.Upgrader{
 	},
 }
 
+func validateTokenMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		tokenString := c.GetHeader("Authorization")
+
+		if tokenString == "" {
+			c.JSON(http.StatusUnprocessableEntity, gin.H{"err": "Token is required"})
+			c.Abort();
+		}
+
+		// get token without 'Bearer ' in name
+		tokenString = tokenString[len("Bearer "):]
+
+		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+			return verifyKey, nil
+		})
+
+		// if there are any errors or token is invalid, abort and don't 
+		// execute the next function in the chain
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"err": err.Error()})
+			c.Abort()
+			return
+		}
+		if !token.Valid {
+			c.JSON(http.StatusUnauthorized, gin.H{"err": err.Error()})
+			c.Abort()
+			return
+		}
+	}
+}
+
 func main() {
 	d := database.Database{}
 	db = &d
+	initKeys()
 	r := setupRouter(db)
 	r.Use(gin.Logger())
 
@@ -184,44 +249,48 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 		webSocketHandler(c.Writer, c.Request)
 	})
 
-	r.GET("/thread/:threadid", func(c *gin.Context) {
-		threadId := c.Param("threadid")
-		getThread(c, d, threadId)
-	})
+	auth := r.Group("/")
 
-	r.GET("/post/:postid", func(c *gin.Context) {
-		postId := c.Param("postid")
-		getPost(c, d, postId)
-	})
+	auth.Use(validateTokenMiddleware())
+	{
+		auth.GET("/thread/:threadid", func(c *gin.Context) {
+			threadId := c.Param("threadid")
+			getThread(c, d, threadId)
+		})
 
-	r.GET("/posts/:threadid", func(c *gin.Context) {
-		threadId := c.Param("threadid")
-		getPosts(c, d, threadId)
-	})
+		auth.GET("/post/:postid", func(c *gin.Context) {
+			postId := c.Param("postid")
+			getPost(c, d, postId)
+		})
 
-	r.GET("/threads", func(c *gin.Context) {
-		getThreads(c, d, 20)
-	})
+		auth.GET("/posts/:threadid", func(c *gin.Context) {
+			threadId := c.Param("threadid")
+			getPosts(c, d, threadId)
+		})
 
-	authorized := r.Group("/protected", AuthorizeRequest())
+		auth.GET("/threads", func(c *gin.Context) {
+			getThreads(c, d, 20)
+		})
 
-	authorized.POST("/thread", func(c *gin.Context) {
-		postThread(c, d)
-	})
+		auth.POST("/thread", func(c *gin.Context) {
+			postThread(c, d)
+		})
 
-	authorized.POST("/post", func(c *gin.Context) {
-		postPost(c, d)
-	})
+		auth.POST("/post", func(c *gin.Context) {
+			postPost(c, d)
+		})
 
-	authorized.GET("/logout/:username", func(c *gin.Context) {
-		username := c.Param("username")
-		err := removeSession(username, c)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
-		} else {
-			c.JSON(http.StatusAccepted, gin.H{"message": "Successfully logged out"})
-		}
-	})
+		auth.GET("/logout/:username", func(c *gin.Context) {
+			// TODO: not sure how to invalidate the token when the user logs out. It seems
+			// like people usually just delete the token from the client and let it expire naturally,
+			// maybe that's sufficient?
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
+			} else {
+				c.JSON(http.StatusAccepted, gin.H{"message": "Successfully logged out"})
+			}
+		})
+	}
 
 	return r
 }
@@ -319,37 +388,45 @@ func checkCredentials(c *gin.Context, d database.IDatabase) {
 
 	user, err := d.GetUser(credentials.Username)
 	if err != nil {
+		log.Error(err)
 		c.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
+		return 
 	}
 
 	err = bcrypt.CompareHashAndPassword(user.UserPassword, []byte(credentials.Password))
 	if err != nil {
+		log.Error(err)
 		c.JSON(http.StatusUnauthorized, gin.H{"err": err.Error()})
+		return
+	}
+
+	// TODO: can maybe manage roles here (and with additional gin middleware)
+	var roles []string
+	if user.IsAdmin {
+		roles = append(roles, "admin")
 	} else {
-		err = setSession(user.Username, c)
-		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"err": err.Error()})
-		} else {
-			c.JSON(http.StatusAccepted, "OK")
-		}
+		roles = append(roles, "user")
 	}
-}
 
-func setSession(username string, c *gin.Context) (err error) {
-	session := sessions.Default(c)
-	session.Set("user-id", username)
-	err = session.Save()
+	token := jwt.New(jwt.SigningMethodRS256)
+	claims := make(jwt.MapClaims)
+	claims["exp"] = time.Now().Add(time.Hour * time.Duration(1)).Unix() // expires in one hour
+	claims["iat"] = time.Now().Unix()
+	claims["roles"] = roles
+	token.Claims = claims
+
+	tokenString, err := token.SignedString(signKey)
+
 	if err != nil {
-		log.WithFields(log.Fields{
-			"Error":    err.Error(),
-			"Username": username,
-		}).Error("Error setting session")
-		c.JSON(http.StatusUnauthorized, gin.H{"err": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
+		log.Error("Error signing the token")
+		return
 	}
-	return
+
+	c.JSON(http.StatusOK, gin.H{"token": tokenString})
 }
 
-func removeSession(username string, c *gin.Context) (err error) {
+func revoke(username string, c *gin.Context) (err error) {
 	session := sessions.Default(c)
 	session.Clear()
 	err = session.Save()
@@ -373,17 +450,5 @@ func createUser(c *gin.Context, d database.IDatabase) {
 		c.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
 	} else {
 		c.JSON(http.StatusCreated, id)
-	}
-}
-
-func AuthorizeRequest() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		session := sessions.Default(c)
-		v := session.Get("user-id")
-		if v == nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"err": "Please log in."})
-			c.Abort()
-		}
-		c.Next()
 	}
 }

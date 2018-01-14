@@ -3,3 +3,5 @@ vendor
 tmp
 .DS_Store
 .env
+.vscode/
+debug

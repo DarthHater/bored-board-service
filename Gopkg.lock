@@ -20,10 +20,22 @@
   revision = "75ee37df8664a47cd5d9eb84d41e1f2b08086893"
 
 [[projects]]
+  name = "github.com/codegangsta/negroni"
+  packages = ["."]
+  revision = "5dbbc83f748fc3ad38585842b0aedab546d0ea1e"
+  version = "v0.3.0"
+
+[[projects]]
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
   revision = "346938d642f2ec3594ed81d874461961cd0faa76"
   version = "v1.1.0"
+
+[[projects]]
+  name = "github.com/dgrijalva/jwt-go"
+  packages = [".","request"]
+  revision = "dbeaa9332f19a944acb5736b4456cfcc02140e29"
+  version = "v3.1.0"
 
 [[projects]]
   name = "github.com/fsnotify/fsnotify"
@@ -244,6 +256,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "c6ba268d91d98931d1e65d736f6b8dea2c03550ccaeaafe2f7817c86af428ca2"
+  inputs-digest = "6fd2682cf74d7fceee77ceaca4d59592f7aaa1a91ecfa6b483c2fe5498b02f76"
   solver-name = "gps-cdcl"
   solver-version = 1
