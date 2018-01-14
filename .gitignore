@@ -5,3 +5,5 @@ tmp
 .env
 .vscode/
 debug
+.keys/app.rsa
+.keys/app.rsa.pub
