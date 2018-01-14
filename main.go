@@ -34,11 +34,10 @@ import (
 	"github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
 	"github.com/toorop/gin-logrus"
-)
-
-const redisURL = "redis_db:6379"
+) 
 
 const (
+	redisURL = "redis_db:6379"
 	privKeyPath = ".keys/app.rsa"
 	pubKeyPath  = ".keys/app.rsa.pub"
 )
@@ -49,8 +48,8 @@ var (
 	gRedisConn  = func() (redis.Conn, error) {
 		return redis.Dial("tcp", redisURL)
 	}
-	signKey   *rsa.PrivateKey
-	verifyKey *rsa.PublicKey
+	signKey   	*rsa.PrivateKey
+	verifyKey 	*rsa.PublicKey
 )
 
 type clientManager struct {
