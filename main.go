@@ -18,7 +18,10 @@ import (
 	"encoding/json"
 	"github.com/darthhater/bored-board-service/model"
 	"github.com/garyburd/redigo/redis"
+	"github.com/gin-contrib/sessions"
+	"golang.org/x/crypto/bcrypt"
 	"net/http"
+	"os"
 
 	"github.com/darthhater/bored-board-service/database"
 	"github.com/gin-contrib/cors"
@@ -29,11 +32,13 @@ import (
 	"github.com/toorop/gin-logrus"
 )
 
+const redisURL = "redis_db:6379"
+
 var (
 	db          database.IDatabase
 	gPubSubConn *redis.PubSubConn
 	gRedisConn  = func() (redis.Conn, error) {
-		return redis.Dial("tcp", "redis_db:6379")
+		return redis.Dial("tcp", redisURL)
 	}
 )
 
@@ -157,12 +162,23 @@ func main() {
 func setupRouter(d database.IDatabase) *gin.Engine {
 	log := log.New()
 	r := gin.New()
+
+	store, _ := sessions.NewRedisStore(10, "tcp", redisURL, "", []byte(os.Getenv("SECRET_KEY")))
+	r.Use(sessions.Sessions("boredboard", store))
 	r.Use(ginlogrus.Logger(log), gin.Recovery())
 
 	err := d.InitDb("development", "./.environment")
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	r.POST("/login", func(c *gin.Context) {
+		checkCredentials(c, d)
+	})
+
+	r.POST("/register", func(c *gin.Context) {
+		createUser(c, d)
+	})
 
 	r.GET("/ws", func(c *gin.Context) {
 		webSocketHandler(c.Writer, c.Request)
@@ -187,12 +203,24 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 		getThreads(c, d, 20)
 	})
 
-	r.POST("/thread", func(c *gin.Context) {
+	authorized := r.Group("/protected", AuthorizeRequest())
+
+	authorized.POST("/thread", func(c *gin.Context) {
 		postThread(c, d)
 	})
 
-	r.POST("/post", func(c *gin.Context) {
+	authorized.POST("/post", func(c *gin.Context) {
 		postPost(c, d)
+	})
+
+	authorized.GET("/logout/:username", func(c *gin.Context) {
+		username := c.Param("username")
+		err := removeSession(username, c)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
+		} else {
+			c.JSON(http.StatusAccepted, gin.H{"message": "Successfully logged out"})
+		}
 	})
 
 	return r
@@ -285,5 +313,81 @@ func postPost(c *gin.Context, d database.IDatabase) {
 				c.Do("PUBLISH", "posts", bytes)
 			}
 		}
+	}
+}
+
+func checkCredentials(c *gin.Context, d database.IDatabase) {
+	var credentials model.Credentials
+	c.BindJSON(&credentials)
+	var user model.User
+
+	user, err := d.GetUser(credentials.Username)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
+	}
+
+	err = bcrypt.CompareHashAndPassword(user.UserPassword, []byte(credentials.Password))
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"err": err.Error()})
+	} else {
+		err = setSession(user.Username, c)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"err": err.Error()})
+		} else {
+			c.JSON(http.StatusAccepted, "OK")
+		}
+	}
+}
+
+func setSession(username string, c *gin.Context) (err error) {
+	session := sessions.Default(c)
+	session.Set("user-id", username)
+	err = session.Save()
+	if err != nil {
+		log.WithFields(log.Fields{
+			"Error":    err.Error(),
+			"Username": username,
+		}).Error("Error setting session")
+		c.JSON(http.StatusUnauthorized, gin.H{"err": err.Error()})
+	}
+	return
+}
+
+func removeSession(username string, c *gin.Context) (err error) {
+	session := sessions.Default(c)
+	session.Clear()
+	err = session.Save()
+	if err != nil {
+		log.WithFields(log.Fields{
+			"Error":    err.Error(),
+			"Username": username,
+		}).Error("Error deleting session")
+	}
+	return
+}
+
+func createUser(c *gin.Context, d database.IDatabase) {
+	var registration model.Registration
+	c.BindJSON(&registration)
+
+	user := model.User{Username: registration.Username, EmailAddress: registration.EmailAddress}
+	_ = user.HashPassword(registration.UserPassword)
+	id, err := d.CreateUser(&user)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
+	} else {
+		c.JSON(http.StatusCreated, id)
+	}
+}
+
+func AuthorizeRequest() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		session := sessions.Default(c)
+		v := session.Get("user-id")
+		if v == nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"err": "Please log in."})
+			c.Abort()
+		}
+		c.Next()
 	}
 }
