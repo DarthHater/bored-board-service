@@ -274,17 +274,6 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 		auth.POST("/post", func(c *gin.Context) {
 			postPost(c, d)
 		})
-
-		auth.GET("/logout/:username", func(c *gin.Context) {
-			// TODO: not sure how to invalidate the token when the user logs out. It seems
-			// like people usually just delete the token from the client and let it expire naturally,
-			// maybe that's sufficient?
-			if err != nil {
-				c.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
-			} else {
-				c.JSON(http.StatusAccepted, gin.H{"message": "Successfully logged out"})
-			}
-		})
 	}
 
 	return r
