@@ -32,10 +32,10 @@ import (
 	"github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
 	"github.com/toorop/gin-logrus"
-) 
+)
 
 const (
-	redisURL = "redis_db:6379"
+	redisURL    = "redis_db:6379"
 	privKeyPath = ".keys/app.rsa"
 	pubKeyPath  = ".keys/app.rsa.pub"
 )
@@ -46,8 +46,8 @@ var (
 	gRedisConn  = func() (redis.Conn, error) {
 		return redis.Dial("tcp", redisURL)
 	}
-	signKey   	*rsa.PrivateKey
-	verifyKey 	*rsa.PublicKey
+	signKey   *rsa.PrivateKey
+	verifyKey *rsa.PublicKey
 )
 
 type clientManager struct {
@@ -171,7 +171,7 @@ func validateTokenMiddleware() gin.HandlerFunc {
 
 		if tokenString == "" {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{"err": "Token is required"})
-			c.Abort();
+			c.Abort()
 		}
 
 		// get token without 'Bearer ' in name
@@ -181,7 +181,7 @@ func validateTokenMiddleware() gin.HandlerFunc {
 			return verifyKey, nil
 		})
 
-		// if there are any errors or token is invalid, abort and don't 
+		// if there are any errors or token is invalid, abort and don't
 		// execute the next function in the chain
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"err": err.Error()})
@@ -385,7 +385,7 @@ func checkCredentials(c *gin.Context, d database.IDatabase) {
 	if err != nil {
 		log.Error(err)
 		c.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
-		return 
+		return
 	}
 
 	err = bcrypt.CompareHashAndPassword(user.UserPassword, []byte(credentials.Password))
@@ -407,6 +407,7 @@ func checkCredentials(c *gin.Context, d database.IDatabase) {
 	claims := make(jwt.MapClaims)
 	claims["exp"] = time.Now().Add(time.Hour * time.Duration(1)).Unix() // expires in one hour
 	claims["iat"] = time.Now().Unix()
+	claims["user"] = user.Username
 	claims["roles"] = roles
 	token.Claims = claims
 
