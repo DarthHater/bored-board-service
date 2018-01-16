@@ -208,8 +208,8 @@ func TestGetUser(t *testing.T) {
 	}
 	defer DB.Close()
 
-	row := sqlmock.NewRows([]string{"id", "username", "emailaddress", "userpassword"}).
-		AddRow("1", "CoolGuy420", "hsimpson@springfield.org", []byte("fake password"))
+	row := sqlmock.NewRows([]string{"id", "username", "emailaddress", "userpassword", "isadmin"}).
+		AddRow("1", "CoolGuy420", "hsimpson@springfield.org", []byte("fake password"), false)
 
 	mock.ExpectQuery("SELECT (.+) FROM board.user").WillReturnRows(row)
 

@@ -15,7 +15,8 @@ CREATE TABLE board.user(
     Id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     Username varchar(250) UNIQUE,
     Emailaddress varchar(250) UNIQUE,
-    UserPassword bytea
+    UserPassword bytea,
+    IsAdmin boolean DEFAULT FALSE
 );
 
 CREATE TABLE board.thread(

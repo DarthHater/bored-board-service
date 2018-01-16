@@ -62,8 +62,8 @@ func (d *Database) GetPost(postId string) (post model.Post, err error) {
 
 func (d *Database) GetUser(username string) (user model.User, err error) {
 	user = model.User{}
-	err = DB.QueryRow("SELECT Id, Username, EmailAddress, UserPassword FROM board.user WHERE Username = $1", username).
-		Scan(&user.ID, &user.Username, &user.EmailAddress, &user.UserPassword)
+	err = DB.QueryRow("SELECT Id, Username, EmailAddress, UserPassword, IsAdmin FROM board.user WHERE Username = $1", username).
+		Scan(&user.ID, &user.Username, &user.EmailAddress, &user.UserPassword, &user.IsAdmin)
 	if err != nil {
 		return user, err
 	}
