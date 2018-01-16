@@ -271,6 +271,10 @@ func postPost(c *gin.Context, d database.IDatabase) {
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	} else {
+		post, err = d.GetPost(id)
+		if err != nil {
+			log.Error("Cannot get post")
+		}
 		if bytes, err := json.Marshal(&post); err != nil {
 			return
 		} else {
