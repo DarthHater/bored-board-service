@@ -15,12 +15,7 @@
 version: '3.1'
 services:
   web:
-    build: 
-      context: .
-      args:
-        - PRIVATE_KEY_PATH=${PRIVATE_KEY_PATH}
-        - PUBLIC_KEY_PATH=${PUBLIC_KEY_PATH}
-        - REMOTE_DEBUGGING=${REMOTE_DEBUGGING}
+    build: .
     privileged: true
     security_opt:
       - seccomp:unconfined

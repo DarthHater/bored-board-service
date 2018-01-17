@@ -15,11 +15,10 @@
 FROM golang:1.9
 
 ARG app_env
-ARG PRIVATE_KEY_PATH=default
-ARG PUBLIC_KEY_PATH=default
-ARG REMOTE_DEBUGGING=default
-
 ENV APP_ENV $app_env
+ENV PRIVATE_KEY_PATH=.keys/app.rsa
+ENV PUBLIC_KEY_PATH=.keys/app.rsa.pub
+ENV REMOTE_DEBUGGING=true
 
 RUN apt-get update && apt-get install -y unzip openssl --no-install-recommends && \
     apt-get autoremove -y && apt-get clean -y && \
@@ -34,8 +33,8 @@ WORKDIR /go/src/github.com/darthhater/bored-board-service
 COPY . .
 
 RUN mkdir .keys && \
-    openssl genrsa -out .keys/app.rsa 1024 && \
-    openssl rsa -in .keys/app.rsa -pubout > .keys/app.rsa.pub
+    openssl genrsa -out ${PRIVATE_KEY_PATH} 1024 && \
+    openssl rsa -in ${PRIVATE_KEY_PATH} -pubout > ${PUBLIC_KEY_PATH}
 
 RUN dep ensure
 
