@@ -17,7 +17,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/darthhater/bored-board-service/model"
+	"github.com/DarthHater/bored-board-service/model"
 	"github.com/garyburd/redigo/redis"
 	"golang.org/x/crypto/bcrypt"
 	"io/ioutil"
@@ -26,7 +26,7 @@ import (
 	"time"
 
 	"crypto/rsa"
-	"github.com/darthhater/bored-board-service/database"
+	"github.com/DarthHater/bored-board-service/database"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
