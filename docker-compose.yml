@@ -15,10 +15,19 @@
 version: '3.1'
 services:
   web:
-    build: .
+    build: 
+      context: .
+      args:
+        - PRIVATE_KEY_PATH=${PRIVATE_KEY_PATH}
+        - PUBLIC_KEY_PATH=${PUBLIC_KEY_PATH}
+        - REMOTE_DEBUGGING=${REMOTE_DEBUGGING}
+    privileged: true
+    security_opt:
+      - seccomp:unconfined
     image: darthhater/bored-board-service:latest
     ports:
       - '8000:8000'
+      - '2345:2345'
     volumes:
       - .:/go/src/github.com/darthhater/bored-board-service
     links:

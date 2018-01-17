@@ -22,6 +22,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"time"
+	"os"
 
 	"crypto/rsa"
 	"github.com/darthhater/bored-board-service/database"
@@ -36,8 +37,6 @@ import (
 
 const (
 	redisURL = "redis_db:6379"
-	privKeyPath = ".keys/app.rsa"
-	pubKeyPath  = ".keys/app.rsa.pub"
 )
 
 var (
@@ -68,28 +67,6 @@ var manager = clientManager{
 	register:   make(chan *client),
 	unregister: make(chan *client),
 	clients:    make(map[*client]bool),
-}
-
-func initKeys() {
-	signBytes, err := ioutil.ReadFile(privKeyPath)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	signKey, err = jwt.ParseRSAPrivateKeyFromPEM(signBytes)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	verifyBytes, err := ioutil.ReadFile(pubKeyPath)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	verifyKey, err = jwt.ParseRSAPublicKeyFromPEM(verifyBytes)
-	if err != nil {
-		log.Fatal(err)
-	}
 }
 
 func (manager *clientManager) start() {
@@ -170,7 +147,7 @@ func validateTokenMiddleware() gin.HandlerFunc {
 		tokenString := c.GetHeader("Authorization")
 
 		if tokenString == "" {
-			c.JSON(http.StatusUnprocessableEntity, gin.H{"err": "Token is required"})
+			c.JSON(http.StatusUnprocessableEntity, gin.H{"err": "token is required"})
 			c.Abort();
 		}
 
@@ -181,25 +158,52 @@ func validateTokenMiddleware() gin.HandlerFunc {
 			return verifyKey, nil
 		})
 
-		// if there are any errors or token is invalid, abort and don't 
-		// execute the next function in the chain
-		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"err": err.Error()})
-			c.Abort()
-			return
-		}
 		if !token.Valid {
-			c.JSON(http.StatusUnauthorized, gin.H{"err": err.Error()})
+			 if ve, ok := err.(*jwt.ValidationError); ok {
+				if ve.Errors&jwt.ValidationErrorMalformed != 0 {
+					c.JSON(http.StatusUnauthorized, gin.H{"err": "token is malformed"})
+				} else if ve.Errors&(jwt.ValidationErrorExpired) != 0 {
+					// Token is either expired
+					c.JSON(http.StatusUnauthorized, gin.H{"err": "token is expired or not yet valid"})
+				} else {
+					c.JSON(http.StatusUnauthorized, gin.H{"err": "error reading token"})
+				}
+			} else {
+				c.JSON(http.StatusUnauthorized, gin.H{"err": "error reading token"})
+			}
 			c.Abort()
-			return
 		}
+	}
+}
+
+func init() {
+	privKeyPath := os.Getenv("PRIVATE_KEY_PATH")
+	pubKeyPath := os.Getenv("PUBLIC_KEY_PATH")
+
+	signBytes, err := ioutil.ReadFile(privKeyPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	signKey, err = jwt.ParseRSAPrivateKeyFromPEM(signBytes)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	verifyBytes, err := ioutil.ReadFile(pubKeyPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	verifyKey, err = jwt.ParseRSAPublicKeyFromPEM(verifyBytes)
+	if err != nil {
+		log.Fatal(err)
 	}
 }
 
 func main() {
 	d := database.Database{}
 	db = &d
-	initKeys()
 	r := setupRouter(db)
 	r.Use(gin.Logger())
 
@@ -405,7 +409,7 @@ func checkCredentials(c *gin.Context, d database.IDatabase) {
 
 	token := jwt.New(jwt.SigningMethodRS256)
 	claims := make(jwt.MapClaims)
-	claims["exp"] = time.Now().Add(time.Hour * time.Duration(1)).Unix() // expires in one hour
+	claims["exp"] = time.Now().Add(time.Hour * 24 * 7).Unix() // expires in one week
 	claims["iat"] = time.Now().Unix()
 	claims["roles"] = roles
 	token.Claims = claims

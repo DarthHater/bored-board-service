@@ -15,6 +15,10 @@
 FROM golang:1.9
 
 ARG app_env
+ARG PRIVATE_KEY_PATH=default
+ARG PUBLIC_KEY_PATH=default
+ARG REMOTE_DEBUGGING=default
+
 ENV APP_ENV $app_env
 
 RUN apt-get update && apt-get install -y unzip openssl --no-install-recommends && \
@@ -26,6 +30,7 @@ RUN apt-get update && apt-get install -y unzip openssl --no-install-recommends &
 RUN chmod +x /usr/bin/dep
 
 WORKDIR /go/src/github.com/darthhater/bored-board-service
+
 COPY . .
 
 RUN mkdir .keys && \
@@ -45,4 +50,11 @@ CMD if [ ${APP_ENV} = production ]; \
     fresh -c .environment/fresh_runner.conf; \
     fi
 
+CMD if [ ${REMOTE_DEBUGGING} = true ]; \
+    then \
+    go get github.com/derekparker/delve/cmd/dlv && \
+    dlv debug --headless --listen=:2345 --log; \
+    fi
+
 EXPOSE 8000
+EXPOSE 2345
