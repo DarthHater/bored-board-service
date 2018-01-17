@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/darthhater/bored-board-service/model"
+	"github.com/DarthHater/bored-board-service/model"
 	_ "github.com/lib/pq"
 	"github.com/spf13/viper"
 )
