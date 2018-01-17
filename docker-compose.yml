@@ -23,6 +23,7 @@ services:
       - .:/go/src/github.com/darthhater/bored-board-service
     links:
       - redis_db
+    env_file: .env
   database:
     image: postgres:latest
     container_name: database
