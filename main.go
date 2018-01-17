@@ -21,8 +21,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"io/ioutil"
 	"net/http"
-	"time"
 	"os"
+	"time"
 
 	"crypto/rsa"
 	"github.com/darthhater/bored-board-service/database"
@@ -33,7 +33,7 @@ import (
 	"github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
 	"github.com/toorop/gin-logrus"
-) 
+)
 
 const (
 	redisURL = "redis_db:6379"
@@ -45,8 +45,8 @@ var (
 	gRedisConn  = func() (redis.Conn, error) {
 		return redis.Dial("tcp", redisURL)
 	}
-	signKey   	*rsa.PrivateKey
-	verifyKey 	*rsa.PublicKey
+	signKey   *rsa.PrivateKey
+	verifyKey *rsa.PublicKey
 )
 
 type clientManager struct {
@@ -148,7 +148,7 @@ func validateTokenMiddleware() gin.HandlerFunc {
 
 		if tokenString == "" {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{"err": "token is required"})
-			c.Abort();
+			c.Abort()
 		}
 
 		// get token without 'Bearer ' in name
@@ -159,7 +159,7 @@ func validateTokenMiddleware() gin.HandlerFunc {
 		})
 
 		if !token.Valid {
-			 if ve, ok := err.(*jwt.ValidationError); ok {
+			if ve, ok := err.(*jwt.ValidationError); ok {
 				if ve.Errors&jwt.ValidationErrorMalformed != 0 {
 					c.JSON(http.StatusUnauthorized, gin.H{"err": "token is malformed"})
 				} else if ve.Errors&(jwt.ValidationErrorExpired) != 0 {
@@ -278,17 +278,6 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 		auth.POST("/post", func(c *gin.Context) {
 			postPost(c, d)
 		})
-
-		auth.GET("/logout/:username", func(c *gin.Context) {
-			// TODO: not sure how to invalidate the token when the user logs out. It seems
-			// like people usually just delete the token from the client and let it expire naturally,
-			// maybe that's sufficient?
-			if err != nil {
-				c.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
-			} else {
-				c.JSON(http.StatusAccepted, gin.H{"message": "Successfully logged out"})
-			}
-		})
 	}
 
 	return r
@@ -367,6 +356,10 @@ func postPost(c *gin.Context, d database.IDatabase) {
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	} else {
+		post, err = d.GetPost(id)
+		if err != nil {
+			log.Error("Cannot get post")
+		}
 		if bytes, err := json.Marshal(&post); err != nil {
 			return
 		} else {
@@ -389,7 +382,7 @@ func checkCredentials(c *gin.Context, d database.IDatabase) {
 	if err != nil {
 		log.Error(err)
 		c.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
-		return 
+		return
 	}
 
 	err = bcrypt.CompareHashAndPassword(user.UserPassword, []byte(credentials.Password))
@@ -411,6 +404,7 @@ func checkCredentials(c *gin.Context, d database.IDatabase) {
 	claims := make(jwt.MapClaims)
 	claims["exp"] = time.Now().Add(time.Hour * 24 * 7).Unix() // expires in one week
 	claims["iat"] = time.Now().Unix()
+	claims["user"] = user.Username
 	claims["roles"] = roles
 	token.Claims = claims
 

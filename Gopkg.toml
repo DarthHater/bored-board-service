@@ -67,3 +67,7 @@
 [[constraint]]
   branch = "master"
   name = "golang.org/x/crypto"
+
+[[constraint]]
+ name = "github.com/dgrijalva/jwt-go"
+ version="3.1.0"
