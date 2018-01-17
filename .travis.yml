@@ -10,3 +10,5 @@ before_install:
 install:
   - dep ensure
 
+env: 
+  - BBS_DATABASE=database BBS_DATABASE_PORT=5432 BBS_DATABASE_USER=admin BBS_DATABASE_PASSWORD=admin123 BBS_DATABASE_DATABASE=db

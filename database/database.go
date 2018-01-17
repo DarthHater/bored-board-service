@@ -27,8 +27,8 @@ var DB *sql.DB
 // Public methods
 
 func (d *Database) InitDb(environment string, configPath string) error {
-	d.setupViper(environment, configPath)
-	psqlInfo := d.connectionString(environment)
+	d.setupViper()
+	psqlInfo := d.connectionString()
 	err := d.openConnection(psqlInfo)
 	if err != nil {
 		return err
@@ -153,22 +153,27 @@ func (d *Database) PostPost(post *model.Post) (postid string, err error) {
 
 // Internal methods
 
-func (d *Database) setupViper(environment string, configPath string) {
-	viper.SetConfigName(environment)
-	viper.AddConfigPath(configPath)
-
-	err := viper.ReadInConfig()
-	if err != nil {
-		panic(err)
-	}
+func (d *Database) setupViper() {
+	viper.SetEnvPrefix("BBS")
+	viper.SetDefault("DATABASE", "database")
+	viper.SetDefault("DATABASE_PORT", 5432)
+	viper.SetDefault("DATABASE_USER", "admin")
+	viper.SetDefault("DATABASE_PASSWORD", "admin123")
+	viper.SetDefault("DATABASE_DATABASE", "db")
+	viper.BindEnv("DATABASE")
+	viper.BindEnv("DATABASE_PORT")
+	viper.BindEnv("DATABASE_USER")
+	viper.BindEnv("DATABASE_PASSWORD")
+	viper.BindEnv("DATABASE_DATABASE")
 }
 
-func (d *Database) connectionString(env string) (connectionString string) {
-	return fmt.Sprintf("postgres://%s:%s@database:%d/%s?sslmode=disable",
-		viper.GetString("database.User"),
-		viper.GetString("database.Password"),
-		viper.GetInt("database.Port"),
-		viper.GetString("database.Database"))
+func (d *Database) connectionString() (connectionString string) {
+	return fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
+		viper.GetString("DATABASE_USER"),
+		viper.GetString("DATABASE_PASSWORD"),
+		viper.GetString("DATABASE"),
+		viper.GetInt("DATABASE_PORT"),
+		viper.GetString("DATABASE_DATABASE"))
 }
 
 func (d *Database) openConnection(psqlInfo string) error {
