@@ -16,6 +16,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/darthhater/bored-board-service/model"
 	"github.com/garyburd/redigo/redis"
 	"golang.org/x/crypto/bcrypt"
@@ -147,8 +148,11 @@ func validateTokenMiddleware() gin.HandlerFunc {
 		tokenString := c.GetHeader("Authorization")
 
 		if tokenString == "" {
+			origin := c.GetHeader("Origin")
 			c.JSON(http.StatusUnprocessableEntity, gin.H{"err": "token is required"})
+			log.Error(fmt.Sprintf("Attempt to log in without token from origin: %s", origin))
 			c.Abort()
+			return
 		}
 
 		// get token without 'Bearer ' in name
@@ -159,17 +163,21 @@ func validateTokenMiddleware() gin.HandlerFunc {
 		})
 
 		if !token.Valid {
+			origin := c.GetHeader("Origin")
 			if ve, ok := err.(*jwt.ValidationError); ok {
 				if ve.Errors&jwt.ValidationErrorMalformed != 0 {
 					c.JSON(http.StatusUnauthorized, gin.H{"err": "token is malformed"})
+					log.Error(fmt.Sprintf("Attempt to log in with malformed token from origin: %s", origin))
 				} else if ve.Errors&(jwt.ValidationErrorExpired) != 0 {
-					// Token is either expired
-					c.JSON(http.StatusUnauthorized, gin.H{"err": "token is expired or not yet valid"})
+					// Token is expired
+					c.JSON(http.StatusUnauthorized, gin.H{"err": "token is expired"})
 				} else {
 					c.JSON(http.StatusUnauthorized, gin.H{"err": "error reading token"})
+					log.Error(fmt.Sprintf("Error logging in with token from origin %s", origin))
 				}
 			} else {
 				c.JSON(http.StatusUnauthorized, gin.H{"err": "error reading token"})
+				log.Error(fmt.Sprintf("Error logging in with token from origin %s", origin))
 			}
 			c.Abort()
 		}
