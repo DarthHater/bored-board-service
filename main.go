@@ -150,7 +150,7 @@ func validateTokenMiddleware() gin.HandlerFunc {
 		if tokenString == "" {
 			origin := c.GetHeader("Origin")
 			c.JSON(http.StatusUnprocessableEntity, gin.H{"err": "token is required"})
-			log.Error(fmt.Sprintf("Attempt to log in without token from origin: %s", origin))
+			log.Error(fmt.Sprintf("Attempt to access resources without token from origin: %s", origin))
 			c.Abort()
 			return
 		}
@@ -167,17 +167,17 @@ func validateTokenMiddleware() gin.HandlerFunc {
 			if ve, ok := err.(*jwt.ValidationError); ok {
 				if ve.Errors&jwt.ValidationErrorMalformed != 0 {
 					c.JSON(http.StatusUnauthorized, gin.H{"err": "token is malformed"})
-					log.Error(fmt.Sprintf("Attempt to log in with malformed token from origin: %s", origin))
+					log.Error(fmt.Sprintf("Attempt to access resources with malformed token from origin: %s", origin))
 				} else if ve.Errors&(jwt.ValidationErrorExpired) != 0 {
 					// Token is expired
 					c.JSON(http.StatusUnauthorized, gin.H{"err": "token is expired"})
 				} else {
 					c.JSON(http.StatusUnauthorized, gin.H{"err": "error reading token"})
-					log.Error(fmt.Sprintf("Error logging in with token from origin %s", origin))
+					log.Error(fmt.Sprintf("Error accessing resources with token from origin %s", origin))
 				}
 			} else {
 				c.JSON(http.StatusUnauthorized, gin.H{"err": "error reading token"})
-				log.Error(fmt.Sprintf("Error logging in with token from origin %s", origin))
+				log.Error(fmt.Sprintf("Error accessing resources with token from origin %s", origin))
 			}
 			c.Abort()
 		}
