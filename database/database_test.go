@@ -16,10 +16,10 @@ func TestInitDb(t *testing.T) {
 
 func TestConnectionString(t *testing.T) {
 	d := Database{}
-	d.setupViper("development", "../.environment")
+	d.setupViper()
 	assert.Equal(t,
 		"postgres://admin:admin123@database:5432/db?sslmode=disable",
-		d.connectionString("development"),
+		d.connectionString(),
 	)
 }
 
