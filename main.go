@@ -16,11 +16,11 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/darthhater/bored-board-service/model"
+	"github.com/DarthHater/bored-board-service/model"
 	"github.com/garyburd/redigo/redis"
 	"net/http"
 
-	"github.com/darthhater/bored-board-service/database"
+	"github.com/DarthHater/bored-board-service/database"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
