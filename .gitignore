@@ -7,3 +7,6 @@ tmp
 debug
 .keys/app.rsa
 .keys/app.rsa.pub
+
+supervisord.log
+supervisord.pid
