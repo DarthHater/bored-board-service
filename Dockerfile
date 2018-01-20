@@ -29,7 +29,7 @@ RUN chmod +x /usr/bin/dep
 
 WORKDIR /go/src/github.com/DarthHater/bored-board-service
 
-COPY . . 
+COPY . .
 
 COPY .environment/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
