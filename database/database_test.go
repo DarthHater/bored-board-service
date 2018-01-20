@@ -1,7 +1,7 @@
 package database
 
 import (
-	"github.com/darthhater/bored-board-service/model"
+	"github.com/DarthHater/bored-board-service/model"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
