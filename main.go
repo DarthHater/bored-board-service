@@ -388,24 +388,16 @@ func checkCredentials(c *gin.Context, d database.IDatabase) {
 
 	user, err := d.GetUser(credentials.Username)
 	if err != nil {
-		log.Error(err)
-		c.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
+		log.WithFields(log.Fields{"username": credentials.Username}).Error("Can't find that username")
+		c.JSON(http.StatusBadRequest, gin.H{"err": "Can't find that username"})
 		return
 	}
 
 	err = bcrypt.CompareHashAndPassword(user.UserPassword, []byte(credentials.Password))
 	if err != nil {
-		log.Error(err)
-		c.JSON(http.StatusUnauthorized, gin.H{"err": err.Error()})
+		log.WithFields(log.Fields{"username": user.Username}).Error("Wrong password")
+		c.JSON(http.StatusUnauthorized, gin.H{"err": "Wrong password"})
 		return
-	}
-
-	// TODO: can maybe manage roles here (and with additional gin middleware)
-	var roles []string
-	if user.IsAdmin {
-		roles = append(roles, "admin")
-	} else {
-		roles = append(roles, "user")
 	}
 
 	token := jwt.New(jwt.SigningMethodRS256)
@@ -413,7 +405,7 @@ func checkCredentials(c *gin.Context, d database.IDatabase) {
 	claims["exp"] = time.Now().Add(time.Hour * 24 * 7).Unix() // expires in one week
 	claims["iat"] = time.Now().Unix()
 	claims["user"] = user.Username
-	claims["roles"] = roles
+	claims["admin"] = user.IsAdmin
 	token.Claims = claims
 
 	tokenString, err := token.SignedString(signKey)
