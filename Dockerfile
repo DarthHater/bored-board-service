@@ -20,7 +20,7 @@ ENV PRIVATE_KEY_PATH=/var/bored-board-service/.keys/app.rsa
 ENV PUBLIC_KEY_PATH=/var/bored-board-service/.keys/app.rsa.pub
 
 RUN apt-get update && apt-get install -y unzip openssl --no-install-recommends && \
-    apt-get install -y supervisor && apt-get autoremove -y && apt-get clean -y && \
+    apt-get autoremove -y && apt-get clean -y && \
     wget -O dep https://github.com/golang/dep/releases/download/v0.3.2/dep-linux-amd64 && \
     echo '322152b8b50b26e5e3a7f6ebaeb75d9c11a747e64bbfd0d8bb1f4d89a031c2b5 dep' | sha256sum -c - && \
     cp dep /usr/bin && rm dep
@@ -31,10 +31,6 @@ WORKDIR /go/src/github.com/DarthHater/bored-board-service
 
 COPY . .
 
-COPY .environment/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-
-RUN chmod +x scripts/start.sh
-
 RUN mkdir -p /var/bored-board-service/.keys && \
     openssl genrsa -out ${PRIVATE_KEY_PATH} 1024 && \
     openssl rsa -in ${PRIVATE_KEY_PATH} -pubout > ${PUBLIC_KEY_PATH}
@@ -43,7 +39,13 @@ RUN dep ensure
 
 RUN go build
 
-CMD [ "/bin/bash", "scripts/start.sh" ]
-
+# Build on changes to source unless production
+CMD if [ ${APP_ENV} = production ]; \
+    then \
+    license-manager; \
+    else \
+    go get github.com/pilu/fresh && \
+    fresh -c .environment/fresh_runner.conf; \
+    fi
+    
 EXPOSE 8000
-EXPOSE 2345
