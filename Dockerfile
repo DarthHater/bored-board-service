@@ -16,8 +16,8 @@ FROM golang:1.9
 
 ARG app_env
 ENV APP_ENV $app_env
-ENV PRIVATE_KEY_PATH=.keys/app.rsa
-ENV PUBLIC_KEY_PATH=.keys/app.rsa.pub
+ENV PRIVATE_KEY_PATH=/var/bored-board-service/.keys/app.rsa
+ENV PUBLIC_KEY_PATH=/var/bored-board-service/.keys/app.rsa.pub
 
 RUN apt-get update && apt-get install -y unzip openssl --no-install-recommends && \
     apt-get install -y supervisor && apt-get autoremove -y && apt-get clean -y && \
@@ -35,7 +35,7 @@ COPY .environment/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 RUN chmod +x scripts/start.sh
 
-RUN mkdir -p .keys && \
+RUN mkdir -p /var/bored-board-service/.keys && \
     openssl genrsa -out ${PRIVATE_KEY_PATH} 1024 && \
     openssl rsa -in ${PRIVATE_KEY_PATH} -pubout > ${PUBLIC_KEY_PATH}
 
