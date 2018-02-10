@@ -30,6 +30,7 @@ CREATE TABLE board.thread_post(
     UserId UUID,
     Body text,
     PostedAt TIMESTAMP DEFAULT now()
+    EditedAt TIMESTAMP DEFAULT now()
 );
 
 GRANT ALL PRIVILEGES 

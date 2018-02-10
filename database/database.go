@@ -3,6 +3,8 @@ package database
 import (
 	"database/sql"
 	"fmt"
+	"time"
+	"errors"
 
 	"github.com/DarthHater/bored-board-service/model"
 	_ "github.com/lib/pq"
@@ -17,6 +19,8 @@ type IDatabase interface {
 	GetThreads(i int) ([]model.Thread, error)
 	PostThread(t *model.NewThread) (string, error)
 	PostPost(p *model.Post) (string, error)
+	CheckEditPost(p *model.Post) (model.Post, error)
+	EditPost(p *model.Post) (error)
 }
 
 type Database struct {
@@ -150,6 +154,37 @@ func (d *Database) PostPost(post *model.Post) (postid string, err error) {
 
 	return id, nil
 }
+
+func (d *Database) CheckEditPost(editPost *model.Post) (post model.Post, err error) {
+	sqlStatement := `
+		SELECT Id, ThreadId, UserId, Body, PostedAt, EditedAt 
+		FROM board.thread_post WHERE PostId = $1 
+		AND (PostedAt::date < $2)`
+
+	row := DB.QueryRow(sqlStatement, editPost.Id, time.Now().Local().Add(time.Minute * 10))
+	fmt.Println("Scanning")
+	switch err := row.Scan(&post); err {  
+		case nil:
+			fmt.Println("yep")
+
+			break
+		case sql.ErrNoRows:  
+			fmt.Println("Nope")
+			err = errors.New("Can't edit post, it doesn't exist or it's too late")
+		default:  
+			return post, nil
+		}
+	err = d.EditPost(&post)
+	return post, nil
+}
+
+func (d *Database) EditPost(editPost *model.Post) (err error) {
+	fmt.Println("Okay")
+	_, err = DB.Exec("UPDATE board.thread_post set Body = $1, EditedAt = $2", editPost.Body, time.Now())
+
+	return err
+}
+
 
 // Internal methods
 
