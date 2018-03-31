@@ -183,8 +183,9 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 		getPosts(c, d, threadId)
 	})
 
-	r.PUT("/posts", func(c *gin.Context) {
-		editPost(c, d)
+	r.PUT("/posts/:postid", func(c *gin.Context) {
+		postId := c.Param("postid")
+		editPost(c, d, postId)
 	})
 
 	r.GET("/threads", func(c *gin.Context) {
@@ -292,10 +293,10 @@ func postPost(c *gin.Context, d database.IDatabase) {
 	}
 }
 
-func editPost(c *gin.Context, d database.IDatabase) {
+func editPost(c *gin.Context, d database.IDatabase, postId string) {
 	var post model.Post
 	c.BindJSON(&post)
-	id, err := d.CheckEditPost(&post)
+	post, err := d.CheckEditPost(&post)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	} else {
@@ -306,7 +307,7 @@ func editPost(c *gin.Context, d database.IDatabase) {
 		// if err != nil {
 		// 	return
 		// } 
-		c.JSON(http.StatusOK, gin.H{"id": id})
+		c.JSON(http.StatusOK, post)
 		// if c, err := gRedisConn(); err != nil {
 		// 	log.Printf("Error on redis conn. %s", err)
 		// } else {

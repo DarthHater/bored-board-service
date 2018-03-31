@@ -1,0 +1,474 @@
+2018-02-11 22:53:12,448 CRIT Supervisor running as root (no user in config file)
+2018-02-11 22:53:12,456 INFO supervisord started with pid 591
+2018-02-11 22:53:13,461 INFO spawned: 'delve' with pid 632
+2018-02-11 22:53:13,465 INFO spawned: 'fresh' with pid 633
+2018-02-11 22:53:15,146 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-11 22:53:15,146 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-11 22:53:23,512 INFO exited: delve (exit status 0; expected)
+2018-02-11 22:53:24,515 INFO spawned: 'delve' with pid 1021
+2018-02-11 22:53:25,516 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-11 22:59:45,993 CRIT Supervisor running as root (no user in config file)
+2018-02-11 22:59:46,011 INFO supervisord started with pid 592
+2018-02-11 22:59:47,015 INFO spawned: 'delve' with pid 595
+2018-02-11 22:59:47,018 INFO spawned: 'fresh' with pid 596
+2018-02-11 22:59:48,674 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-11 22:59:48,675 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-11 22:59:57,033 INFO exited: delve (exit status 0; expected)
+2018-02-11 22:59:58,037 INFO spawned: 'delve' with pid 894
+2018-02-11 22:59:59,041 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-12 00:52:34,531 CRIT Supervisor running as root (no user in config file)
+2018-02-12 00:52:34,546 INFO supervisord started with pid 594
+2018-02-12 00:52:35,549 INFO spawned: 'delve' with pid 597
+2018-02-12 00:52:35,555 INFO spawned: 'fresh' with pid 598
+2018-02-12 00:52:37,229 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-12 00:52:37,230 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-12 00:52:45,678 INFO exited: delve (exit status 0; expected)
+2018-02-12 00:52:46,681 INFO spawned: 'delve' with pid 964
+2018-02-12 00:52:47,682 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-12 01:33:12,536 CRIT Supervisor running as root (no user in config file)
+2018-02-12 01:33:12,568 INFO supervisord started with pid 32
+2018-02-12 01:33:13,574 INFO spawned: 'delve' with pid 52
+2018-02-12 01:33:13,577 INFO spawned: 'fresh' with pid 53
+2018-02-12 01:33:15,214 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-12 01:33:15,216 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-12 01:33:23,673 INFO exited: delve (exit status 0; expected)
+2018-02-12 01:33:24,677 INFO spawned: 'delve' with pid 237
+2018-02-12 01:33:25,686 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-12 01:33:34,745 INFO exited: delve (exit status 0; expected)
+2018-02-12 01:33:35,750 INFO spawned: 'delve' with pid 416
+2018-02-12 01:33:36,752 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-13 16:46:15,564 WARN received SIGTERM indicating exit request
+2018-02-13 16:46:15,606 INFO waiting for delve, fresh to die
+2018-02-13 16:46:15,607 INFO stopped: fresh (terminated by SIGTERM)
+2018-02-13 16:46:15,610 INFO exited: delve (terminated by SIGTERM; not expected)
+2018-02-18 22:11:09,873 CRIT Supervisor running as root (no user in config file)
+2018-02-18 22:11:09,881 INFO supervisord started with pid 590
+2018-02-18 22:11:10,883 INFO spawned: 'delve' with pid 593
+2018-02-18 22:11:10,885 INFO spawned: 'fresh' with pid 594
+2018-02-18 22:11:12,503 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 22:11:12,504 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 22:42:29,248 INFO exited: delve (exit status 0; expected)
+2018-02-18 22:42:30,251 INFO spawned: 'delve' with pid 962
+2018-02-18 22:42:31,253 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 22:42:40,284 INFO exited: delve (exit status 1; not expected)
+2018-02-18 22:42:41,287 INFO spawned: 'delve' with pid 971
+2018-02-18 22:42:42,289 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 22:42:51,303 INFO exited: delve (exit status 1; not expected)
+2018-02-18 22:42:52,306 INFO spawned: 'delve' with pid 979
+2018-02-18 22:42:53,308 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 22:43:02,323 INFO exited: delve (exit status 1; not expected)
+2018-02-18 22:43:03,326 INFO spawned: 'delve' with pid 988
+2018-02-18 22:43:04,328 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 22:43:13,360 INFO exited: delve (exit status 1; not expected)
+2018-02-18 22:43:13,362 INFO spawned: 'delve' with pid 996
+2018-02-18 22:43:14,364 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 22:43:23,387 INFO exited: delve (exit status 1; not expected)
+2018-02-18 22:43:24,389 INFO spawned: 'delve' with pid 1004
+2018-02-18 22:43:25,392 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 22:43:34,414 INFO exited: delve (exit status 1; not expected)
+2018-02-18 22:43:35,416 INFO spawned: 'delve' with pid 1013
+2018-02-18 22:43:36,419 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 22:43:45,436 INFO exited: delve (exit status 1; not expected)
+2018-02-18 22:43:46,438 INFO spawned: 'delve' with pid 1021
+2018-02-18 22:43:47,440 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 22:43:56,454 INFO exited: delve (exit status 1; not expected)
+2018-02-18 22:43:57,456 INFO spawned: 'delve' with pid 1030
+2018-02-18 22:43:58,458 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 22:44:07,470 INFO exited: delve (exit status 1; not expected)
+2018-02-18 22:44:08,473 INFO spawned: 'delve' with pid 1037
+2018-02-18 22:44:09,475 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 22:44:19,793 INFO exited: delve (exit status 1; not expected)
+2018-02-18 22:44:20,796 INFO spawned: 'delve' with pid 1045
+2018-02-18 22:44:21,798 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 22:44:30,810 INFO exited: delve (exit status 1; not expected)
+2018-02-18 22:44:31,813 INFO spawned: 'delve' with pid 1054
+2018-02-18 22:44:32,815 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 22:44:41,827 INFO exited: delve (exit status 1; not expected)
+2018-02-18 22:44:42,830 INFO spawned: 'delve' with pid 1063
+2018-02-18 22:44:43,832 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 22:44:52,848 INFO exited: delve (exit status 1; not expected)
+2018-02-18 22:44:53,852 INFO spawned: 'delve' with pid 1072
+2018-02-18 22:44:54,855 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 22:45:03,870 INFO exited: delve (exit status 1; not expected)
+2018-02-18 22:45:04,873 INFO spawned: 'delve' with pid 1081
+2018-02-18 22:45:05,875 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 22:45:14,897 INFO exited: delve (exit status 1; not expected)
+2018-02-18 22:45:15,900 INFO spawned: 'delve' with pid 1089
+2018-02-18 22:45:16,903 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 22:45:25,922 INFO exited: delve (exit status 1; not expected)
+2018-02-18 22:45:26,924 INFO spawned: 'delve' with pid 1097
+2018-02-18 22:45:27,926 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 22:45:36,941 INFO exited: delve (exit status 1; not expected)
+2018-02-18 22:45:37,944 INFO spawned: 'delve' with pid 1106
+2018-02-18 22:45:38,946 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 22:45:47,976 INFO exited: delve (exit status 1; not expected)
+2018-02-18 22:45:47,979 INFO spawned: 'delve' with pid 1115
+2018-02-18 22:45:48,991 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 22:45:58,007 INFO exited: delve (exit status 1; not expected)
+2018-02-18 22:45:59,010 INFO spawned: 'delve' with pid 1124
+2018-02-18 22:46:00,012 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 22:46:09,031 INFO exited: delve (exit status 1; not expected)
+2018-02-18 22:46:10,034 INFO spawned: 'delve' with pid 1132
+2018-02-18 22:46:11,036 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 22:46:20,093 INFO exited: delve (exit status 1; not expected)
+2018-02-18 22:46:21,096 INFO spawned: 'delve' with pid 1141
+2018-02-18 22:46:22,099 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 22:46:31,111 INFO exited: delve (exit status 1; not expected)
+2018-02-18 22:46:32,114 INFO spawned: 'delve' with pid 1150
+2018-02-18 22:46:33,116 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 22:46:42,179 INFO exited: delve (exit status 1; not expected)
+2018-02-18 22:46:43,182 INFO spawned: 'delve' with pid 1159
+2018-02-18 22:46:44,185 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 22:46:53,197 INFO exited: delve (exit status 1; not expected)
+2018-02-18 22:46:54,200 INFO spawned: 'delve' with pid 1167
+2018-02-18 22:46:55,203 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 22:47:04,218 INFO exited: delve (exit status 1; not expected)
+2018-02-18 22:47:05,221 INFO spawned: 'delve' with pid 1175
+2018-02-18 22:47:06,223 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 22:47:15,235 INFO exited: delve (exit status 1; not expected)
+2018-02-18 22:47:16,238 INFO spawned: 'delve' with pid 1183
+2018-02-18 22:47:17,239 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 22:47:26,253 INFO exited: delve (exit status 1; not expected)
+2018-02-18 22:47:27,256 INFO spawned: 'delve' with pid 1191
+2018-02-18 22:47:28,258 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 22:47:37,271 INFO exited: delve (exit status 1; not expected)
+2018-02-18 22:47:38,273 INFO spawned: 'delve' with pid 1201
+2018-02-18 22:47:39,276 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 22:47:48,296 INFO exited: delve (exit status 1; not expected)
+2018-02-18 22:47:49,299 INFO spawned: 'delve' with pid 1210
+2018-02-18 22:47:50,303 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 22:47:59,319 INFO exited: delve (exit status 1; not expected)
+2018-02-18 22:48:00,324 INFO spawned: 'delve' with pid 1221
+2018-02-18 22:48:01,327 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 22:48:10,340 INFO exited: delve (exit status 1; not expected)
+2018-02-18 22:48:11,344 INFO spawned: 'delve' with pid 1231
+2018-02-18 22:48:12,346 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 22:48:21,365 INFO exited: delve (exit status 1; not expected)
+2018-02-18 22:48:22,368 INFO spawned: 'delve' with pid 1239
+2018-02-18 22:48:23,370 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 22:48:32,383 INFO exited: delve (exit status 1; not expected)
+2018-02-18 22:48:33,386 INFO spawned: 'delve' with pid 1247
+2018-02-18 22:48:34,388 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 22:48:43,404 INFO exited: delve (exit status 1; not expected)
+2018-02-18 22:48:44,408 INFO spawned: 'delve' with pid 1256
+2018-02-18 22:48:45,410 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 22:48:54,422 INFO exited: delve (exit status 1; not expected)
+2018-02-18 22:48:55,424 INFO spawned: 'delve' with pid 1265
+2018-02-18 22:48:56,426 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 22:49:05,439 INFO exited: delve (exit status 1; not expected)
+2018-02-18 22:49:06,442 INFO spawned: 'delve' with pid 1274
+2018-02-18 22:49:07,443 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 22:49:16,457 INFO exited: delve (exit status 1; not expected)
+2018-02-18 22:49:17,460 INFO spawned: 'delve' with pid 1282
+2018-02-18 22:49:18,463 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 22:49:27,481 INFO exited: delve (exit status 1; not expected)
+2018-02-18 22:49:28,483 INFO spawned: 'delve' with pid 1292
+2018-02-18 22:49:29,485 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 22:49:38,524 INFO exited: delve (exit status 1; not expected)
+2018-02-18 22:49:39,527 INFO spawned: 'delve' with pid 1301
+2018-02-18 22:49:40,529 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 22:51:16,459 CRIT Supervisor running as root (no user in config file)
+2018-02-18 22:51:16,468 INFO supervisord started with pid 590
+2018-02-18 22:51:17,470 INFO spawned: 'fresh' with pid 593
+2018-02-18 22:51:19,104 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 23:13:18,575 CRIT Supervisor running as root (no user in config file)
+2018-02-18 23:13:18,583 INFO supervisord started with pid 592
+2018-02-18 23:13:19,585 INFO spawned: 'fresh' with pid 595
+2018-02-18 23:13:21,228 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 23:20:27,786 CRIT Supervisor running as root (no user in config file)
+2018-02-18 23:20:27,795 INFO supervisord started with pid 31
+2018-02-18 23:20:28,799 INFO spawned: 'fresh' with pid 51
+2018-02-18 23:20:30,427 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 23:23:56,217 CRIT Supervisor running as root (no user in config file)
+2018-02-18 23:23:56,231 INFO supervisord started with pid 31
+2018-02-18 23:23:57,234 INFO spawned: 'fresh' with pid 52
+2018-02-18 23:23:58,870 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 23:28:28,430 WARN received SIGTERM indicating exit request
+2018-02-18 23:28:28,433 INFO waiting for fresh to die
+2018-02-18 23:28:28,565 INFO stopped: fresh (terminated by SIGTERM)
+2018-02-18 23:32:23,483 CRIT Supervisor running as root (no user in config file)
+2018-02-18 23:32:23,523 INFO supervisord started with pid 588
+2018-02-18 23:32:24,527 INFO spawned: 'fresh' with pid 591
+2018-02-18 23:32:26,174 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 23:49:12,406 CRIT Supervisor running as root (no user in config file)
+2018-02-18 23:49:12,415 INFO supervisord started with pid 596
+2018-02-18 23:49:13,417 INFO spawned: 'fresh' with pid 599
+2018-02-18 23:49:15,038 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 23:53:59,013 CRIT Supervisor running as root (no user in config file)
+2018-02-18 23:53:59,029 INFO supervisord started with pid 33
+2018-02-18 23:54:00,032 INFO spawned: 'fresh' with pid 53
+2018-02-18 23:54:01,690 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-18 23:55:45,898 CRIT Supervisor running as root (no user in config file)
+2018-02-18 23:55:45,920 INFO supervisord started with pid 30
+2018-02-18 23:55:46,923 INFO spawned: 'fresh' with pid 52
+2018-02-18 23:55:48,553 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-19 00:10:42,467 CRIT Supervisor running as root (no user in config file)
+2018-02-19 00:10:42,485 INFO supervisord started with pid 31
+2018-02-19 00:10:43,489 INFO spawned: 'fresh' with pid 52
+2018-02-19 00:10:45,106 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-19 01:00:28,441 CRIT Supervisor running as root (no user in config file)
+2018-02-19 01:00:28,453 INFO supervisord started with pid 585
+2018-02-19 01:00:29,455 INFO spawned: 'fresh' with pid 607
+2018-02-19 01:00:31,079 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-19 01:09:56,126 CRIT Supervisor running as root (no user in config file)
+2018-02-19 01:09:56,139 INFO supervisord started with pid 664
+2018-02-19 01:09:57,149 INFO spawned: 'fresh' with pid 685
+2018-02-19 01:09:58,807 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-19 01:12:23,944 CRIT Supervisor running as root (no user in config file)
+2018-02-19 01:12:23,955 INFO supervisord started with pid 32
+2018-02-19 01:12:24,961 INFO spawned: 'fresh' with pid 56
+2018-02-19 01:12:26,606 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-19 01:22:20,443 CRIT Supervisor running as root (no user in config file)
+2018-02-19 01:22:20,452 INFO supervisord started with pid 599
+2018-02-19 01:22:21,458 INFO spawned: 'fresh' with pid 602
+2018-02-19 01:22:23,092 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-19 01:26:39,813 CRIT Supervisor running as root (no user in config file)
+2018-02-19 01:26:39,823 INFO supervisord started with pid 32
+2018-02-19 01:26:40,825 INFO spawned: 'fresh' with pid 53
+2018-02-19 01:26:42,460 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-19 01:32:46,784 CRIT Supervisor running as root (no user in config file)
+2018-02-19 01:32:46,792 INFO supervisord started with pid 32
+2018-02-19 01:32:47,801 INFO spawned: 'fresh' with pid 51
+2018-02-19 01:32:49,455 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-19 01:40:16,616 CRIT Supervisor running as root (no user in config file)
+2018-02-19 01:40:16,635 INFO supervisord started with pid 29
+2018-02-19 01:40:17,642 INFO spawned: 'fresh' with pid 50
+2018-02-19 01:40:19,288 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-19 01:48:22,480 CRIT Supervisor running as root (no user in config file)
+2018-02-19 01:48:22,500 INFO supervisord started with pid 592
+2018-02-19 01:48:23,506 INFO spawned: 'fresh' with pid 614
+2018-02-19 01:48:25,155 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-19 01:55:50,070 CRIT Supervisor running as root (no user in config file)
+2018-02-19 01:55:50,078 INFO supervisord started with pid 32
+2018-02-19 01:55:51,081 INFO spawned: 'fresh' with pid 51
+2018-02-19 01:55:52,718 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-19 01:58:48,172 CRIT Supervisor running as root (no user in config file)
+2018-02-19 01:58:48,181 INFO supervisord started with pid 32
+2018-02-19 01:58:49,185 INFO spawned: 'fresh' with pid 57
+2018-02-19 01:58:50,884 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-19 02:07:07,023 CRIT Supervisor running as root (no user in config file)
+2018-02-19 02:07:07,037 INFO supervisord started with pid 31
+2018-02-19 02:07:08,041 INFO spawned: 'fresh' with pid 51
+2018-02-19 02:07:09,663 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-19 02:12:31,095 CRIT Supervisor running as root (no user in config file)
+2018-02-19 02:12:31,102 INFO supervisord started with pid 31
+2018-02-19 02:12:32,105 INFO spawned: 'fresh' with pid 51
+2018-02-19 02:12:33,736 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-19 02:15:55,075 CRIT Supervisor running as root (no user in config file)
+2018-02-19 02:15:55,101 INFO supervisord started with pid 31
+2018-02-19 02:15:56,105 INFO spawned: 'fresh' with pid 52
+2018-02-19 02:15:57,732 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-24 21:20:44,131 CRIT Supervisor running as root (no user in config file)
+2018-02-24 21:20:44,141 INFO supervisord started with pid 31
+2018-02-24 21:20:45,145 INFO spawned: 'fresh' with pid 52
+2018-02-24 21:20:46,798 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-24 21:24:08,122 CRIT Supervisor running as root (no user in config file)
+2018-02-24 21:24:08,146 INFO supervisord started with pid 618
+2018-02-24 21:24:09,149 INFO spawned: 'fresh' with pid 638
+2018-02-24 21:24:10,771 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-24 21:28:02,278 INFO exited: fresh (terminated by SIGTERM; not expected)
+2018-02-24 21:28:03,282 INFO spawned: 'fresh' with pid 2397
+2018-02-24 21:28:04,902 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-24 21:34:58,052 INFO exited: fresh (terminated by SIGTERM; not expected)
+2018-02-24 21:34:59,056 INFO spawned: 'fresh' with pid 4439
+2018-02-24 21:35:00,671 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-24 21:35:01,528 INFO exited: fresh (exit status 1; not expected)
+2018-02-24 21:35:02,531 INFO spawned: 'fresh' with pid 4485
+2018-02-24 21:35:04,149 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-24 21:35:04,920 INFO exited: fresh (exit status 1; not expected)
+2018-02-24 21:35:05,924 INFO spawned: 'fresh' with pid 4526
+2018-02-24 21:35:07,548 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-24 21:35:08,273 INFO exited: fresh (exit status 1; not expected)
+2018-02-24 21:35:09,277 INFO spawned: 'fresh' with pid 4569
+2018-02-24 21:35:10,901 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-24 21:35:11,566 INFO exited: fresh (exit status 1; not expected)
+2018-02-24 21:35:12,569 INFO spawned: 'fresh' with pid 4610
+2018-02-24 21:35:14,188 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-24 21:35:15,009 INFO exited: fresh (exit status 1; not expected)
+2018-02-24 21:35:15,013 INFO spawned: 'fresh' with pid 4639
+2018-02-24 21:35:16,650 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-24 21:35:17,430 INFO exited: fresh (exit status 1; not expected)
+2018-02-24 21:35:18,433 INFO spawned: 'fresh' with pid 4696
+2018-02-24 21:35:20,055 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-24 21:35:20,791 INFO exited: fresh (exit status 1; not expected)
+2018-02-24 21:35:20,797 INFO spawned: 'fresh' with pid 4725
+2018-02-24 21:35:22,436 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-24 21:35:23,269 INFO exited: fresh (exit status 1; not expected)
+2018-02-24 21:35:23,280 INFO spawned: 'fresh' with pid 4769
+2018-02-24 21:35:24,935 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-24 21:35:25,704 INFO exited: fresh (exit status 1; not expected)
+2018-02-24 21:35:25,706 INFO spawned: 'fresh' with pid 4821
+2018-02-24 21:35:27,340 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-24 21:35:28,138 INFO exited: fresh (exit status 1; not expected)
+2018-02-24 21:35:29,141 INFO spawned: 'fresh' with pid 4872
+2018-02-24 21:35:30,060 WARN received SIGTERM indicating exit request
+2018-02-24 21:35:30,061 INFO waiting for fresh to die
+2018-02-24 21:35:30,062 INFO stopped: fresh (terminated by SIGTERM)
+2018-02-24 21:38:48,640 CRIT Supervisor running as root (no user in config file)
+2018-02-24 21:38:48,670 INFO supervisord started with pid 29
+2018-02-24 21:38:49,675 INFO spawned: 'fresh' with pid 61
+2018-02-24 21:38:51,297 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-24 21:38:52,052 INFO exited: fresh (exit status 1; not expected)
+2018-02-24 21:38:53,054 INFO spawned: 'fresh' with pid 101
+2018-02-24 21:38:54,677 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-24 21:38:55,247 INFO exited: fresh (exit status 1; not expected)
+2018-02-24 21:38:55,249 INFO spawned: 'fresh' with pid 130
+2018-02-24 21:38:56,879 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-24 21:38:57,434 INFO exited: fresh (exit status 1; not expected)
+2018-02-24 21:38:58,437 INFO spawned: 'fresh' with pid 187
+2018-02-24 21:39:00,054 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-24 21:39:00,634 INFO exited: fresh (exit status 1; not expected)
+2018-02-24 21:39:00,638 INFO spawned: 'fresh' with pid 215
+2018-02-24 21:39:02,257 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-24 21:39:02,962 INFO exited: fresh (exit status 1; not expected)
+2018-02-24 21:39:03,966 INFO spawned: 'fresh' with pid 272
+2018-02-24 21:39:05,589 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-24 21:39:06,423 INFO exited: fresh (exit status 1; not expected)
+2018-02-24 21:39:07,426 INFO spawned: 'fresh' with pid 312
+2018-02-24 21:39:09,096 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-24 21:39:10,523 INFO exited: fresh (exit status 1; not expected)
+2018-02-24 21:39:11,529 INFO spawned: 'fresh' with pid 353
+2018-02-24 21:39:13,348 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-24 21:58:13,582 CRIT Supervisor running as root (no user in config file)
+2018-02-24 21:58:13,592 INFO supervisord started with pid 618
+2018-02-24 21:58:14,595 INFO spawned: 'fresh' with pid 639
+2018-02-24 21:58:15,006 INFO exited: fresh (exit status 1; not expected)
+2018-02-24 21:58:16,009 INFO spawned: 'fresh' with pid 768
+2018-02-24 21:58:16,240 INFO exited: fresh (exit status 1; not expected)
+2018-02-24 21:58:18,245 INFO spawned: 'fresh' with pid 897
+2018-02-24 21:58:18,540 INFO exited: fresh (exit status 1; not expected)
+2018-02-24 21:58:21,545 INFO spawned: 'fresh' with pid 1027
+2018-02-24 21:58:21,780 INFO exited: fresh (exit status 1; not expected)
+2018-02-24 21:58:22,782 INFO gave up: fresh entered FATAL state, too many start retries too quickly
+2018-02-24 22:14:10,684 CRIT Supervisor running as root (no user in config file)
+2018-02-24 22:14:10,696 INFO supervisord started with pid 592
+2018-02-24 22:14:11,699 INFO spawned: 'fresh' with pid 613
+2018-02-24 22:14:12,513 INFO exited: fresh (exit status 1; not expected)
+2018-02-24 22:14:13,519 INFO spawned: 'fresh' with pid 633
+2018-02-24 22:14:14,306 INFO exited: fresh (exit status 1; not expected)
+2018-02-24 22:14:16,310 INFO spawned: 'fresh' with pid 653
+2018-02-24 22:14:17,094 INFO exited: fresh (exit status 1; not expected)
+2018-02-24 22:14:20,100 INFO spawned: 'fresh' with pid 672
+2018-02-24 22:14:20,889 INFO exited: fresh (exit status 1; not expected)
+2018-02-24 22:14:21,891 INFO gave up: fresh entered FATAL state, too many start retries too quickly
+2018-02-25 17:14:49,621 CRIT Supervisor running as root (no user in config file)
+2018-02-25 17:14:49,630 INFO supervisord started with pid 596
+2018-02-25 17:14:50,633 INFO spawned: 'fresh' with pid 599
+2018-02-25 17:14:50,911 INFO exited: fresh (exit status 1; not expected)
+2018-02-25 17:14:51,914 INFO spawned: 'fresh' with pid 731
+2018-02-25 17:14:52,118 INFO exited: fresh (exit status 1; not expected)
+2018-02-25 17:14:54,123 INFO spawned: 'fresh' with pid 862
+2018-02-25 17:14:54,437 INFO exited: fresh (exit status 1; not expected)
+2018-02-25 17:14:57,442 INFO spawned: 'fresh' with pid 993
+2018-02-25 17:14:58,013 INFO exited: fresh (exit status 1; not expected)
+2018-02-25 17:14:59,015 INFO gave up: fresh entered FATAL state, too many start retries too quickly
+2018-02-25 17:56:07,344 CRIT Supervisor running as root (no user in config file)
+2018-02-25 17:56:07,351 INFO supervisord started with pid 524
+2018-02-25 17:56:08,354 INFO spawned: 'fresh' with pid 527
+2018-02-25 17:56:09,971 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-02-25 19:37:06,722 WARN received SIGTERM indicating exit request
+2018-02-25 19:37:06,729 INFO waiting for fresh to die
+2018-02-25 19:37:06,736 INFO stopped: fresh (terminated by SIGTERM)
+2018-03-18 19:28:50,885 CRIT Supervisor running as root (no user in config file)
+2018-03-18 19:28:50,892 INFO supervisord started with pid 597
+2018-03-18 19:28:51,895 INFO spawned: 'fresh' with pid 600
+2018-03-18 19:28:52,648 INFO exited: fresh (exit status 1; not expected)
+2018-03-18 19:28:53,651 INFO spawned: 'fresh' with pid 622
+2018-03-18 19:28:54,409 INFO exited: fresh (exit status 1; not expected)
+2018-03-18 19:28:56,413 INFO spawned: 'fresh' with pid 641
+2018-03-18 19:28:57,187 INFO exited: fresh (exit status 1; not expected)
+2018-03-18 19:29:00,197 INFO spawned: 'fresh' with pid 662
+2018-03-18 19:29:01,139 INFO exited: fresh (exit status 1; not expected)
+2018-03-18 19:29:02,145 INFO gave up: fresh entered FATAL state, too many start retries too quickly
+2018-03-18 19:35:27,694 CRIT Supervisor running as root (no user in config file)
+2018-03-18 19:35:27,710 INFO supervisord started with pid 594
+2018-03-18 19:35:28,712 INFO spawned: 'fresh' with pid 597
+2018-03-18 19:35:29,587 INFO exited: fresh (exit status 1; not expected)
+2018-03-18 19:35:30,591 INFO spawned: 'fresh' with pid 616
+2018-03-18 19:35:31,394 INFO exited: fresh (exit status 1; not expected)
+2018-03-18 19:35:33,398 INFO spawned: 'fresh' with pid 635
+2018-03-18 19:35:34,234 INFO exited: fresh (exit status 1; not expected)
+2018-03-18 19:35:37,240 INFO spawned: 'fresh' with pid 655
+2018-03-18 19:35:38,190 INFO exited: fresh (exit status 1; not expected)
+2018-03-18 19:35:39,193 INFO gave up: fresh entered FATAL state, too many start retries too quickly
+2018-03-18 19:37:46,156 CRIT Supervisor running as root (no user in config file)
+2018-03-18 19:37:46,164 INFO supervisord started with pid 597
+2018-03-18 19:37:47,166 INFO spawned: 'fresh' with pid 600
+2018-03-18 19:37:47,902 INFO exited: fresh (exit status 1; not expected)
+2018-03-18 19:37:48,905 INFO spawned: 'fresh' with pid 619
+2018-03-18 19:37:49,672 INFO exited: fresh (exit status 1; not expected)
+2018-03-18 19:37:51,675 INFO spawned: 'fresh' with pid 639
+2018-03-18 19:37:52,436 INFO exited: fresh (exit status 1; not expected)
+2018-03-18 19:37:55,441 INFO spawned: 'fresh' with pid 661
+2018-03-18 19:37:56,206 INFO exited: fresh (exit status 1; not expected)
+2018-03-18 19:37:56,207 INFO gave up: fresh entered FATAL state, too many start retries too quickly
+2018-03-18 19:44:11,062 CRIT Supervisor running as root (no user in config file)
+2018-03-18 19:44:11,069 INFO supervisord started with pid 599
+2018-03-18 19:44:12,071 INFO spawned: 'fresh' with pid 602
+2018-03-18 19:44:12,837 INFO exited: fresh (exit status 1; not expected)
+2018-03-18 19:44:13,839 INFO spawned: 'fresh' with pid 621
+2018-03-18 19:44:14,585 INFO exited: fresh (exit status 1; not expected)
+2018-03-18 19:44:16,589 INFO spawned: 'fresh' with pid 640
+2018-03-18 19:44:17,332 INFO exited: fresh (exit status 1; not expected)
+2018-03-18 19:44:20,336 INFO spawned: 'fresh' with pid 659
+2018-03-18 19:44:21,106 INFO exited: fresh (exit status 1; not expected)
+2018-03-18 19:44:22,107 INFO gave up: fresh entered FATAL state, too many start retries too quickly
+2018-03-18 19:45:54,162 CRIT Supervisor running as root (no user in config file)
+2018-03-18 19:45:54,169 INFO supervisord started with pid 529
+2018-03-18 19:45:55,171 INFO spawned: 'fresh' with pid 532
+2018-03-18 19:45:56,791 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-24 19:02:25,898 CRIT Supervisor running as root (no user in config file)
+2018-03-24 19:02:25,904 INFO supervisord started with pid 31
+2018-03-24 19:02:26,906 INFO spawned: 'fresh' with pid 34
+2018-03-24 19:02:28,559 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-24 19:10:19,531 CRIT Supervisor running as root (no user in config file)
+2018-03-24 19:10:19,537 INFO supervisord started with pid 29
+2018-03-24 19:10:20,540 INFO spawned: 'fresh' with pid 32
+2018-03-24 19:10:22,159 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-24 19:10:29,032 INFO exited: fresh (exit status 1; not expected)
+2018-03-24 19:10:30,035 INFO spawned: 'fresh' with pid 247
+2018-03-24 19:10:31,653 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-24 19:59:09,491 CRIT Supervisor running as root (no user in config file)
+2018-03-24 19:59:09,498 INFO supervisord started with pid 551
+2018-03-24 19:59:10,501 INFO spawned: 'fresh' with pid 571
+2018-03-24 19:59:12,134 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-24 20:02:55,790 CRIT Supervisor running as root (no user in config file)
+2018-03-24 20:02:55,808 INFO supervisord started with pid 518
+2018-03-24 20:02:56,816 INFO spawned: 'fresh' with pid 538
+2018-03-24 20:02:58,445 INFO success: fresh entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-26 17:01:46,635 WARN received SIGTERM indicating exit request
+2018-03-26 17:01:46,669 INFO waiting for fresh to die
+2018-03-26 17:01:49,433 INFO stopped: fresh (terminated by SIGTERM)
+2018-03-31 21:10:46,493 CRIT Supervisor running as root (no user in config file)
+2018-03-31 21:10:46,507 INFO supervisord started with pid 1490
+2018-03-31 21:10:47,511 INFO spawned: 'delve' with pid 1493
+2018-03-31 21:10:47,522 INFO spawned: 'realize' with pid 1494
+2018-03-31 21:10:48,524 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:10:48,525 INFO success: realize entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:10:57,605 INFO exited: delve (exit status 0; expected)
+2018-03-31 21:10:57,608 INFO spawned: 'delve' with pid 1835
+2018-03-31 21:10:58,611 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:11:07,641 INFO exited: delve (exit status 0; expected)
+2018-03-31 21:11:08,643 INFO spawned: 'delve' with pid 2194
+2018-03-31 21:11:09,646 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:11:18,685 INFO exited: delve (exit status 0; expected)
+2018-03-31 21:11:19,688 INFO spawned: 'delve' with pid 2227
+2018-03-31 21:11:20,691 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:11:29,720 INFO exited: delve (exit status 0; expected)
+2018-03-31 21:11:30,723 INFO spawned: 'delve' with pid 2239
+2018-03-31 21:11:31,726 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:11:40,751 INFO exited: delve (exit status 0; expected)
+2018-03-31 21:11:41,753 INFO spawned: 'delve' with pid 2252
+2018-03-31 21:11:42,755 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:11:51,783 INFO exited: delve (exit status 0; expected)
+2018-03-31 21:11:52,786 INFO spawned: 'delve' with pid 2265
+2018-03-31 21:11:53,788 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:12:02,808 INFO exited: delve (exit status 0; expected)
+2018-03-31 21:12:03,813 INFO spawned: 'delve' with pid 2277
+2018-03-31 21:12:04,820 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:12:13,853 INFO exited: delve (exit status 0; expected)
+2018-03-31 21:12:14,856 INFO spawned: 'delve' with pid 2290
+2018-03-31 21:12:15,859 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:12:24,885 INFO exited: delve (exit status 0; expected)
+2018-03-31 21:12:25,888 INFO spawned: 'delve' with pid 2302
+2018-03-31 21:12:26,890 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)

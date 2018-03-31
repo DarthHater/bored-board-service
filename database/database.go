@@ -155,26 +155,27 @@ func (d *Database) PostPost(post *model.Post) (postid string, err error) {
 	return id, nil
 }
 
+// CheckEditPost checks if a post exists and has been posted within 15 minutes. 
+// If it does, will update the post 
 func (d *Database) CheckEditPost(editPost *model.Post) (post model.Post, err error) {
 	sqlStatement := `
-		SELECT Id, ThreadId, UserId, Body, PostedAt, EditedAt 
-		FROM board.thread_post WHERE PostId = $1 
-		AND (PostedAt::date < $2)`
+		SELECT Id, hreadId, UserId, Body, PostedAt, EditedAt 
+		FROM board.thread_post WHERE Id::text = '6fc2d5c5-c083-43e9-9005-a68b400a46e5'`
 
-	row := DB.QueryRow(sqlStatement, editPost.Id, time.Now().Local().Add(time.Minute * 10))
+	row := DB.QueryRow(sqlStatement)
 	fmt.Println("Scanning")
 	switch err := row.Scan(&post); err {  
 		case nil:
 			fmt.Println("yep")
-
+			err = d.EditPost(&post)
 			break
 		case sql.ErrNoRows:  
 			fmt.Println("Nope")
 			err = errors.New("Can't edit post, it doesn't exist or it's too late")
 		default:  
+			fmt.Println("Default")
 			return post, nil
 		}
-	err = d.EditPost(&post)
 	return post, nil
 }
 
