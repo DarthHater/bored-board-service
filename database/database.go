@@ -158,10 +158,8 @@ func (d *Database) EditPost(editPost *model.Post) (post model.Post, err error) {
 		UPDATE board.thread_post 
 		SET Body = $1, EditedAt = $2
 		WHERE Id::text = $3 
-		AND PostedAt::date < now() + '500 minutes'::interval`
-
+		AND PostedAt::date + '10 minutes'::interval < now()`
 	res, err := DB.Exec(sqlStatement, editPost.Body, time.Now(), editPost.Id)
-
 	if err != nil {
 		panic(err)
 	}
@@ -174,7 +172,7 @@ func (d *Database) EditPost(editPost *model.Post) (post model.Post, err error) {
 		return post, nil
 	}
 
-	return post, err	
+	return post, err
 }
 
 
