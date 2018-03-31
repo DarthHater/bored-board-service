@@ -296,7 +296,7 @@ func postPost(c *gin.Context, d database.IDatabase) {
 func editPost(c *gin.Context, d database.IDatabase, postId string) {
 	var post model.Post
 	c.BindJSON(&post)
-	post, err := d.CheckEditPost(&post)
+	post, err := d.EditPost(&post)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	} else {

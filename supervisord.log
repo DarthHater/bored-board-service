@@ -472,3 +472,347 @@
 2018-03-31 21:12:24,885 INFO exited: delve (exit status 0; expected)
 2018-03-31 21:12:25,888 INFO spawned: 'delve' with pid 2302
 2018-03-31 21:12:26,890 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:28:44,380 CRIT Supervisor running as root (no user in config file)
+2018-03-31 21:28:44,400 INFO supervisord started with pid 1498
+2018-03-31 21:28:45,403 INFO spawned: 'delve' with pid 1501
+2018-03-31 21:28:45,405 INFO spawned: 'realize' with pid 1502
+2018-03-31 21:28:46,409 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:28:46,409 INFO success: realize entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:31:14,083 CRIT Supervisor running as root (no user in config file)
+2018-03-31 21:31:14,099 INFO supervisord started with pid 1493
+2018-03-31 21:31:15,102 INFO spawned: 'delve' with pid 1496
+2018-03-31 21:31:15,109 INFO spawned: 'realize' with pid 1497
+2018-03-31 21:31:16,112 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:31:16,114 INFO success: realize entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:31:25,196 INFO exited: delve (exit status 1; not expected)
+2018-03-31 21:31:26,201 INFO spawned: 'delve' with pid 1760
+2018-03-31 21:31:27,204 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:31:36,260 INFO exited: delve (exit status 1; not expected)
+2018-03-31 21:31:37,264 INFO spawned: 'delve' with pid 1910
+2018-03-31 21:31:38,266 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:31:47,350 INFO exited: delve (exit status 1; not expected)
+2018-03-31 21:31:48,354 INFO spawned: 'delve' with pid 2213
+2018-03-31 21:31:49,357 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:31:58,378 INFO exited: delve (exit status 1; not expected)
+2018-03-31 21:31:59,382 INFO spawned: 'delve' with pid 2222
+2018-03-31 21:32:00,384 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:32:09,405 INFO exited: delve (exit status 1; not expected)
+2018-03-31 21:32:10,409 INFO spawned: 'delve' with pid 2230
+2018-03-31 21:32:11,412 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:32:20,431 INFO exited: delve (exit status 1; not expected)
+2018-03-31 21:32:21,435 INFO spawned: 'delve' with pid 2238
+2018-03-31 21:32:22,438 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:32:31,453 INFO exited: delve (exit status 1; not expected)
+2018-03-31 21:32:32,457 INFO spawned: 'delve' with pid 2247
+2018-03-31 21:32:33,460 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:32:42,476 INFO exited: delve (exit status 1; not expected)
+2018-03-31 21:33:11,553 CRIT Supervisor running as root (no user in config file)
+2018-03-31 21:33:11,569 INFO supervisord started with pid 1164
+2018-03-31 21:33:12,572 INFO spawned: 'delve' with pid 1167
+2018-03-31 21:33:12,578 INFO spawned: 'realize' with pid 1168
+2018-03-31 21:33:13,583 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:33:13,584 INFO success: realize entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:33:22,601 INFO exited: delve (exit status 1; not expected)
+2018-03-31 21:33:23,604 INFO spawned: 'delve' with pid 1217
+2018-03-31 21:33:24,607 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:33:33,626 INFO exited: delve (exit status 1; not expected)
+2018-03-31 21:33:34,629 INFO spawned: 'delve' with pid 1225
+2018-03-31 21:33:35,631 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:33:44,646 INFO exited: delve (exit status 1; not expected)
+2018-03-31 21:33:45,649 INFO spawned: 'delve' with pid 1241
+2018-03-31 21:33:46,652 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:33:55,666 INFO exited: delve (exit status 1; not expected)
+2018-03-31 21:33:56,669 INFO spawned: 'delve' with pid 1249
+2018-03-31 21:33:57,671 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:34:06,686 INFO exited: delve (exit status 1; not expected)
+2018-03-31 21:34:07,691 INFO spawned: 'delve' with pid 1259
+2018-03-31 21:34:08,693 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:34:17,706 INFO exited: delve (exit status 1; not expected)
+2018-03-31 21:34:18,710 INFO spawned: 'delve' with pid 1268
+2018-03-31 21:34:19,712 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:34:28,731 INFO exited: delve (exit status 1; not expected)
+2018-03-31 21:34:29,734 INFO spawned: 'delve' with pid 1276
+2018-03-31 21:34:30,736 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:34:39,751 INFO exited: delve (exit status 1; not expected)
+2018-03-31 21:34:40,755 INFO spawned: 'delve' with pid 1286
+2018-03-31 21:34:41,758 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:34:50,772 INFO exited: delve (exit status 1; not expected)
+2018-03-31 21:34:51,775 INFO spawned: 'delve' with pid 1295
+2018-03-31 21:34:52,777 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:35:01,788 INFO exited: delve (exit status 1; not expected)
+2018-03-31 21:35:02,795 INFO spawned: 'delve' with pid 1305
+2018-03-31 21:35:03,798 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:35:12,821 INFO exited: delve (exit status 1; not expected)
+2018-03-31 21:35:13,825 INFO spawned: 'delve' with pid 1313
+2018-03-31 21:35:14,828 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:35:23,845 INFO exited: delve (exit status 1; not expected)
+2018-03-31 21:35:24,847 INFO spawned: 'delve' with pid 1323
+2018-03-31 21:35:25,849 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:35:34,866 INFO exited: delve (exit status 1; not expected)
+2018-03-31 21:35:35,870 INFO spawned: 'delve' with pid 1331
+2018-03-31 21:35:36,872 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:35:45,886 INFO exited: delve (exit status 1; not expected)
+2018-03-31 21:35:46,890 INFO spawned: 'delve' with pid 1341
+2018-03-31 21:35:47,892 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:35:56,929 INFO exited: delve (exit status 1; not expected)
+2018-03-31 21:35:57,932 INFO spawned: 'delve' with pid 1350
+2018-03-31 21:35:58,934 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:36:07,951 INFO exited: delve (exit status 1; not expected)
+2018-03-31 21:36:08,954 INFO spawned: 'delve' with pid 1358
+2018-03-31 21:36:09,956 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:36:18,968 INFO exited: delve (exit status 1; not expected)
+2018-03-31 21:36:19,970 INFO spawned: 'delve' with pid 1367
+2018-03-31 21:36:20,973 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:36:29,988 INFO exited: delve (exit status 1; not expected)
+2018-03-31 21:36:30,990 INFO spawned: 'delve' with pid 1375
+2018-03-31 21:36:31,992 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:36:41,007 INFO exited: delve (exit status 1; not expected)
+2018-03-31 21:36:42,012 INFO spawned: 'delve' with pid 1383
+2018-03-31 21:36:43,014 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:36:52,027 INFO exited: delve (exit status 1; not expected)
+2018-03-31 21:36:52,030 INFO spawned: 'delve' with pid 1392
+2018-03-31 21:36:53,033 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:39:07,200 CRIT Supervisor running as root (no user in config file)
+2018-03-31 21:39:07,213 INFO supervisord started with pid 1499
+2018-03-31 21:39:08,217 INFO spawned: 'delve' with pid 1502
+2018-03-31 21:39:08,219 INFO spawned: 'realize' with pid 1503
+2018-03-31 21:39:09,223 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:39:09,224 INFO success: realize entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:55:53,942 CRIT Supervisor running as root (no user in config file)
+2018-03-31 21:55:53,953 INFO supervisord started with pid 1165
+2018-03-31 21:55:54,957 INFO spawned: 'delve' with pid 1168
+2018-03-31 21:55:54,960 INFO spawned: 'realize' with pid 1169
+2018-03-31 21:55:55,963 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:55:55,964 INFO success: realize entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:57:14,608 INFO exited: realize (exit status 0; expected)
+2018-03-31 21:57:14,613 INFO exited: delve (exit status 0; expected)
+2018-03-31 21:57:14,616 INFO spawned: 'delve' with pid 1224
+2018-03-31 21:57:14,623 INFO spawned: 'realize' with pid 1225
+2018-03-31 21:57:15,626 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:57:15,627 INFO success: realize entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:59:07,118 CRIT Supervisor running as root (no user in config file)
+2018-03-31 21:59:07,135 INFO supervisord started with pid 1493
+2018-03-31 21:59:08,142 INFO spawned: 'delve' with pid 1496
+2018-03-31 21:59:08,147 INFO spawned: 'realize' with pid 1497
+2018-03-31 21:59:09,190 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:59:09,191 INFO success: realize entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:59:18,249 INFO exited: delve (exit status 0; expected)
+2018-03-31 21:59:19,252 INFO spawned: 'delve' with pid 1807
+2018-03-31 21:59:20,254 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:59:29,325 INFO exited: delve (exit status 0; expected)
+2018-03-31 21:59:30,329 INFO spawned: 'delve' with pid 2181
+2018-03-31 21:59:31,332 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:59:40,379 INFO exited: delve (exit status 0; expected)
+2018-03-31 21:59:41,381 INFO spawned: 'delve' with pid 2248
+2018-03-31 21:59:42,383 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 21:59:51,406 INFO exited: delve (exit status 0; expected)
+2018-03-31 21:59:52,408 INFO spawned: 'delve' with pid 2257
+2018-03-31 21:59:53,410 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:00:30,935 CRIT Supervisor running as root (no user in config file)
+2018-03-31 22:00:30,950 INFO supervisord started with pid 1167
+2018-03-31 22:00:31,953 INFO spawned: 'delve' with pid 1170
+2018-03-31 22:00:31,956 INFO spawned: 'realize' with pid 1171
+2018-03-31 22:00:32,959 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:00:32,959 INFO success: realize entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:00:41,973 INFO exited: delve (exit status 0; expected)
+2018-03-31 22:00:42,977 INFO spawned: 'delve' with pid 1221
+2018-03-31 22:00:43,979 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:00:52,996 INFO exited: delve (exit status 0; expected)
+2018-03-31 22:00:54,000 INFO spawned: 'delve' with pid 1230
+2018-03-31 22:00:55,002 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:01:04,016 INFO exited: delve (exit status 0; expected)
+2018-03-31 22:01:05,019 INFO spawned: 'delve' with pid 1239
+2018-03-31 22:01:26,549 CRIT Supervisor running as root (no user in config file)
+2018-03-31 22:01:26,568 INFO supervisord started with pid 1164
+2018-03-31 22:01:27,571 INFO spawned: 'delve' with pid 1167
+2018-03-31 22:01:27,573 INFO spawned: 'realize' with pid 1168
+2018-03-31 22:01:28,576 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:01:28,577 INFO success: realize entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:01:37,591 INFO exited: delve (exit status 0; expected)
+2018-03-31 22:01:38,595 INFO spawned: 'delve' with pid 1221
+2018-03-31 22:01:39,598 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:01:48,614 INFO exited: delve (exit status 0; expected)
+2018-03-31 22:01:49,617 INFO spawned: 'delve' with pid 1231
+2018-03-31 22:01:50,619 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:01:59,635 INFO exited: delve (exit status 0; expected)
+2018-03-31 22:02:00,639 INFO spawned: 'delve' with pid 1240
+2018-03-31 22:02:01,641 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:02:10,659 INFO exited: delve (exit status 1; not expected)
+2018-03-31 22:02:11,662 INFO spawned: 'delve' with pid 1250
+2018-03-31 22:02:12,665 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:02:21,680 INFO exited: delve (exit status 1; not expected)
+2018-03-31 22:02:22,683 INFO spawned: 'delve' with pid 1259
+2018-03-31 22:02:23,685 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:02:32,701 INFO exited: delve (exit status 1; not expected)
+2018-03-31 22:02:33,705 INFO spawned: 'delve' with pid 1268
+2018-03-31 22:02:34,707 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:02:43,721 INFO exited: delve (exit status 1; not expected)
+2018-03-31 22:02:44,725 INFO spawned: 'delve' with pid 1277
+2018-03-31 22:02:45,727 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:02:54,742 INFO exited: delve (exit status 1; not expected)
+2018-03-31 22:02:55,746 INFO spawned: 'delve' with pid 1286
+2018-03-31 22:02:56,749 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:03:05,767 INFO exited: delve (exit status 1; not expected)
+2018-03-31 22:03:06,771 INFO spawned: 'delve' with pid 1294
+2018-03-31 22:03:07,773 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:03:27,141 CRIT Supervisor running as root (no user in config file)
+2018-03-31 22:03:27,180 INFO supervisord started with pid 1163
+2018-03-31 22:03:28,183 INFO spawned: 'delve' with pid 1166
+2018-03-31 22:03:28,185 INFO spawned: 'realize' with pid 1167
+2018-03-31 22:03:29,188 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:03:29,189 INFO success: realize entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:03:38,218 INFO exited: delve (exit status 0; expected)
+2018-03-31 22:03:39,222 INFO spawned: 'delve' with pid 1219
+2018-03-31 22:03:40,224 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:03:49,239 INFO exited: delve (exit status 0; expected)
+2018-03-31 22:03:50,242 INFO spawned: 'delve' with pid 1229
+2018-03-31 22:03:51,244 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:04:00,261 INFO exited: delve (exit status 0; expected)
+2018-03-31 22:04:01,265 INFO spawned: 'delve' with pid 1245
+2018-03-31 22:04:02,267 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:04:11,283 INFO exited: delve (exit status 0; expected)
+2018-03-31 22:04:12,287 INFO spawned: 'delve' with pid 1254
+2018-03-31 22:04:13,289 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:04:22,309 INFO exited: delve (exit status 0; expected)
+2018-03-31 22:04:23,314 INFO spawned: 'delve' with pid 1262
+2018-03-31 22:04:24,316 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:04:33,329 INFO exited: delve (exit status 0; expected)
+2018-03-31 22:04:34,333 INFO spawned: 'delve' with pid 1270
+2018-03-31 22:04:35,335 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:04:44,351 INFO exited: delve (exit status 0; expected)
+2018-03-31 22:04:45,354 INFO spawned: 'delve' with pid 1279
+2018-03-31 22:04:46,356 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:04:55,371 INFO exited: delve (exit status 0; expected)
+2018-03-31 22:04:56,375 INFO spawned: 'delve' with pid 1288
+2018-03-31 22:04:57,377 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:05:06,392 INFO exited: delve (exit status 0; expected)
+2018-03-31 22:05:07,395 INFO spawned: 'delve' with pid 1296
+2018-03-31 22:05:08,397 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:05:17,412 INFO exited: delve (exit status 0; expected)
+2018-03-31 22:05:18,415 INFO spawned: 'delve' with pid 1305
+2018-03-31 22:05:19,417 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:05:28,432 INFO exited: delve (exit status 0; expected)
+2018-03-31 22:05:29,436 INFO spawned: 'delve' with pid 1314
+2018-03-31 22:05:30,438 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:05:39,452 INFO exited: delve (exit status 0; expected)
+2018-03-31 22:05:40,455 INFO spawned: 'delve' with pid 1328
+2018-03-31 22:05:41,457 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:05:50,475 INFO exited: delve (exit status 0; expected)
+2018-03-31 22:05:51,478 INFO spawned: 'delve' with pid 1336
+2018-03-31 22:05:52,481 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:06:01,495 INFO exited: delve (exit status 0; expected)
+2018-03-31 22:06:02,498 INFO spawned: 'delve' with pid 1344
+2018-03-31 22:06:03,500 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:06:12,517 INFO exited: delve (exit status 1; not expected)
+2018-03-31 22:06:13,520 INFO spawned: 'delve' with pid 1353
+2018-03-31 22:06:14,521 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:06:34,143 CRIT Supervisor running as root (no user in config file)
+2018-03-31 22:06:34,154 INFO supervisord started with pid 1163
+2018-03-31 22:06:35,158 INFO spawned: 'delve' with pid 1166
+2018-03-31 22:06:35,162 INFO spawned: 'realize' with pid 1167
+2018-03-31 22:06:36,165 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:06:36,166 INFO success: realize entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:06:45,180 INFO exited: delve (exit status 0; expected)
+2018-03-31 22:06:46,184 INFO spawned: 'delve' with pid 1220
+2018-03-31 22:06:47,186 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:06:56,204 INFO exited: delve (exit status 0; expected)
+2018-03-31 22:06:57,208 INFO spawned: 'delve' with pid 1230
+2018-03-31 22:06:58,210 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:07:07,225 INFO exited: delve (exit status 0; expected)
+2018-03-31 22:07:08,228 INFO spawned: 'delve' with pid 1238
+2018-03-31 22:07:09,232 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:07:18,248 INFO exited: delve (exit status 0; expected)
+2018-03-31 22:07:19,255 INFO spawned: 'delve' with pid 1248
+2018-03-31 22:07:20,265 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:08:54,075 CRIT Supervisor running as root (no user in config file)
+2018-03-31 22:08:54,091 INFO supervisord started with pid 1489
+2018-03-31 22:08:55,094 INFO spawned: 'delve' with pid 1492
+2018-03-31 22:08:55,097 INFO spawned: 'realize' with pid 1493
+2018-03-31 22:08:56,099 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:08:56,100 INFO success: realize entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:09:05,173 INFO exited: delve (exit status 0; expected)
+2018-03-31 22:09:05,882 INFO spawned: 'delve' with pid 1862
+2018-03-31 22:09:06,884 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:09:15,922 INFO exited: delve (exit status 0; expected)
+2018-03-31 22:09:16,358 INFO spawned: 'delve' with pid 2211
+2018-03-31 22:09:17,380 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:16:22,917 CRIT Supervisor running as root (no user in config file)
+2018-03-31 22:16:22,934 INFO supervisord started with pid 1165
+2018-03-31 22:16:23,940 INFO spawned: 'delve' with pid 1168
+2018-03-31 22:16:23,943 INFO spawned: 'realize' with pid 1169
+2018-03-31 22:16:24,948 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:16:24,949 INFO success: realize entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:19:18,348 INFO exited: delve (exit status 0; expected)
+2018-03-31 22:19:19,371 INFO spawned: 'delve' with pid 1234
+2018-03-31 22:19:20,376 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:19:29,445 INFO exited: delve (exit status 0; expected)
+2018-03-31 22:19:29,457 INFO spawned: 'delve' with pid 1290
+2018-03-31 22:19:30,471 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:19:58,899 INFO exited: delve (exit status 0; expected)
+2018-03-31 22:19:59,902 INFO spawned: 'delve' with pid 1397
+2018-03-31 22:20:00,904 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:20:09,925 INFO exited: delve (exit status 0; expected)
+2018-03-31 22:20:10,927 INFO spawned: 'delve' with pid 1405
+2018-03-31 22:20:11,929 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:20:37,300 CRIT Supervisor running as root (no user in config file)
+2018-03-31 22:20:37,313 INFO supervisord started with pid 1164
+2018-03-31 22:20:38,316 INFO spawned: 'delve' with pid 1167
+2018-03-31 22:20:38,319 INFO spawned: 'realize' with pid 1168
+2018-03-31 22:20:39,321 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:20:39,322 INFO success: realize entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:21:50,929 INFO exited: delve (exit status 0; expected)
+2018-03-31 22:21:51,934 INFO spawned: 'delve' with pid 1221
+2018-03-31 22:21:52,937 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:22:01,953 INFO exited: delve (exit status 0; expected)
+2018-03-31 22:22:02,959 INFO spawned: 'delve' with pid 1230
+2018-03-31 22:22:03,964 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:22:12,984 INFO exited: delve (exit status 0; expected)
+2018-03-31 22:22:13,988 INFO spawned: 'delve' with pid 1239
+2018-03-31 22:22:14,990 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:33:42,020 CRIT Supervisor running as root (no user in config file)
+2018-03-31 22:33:42,035 INFO supervisord started with pid 1163
+2018-03-31 22:33:43,038 INFO spawned: 'delve' with pid 1166
+2018-03-31 22:33:43,041 INFO spawned: 'realize' with pid 1167
+2018-03-31 22:33:44,044 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:33:44,044 INFO success: realize entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:35:17,836 INFO exited: delve (exit status 0; expected)
+2018-03-31 22:35:18,841 INFO spawned: 'delve' with pid 1245
+2018-03-31 22:35:20,836 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:36:06,621 CRIT Supervisor running as root (no user in config file)
+2018-03-31 22:36:06,634 INFO supervisord started with pid 1163
+2018-03-31 22:36:07,639 INFO spawned: 'delve' with pid 1166
+2018-03-31 22:36:07,642 INFO spawned: 'realize' with pid 1167
+2018-03-31 22:36:08,644 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:36:08,645 INFO success: realize entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:43:54,973 INFO exited: delve (exit status 0; expected)
+2018-03-31 22:43:55,981 INFO spawned: 'delve' with pid 1233
+2018-03-31 22:43:56,986 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:44:06,108 INFO exited: delve (exit status 0; expected)
+2018-03-31 22:44:08,776 INFO spawned: 'delve' with pid 1318
+2018-03-31 22:44:30,243 CRIT Supervisor running as root (no user in config file)
+2018-03-31 22:44:30,257 INFO supervisord started with pid 1163
+2018-03-31 22:44:31,260 INFO spawned: 'delve' with pid 1166
+2018-03-31 22:44:31,263 INFO spawned: 'realize' with pid 1167
+2018-03-31 22:44:32,265 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:44:32,266 INFO success: realize entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:47:54,170 INFO exited: delve (exit status 0; expected)
+2018-03-31 22:47:54,423 INFO spawned: 'delve' with pid 1512
+2018-03-31 22:47:55,429 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:48:04,450 INFO exited: delve (exit status 0; expected)
+2018-03-31 22:48:05,454 INFO spawned: 'delve' with pid 1521
+2018-03-31 22:48:06,456 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:48:15,472 INFO exited: delve (exit status 0; expected)
+2018-03-31 22:48:16,475 INFO spawned: 'delve' with pid 1531
+2018-03-31 22:48:17,478 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:48:26,495 INFO exited: delve (exit status 0; expected)
+2018-03-31 22:48:27,498 INFO spawned: 'delve' with pid 1539
+2018-03-31 22:48:28,500 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:48:37,522 INFO exited: delve (exit status 0; expected)
+2018-03-31 22:48:38,526 INFO spawned: 'delve' with pid 1548
+2018-03-31 22:48:39,529 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:48:48,549 INFO exited: delve (exit status 0; expected)
+2018-03-31 22:48:49,126 INFO spawned: 'delve' with pid 1557
+2018-03-31 22:48:50,130 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2018-03-31 22:50:28,472 INFO exited: delve (exit status 0; expected)
+2018-03-31 22:50:29,038 INFO spawned: 'delve' with pid 1663
+2018-03-31 22:50:30,045 INFO success: delve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)

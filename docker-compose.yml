@@ -16,6 +16,7 @@ version: '3.1'
 services:
   web:
     build: .
+    privileged: true
     image: darthhater/bored-board-service:latest
     ports:
       - '8000:8000'

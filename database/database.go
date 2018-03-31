@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"time"
-	"errors"
 
 	"github.com/DarthHater/bored-board-service/model"
 	_ "github.com/lib/pq"
@@ -19,8 +18,7 @@ type IDatabase interface {
 	GetThreads(i int) ([]model.Thread, error)
 	PostThread(t *model.NewThread) (string, error)
 	PostPost(p *model.Post) (string, error)
-	CheckEditPost(p *model.Post) (model.Post, error)
-	EditPost(p *model.Post) (error)
+	EditPost(p *model.Post) (model.Post, error)
 }
 
 type Database struct {
@@ -155,35 +153,28 @@ func (d *Database) PostPost(post *model.Post) (postid string, err error) {
 	return id, nil
 }
 
-// CheckEditPost checks if a post exists and has been posted within 15 minutes. 
-// If it does, will update the post 
-func (d *Database) CheckEditPost(editPost *model.Post) (post model.Post, err error) {
+func (d *Database) EditPost(editPost *model.Post) (post model.Post, err error) {
 	sqlStatement := `
-		SELECT Id, hreadId, UserId, Body, PostedAt, EditedAt 
-		FROM board.thread_post WHERE Id::text = '6fc2d5c5-c083-43e9-9005-a68b400a46e5'`
+		UPDATE board.thread_post 
+		SET Body = $1, EditedAt = $2
+		WHERE Id::text = $3 
+		AND PostedAt::date < now() + '500 minutes'::interval`
 
-	row := DB.QueryRow(sqlStatement)
-	fmt.Println("Scanning")
-	switch err := row.Scan(&post); err {  
-		case nil:
-			fmt.Println("yep")
-			err = d.EditPost(&post)
-			break
-		case sql.ErrNoRows:  
-			fmt.Println("Nope")
-			err = errors.New("Can't edit post, it doesn't exist or it's too late")
-		default:  
-			fmt.Println("Default")
-			return post, nil
-		}
-	return post, nil
-}
+	res, err := DB.Exec(sqlStatement, editPost.Body, time.Now(), editPost.Id)
 
-func (d *Database) EditPost(editPost *model.Post) (err error) {
-	fmt.Println("Okay")
-	_, err = DB.Exec("UPDATE board.thread_post set Body = $1, EditedAt = $2", editPost.Body, time.Now())
+	if err != nil {
+		panic(err)
+	}
+	count, err := res.RowsAffected()
+	if err != nil {
+		panic(err)
+	}
 
-	return err
+	if (count > 0) {
+		return post, nil
+	}
+
+	return post, err	
 }
 
 
