@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"time"
+	"errors"
 
 	"github.com/DarthHater/bored-board-service/model"
 	_ "github.com/lib/pq"
@@ -18,7 +19,7 @@ type IDatabase interface {
 	GetThreads(i int) ([]model.Thread, error)
 	PostThread(t *model.NewThread) (string, error)
 	PostPost(p *model.Post) (string, error)
-	EditPost(p *model.Post) (model.Post, error)
+	EditPost(p *model.Post) (error)
 }
 
 type Database struct {
@@ -153,11 +154,11 @@ func (d *Database) PostPost(post *model.Post) (postid string, err error) {
 	return id, nil
 }
 
-func (d *Database) EditPost(editPost *model.Post) (post model.Post, err error) {
+func (d *Database) EditPost(editPost *model.Post) (err error) {
 	sqlStatement := `
 		UPDATE board.thread_post 
 		SET Body = $1, EditedAt = $2
-		WHERE Id::text = $3 
+		WHERE Id = $3 
 		AND PostedAt::date + '10 minutes'::interval > now()`
 	res, err := DB.Exec(sqlStatement, editPost.Body, time.Now(), editPost.Id)
 	if err != nil {
@@ -169,10 +170,10 @@ func (d *Database) EditPost(editPost *model.Post) (post model.Post, err error) {
 	}
 
 	if (count > 0) {
-		return post, nil
+		return 
 	}
 
-	return post, err
+	return errors.New("Posts can only be edited for 10 minutes")
 }
 
 

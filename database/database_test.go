@@ -198,31 +198,26 @@ func TestPostPost(t *testing.T) {
 	}
 }
 
-// func TestEditPost(t *testing.T) {
-// 	d := Database{}
-// 	var mock sqlmock.Sqlmock
-// 	var err error
-// 	var post model.Post
-// 	DB, mock, err = sqlmock.New()
-// 	if err != nil {
-// 		t.Fatalf("An error %s occurred when opening stub database connection", err)
-// 	}
-// 	defer DB.Close()
+func TestEditPost(t *testing.T) {
+	d := Database{}
+	var mock sqlmock.Sqlmock
+	var err error
+	var post model.Post
+	DB, mock, err = sqlmock.New()
+	if err != nil {
+		t.Fatalf("An error %s occurred when opening stub database connection", err)
+	}
+	defer DB.Close()
 
-// 	row := sqlmock.NewRows([]string{"id", "threadid", "userid", "body", "postedat", "editedat" }).
-// 		AddRow("", "", "", "Post Body", "Good time", "Edited at")
+	mock.ExpectExec("UPDATE board.thread_post").WillReturnResult(sqlmock.NewResult(0, 1))
 
-// 	sqlStatement := `SELECT Id, ThreadId, UserId, Body, PostedAt, EditedAt FROM board.thread_post 
-// 					 WHERE PostId = (.+) AND PostedAt::date < now() + '10 minutes'::interval`
+	if err := d.EditPost(&post); err != nil {
+		t.Errorf("Error was not expected while updating post: %s", err)
+	} else {
+		t.Log("Post updated")
+	}
 
-// 	mock.ExpectQuery(sqlStatement).WillReturnRows(row)
-
-// 	result, err := d.EditPost(&post)
-
-// 	expected := model.Post{Id: "", ThreadId: "", UserId: "", Body: "Post Body", PostedAt: "Good time", EditedAt: "Edited at" }
-// 	assert.Equal(t, result, expected)
-
-// 	if err := mock.ExpectationsWereMet(); err != nil {
-// 		t.Errorf("there were unfulfilled expections: %s", err)
-// 	}
-// }
+	if err = mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("There were unfulfilled expectations: %s", err)
+	}
+}
