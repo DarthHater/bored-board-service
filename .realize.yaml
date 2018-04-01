@@ -24,4 +24,3 @@ schema:
     - go
     ignored_paths:
     - vendor
-    
