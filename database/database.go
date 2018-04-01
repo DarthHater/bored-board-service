@@ -53,8 +53,8 @@ func (d *Database) GetThread(threadId string) (model.Thread, error) {
 
 func (d *Database) GetPost(postId string) (post model.Post, err error) {
 	post = model.Post{}
-	err = DB.QueryRow("SELECT Id, ThreadId, UserId, Body, PostedAt FROM board.thread_post WHERE Id = $1", postId).
-		Scan(&post.Id, &post.ThreadId, &post.UserId, &post.Body, &post.PostedAt)
+	err = DB.QueryRow("SELECT Id, ThreadId, UserId, Body, PostedAt, EditedAt FROM board.thread_post WHERE Id = $1", postId).
+		Scan(&post.Id, &post.ThreadId, &post.UserId, &post.Body, &post.PostedAt, &post.EditedAt)
 	if err != nil {
 		return post, err
 	}
@@ -159,8 +159,8 @@ func (d *Database) EditPost(editPost *model.Post) (err error) {
 		UPDATE board.thread_post 
 		SET Body = $1, EditedAt = $2
 		WHERE Id = $3 
-		AND PostedAt::date + '10 minutes'::interval > now()`
-	res, err := DB.Exec(sqlStatement, editPost.Body, time.Now(), editPost.Id)
+		AND PostedAt::date + '5 days'::interval > now()`
+	res, err := DB.Exec(sqlStatement, editPost.Body, time.Now().Local(), editPost.Id)
 	if err != nil {
 		panic(err)
 	}

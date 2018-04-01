@@ -296,23 +296,25 @@ func postPost(c *gin.Context, d database.IDatabase) {
 func editPost(c *gin.Context, d database.IDatabase, postId string) {
 	var post model.Post
 	c.BindJSON(&post)
-	post, err := d.EditPost(&post)
+	err := d.EditPost(&post)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-	} else {
+	} else {		
+		post, err = d.GetPost(postId)
 		if err != nil {
-			log.Error(err.Error())
+			log.Error("Cannot get post")
 		}
-		// bytes, err := json.Marshal(&post)
-		// if err != nil {
-		// 	return
-		// } 
+		
+		bytes, err := json.Marshal(&post)
+		if err != nil {
+			return
+		} 
+		
 		c.JSON(http.StatusOK, post)
-		// if c, err := gRedisConn(); err != nil {
-		// 	log.Printf("Error on redis conn. %s", err)
-		// } else {
-		// 	c.Do("PUBLISH", "posts", bytes)
-		// }
+		if c, err := gRedisConn(); err != nil {
+			log.Printf("Error on redis conn. %s", err)
+		} else {
+			c.Do("PUBLISH", "posts", bytes)
+		}
 	}
 }
-

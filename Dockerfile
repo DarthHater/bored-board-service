@@ -27,23 +27,22 @@ RUN apt-get update && apt-get install -y unzip openssl --no-install-recommends &
 
 RUN chmod +x /usr/bin/dep
 
-RUN mkdir -p /go/src/github.com/***
-WORKDIR /go/src/github.com/***
-
-COPY Gopkg.toml Gopkg.lock ./
-RUN dep ensure -vendor-only -v
-
 WORKDIR /go/src/github.com/DarthHater/bored-board-service
 
 COPY . .
 
-COPY .environment/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-
-RUN chmod +x scripts/start.sh
+RUN dep ensure 
 
 RUN go build
 
-CMD [ "/bin/bash", "scripts/start.sh" ]
+CMD if [ ${REMOTE_DEBUGGING} = true ]; \
+    then \
+        go get github.com/derekparker/delve/cmd/dlv && \
+        dlv debug --headless --listen=:2345 --log; \
+    else \
+        go get -u github.com/oxequa/realize && \
+        realize start; \
+    fi 
 
 EXPOSE 8000
 EXPOSE 2345
