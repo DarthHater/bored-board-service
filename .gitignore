@@ -2,3 +2,4 @@ vendor
 .environment/development.toml
 tmp
 .DS_Store
+.vscode

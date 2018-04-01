@@ -16,29 +16,33 @@ FROM golang:1.9
 
 ARG app_env
 ENV APP_ENV $app_env
+ENV PRIVATE_KEY_PATH=/var/bored-board-service/.keys/app.rsa
+ENV PUBLIC_KEY_PATH=/var/bored-board-service/.keys/app.rsa.pub
 
-RUN apt-get update && apt-get install -y unzip --no-install-recommends && \
-    apt-get autoremove -y && apt-get clean -y && \
+RUN apt-get update && apt-get install -y unzip openssl --no-install-recommends && \
+    apt-get install -y supervisor && apt-get autoremove -y && apt-get clean -y && \
     wget -O dep https://github.com/golang/dep/releases/download/v0.3.2/dep-linux-amd64 && \
     echo '322152b8b50b26e5e3a7f6ebaeb75d9c11a747e64bbfd0d8bb1f4d89a031c2b5 dep' | sha256sum -c - && \
     cp dep /usr/bin && rm dep
 
 RUN chmod +x /usr/bin/dep
 
-WORKDIR /go/src/github.com/darthhater/bored-board-service
+WORKDIR /go/src/github.com/DarthHater/bored-board-service
+
 COPY . .
 
-RUN dep ensure
+RUN dep ensure 
 
 RUN go build
 
-# Build on changes to source unless production
-CMD if [ ${APP_ENV} = production ]; \
+CMD if [ ${REMOTE_DEBUGGING} = true ]; \
     then \
-    license-manager; \
+        go get github.com/derekparker/delve/cmd/dlv && \
+        dlv debug --headless --listen=:2345 --log; \
     else \
-    go get github.com/pilu/fresh && \
-    fresh -c .environment/fresh_runner.conf; \
-    fi
+        go get -u github.com/oxequa/realize && \
+        realize start; \
+    fi 
 
 EXPOSE 8000
+EXPOSE 2345

@@ -16,11 +16,13 @@ version: '3.1'
 services:
   web:
     build: .
+    privileged: true
     image: darthhater/bored-board-service:latest
     ports:
       - '8000:8000'
+      - '2345:2345'
     volumes:
-      - .:/go/src/github.com/darthhater/bored-board-service
+      - .:/go/src/github.com/DarthHater/bored-board-service
     links:
       - redis_db
     env_file: .env

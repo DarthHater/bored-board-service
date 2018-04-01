@@ -3,6 +3,8 @@ package database
 import (
 	"database/sql"
 	"fmt"
+	"time"
+	"errors"
 
 	"github.com/DarthHater/bored-board-service/model"
 	_ "github.com/lib/pq"
@@ -17,6 +19,7 @@ type IDatabase interface {
 	GetThreads(i int) ([]model.Thread, error)
 	PostThread(t *model.NewThread) (string, error)
 	PostPost(p *model.Post) (string, error)
+	EditPost(p *model.Post) (error)
 }
 
 type Database struct {
@@ -50,8 +53,8 @@ func (d *Database) GetThread(threadId string) (model.Thread, error) {
 
 func (d *Database) GetPost(postId string) (post model.Post, err error) {
 	post = model.Post{}
-	err = DB.QueryRow("SELECT Id, ThreadId, UserId, Body, PostedAt FROM board.thread_post WHERE Id = $1", postId).
-		Scan(&post.Id, &post.ThreadId, &post.UserId, &post.Body, &post.PostedAt)
+	err = DB.QueryRow("SELECT Id, ThreadId, UserId, Body, PostedAt, EditedAt FROM board.thread_post WHERE Id = $1", postId).
+		Scan(&post.Id, &post.ThreadId, &post.UserId, &post.Body, &post.PostedAt, &post.EditedAt)
 	if err != nil {
 		return post, err
 	}
@@ -150,6 +153,29 @@ func (d *Database) PostPost(post *model.Post) (postid string, err error) {
 
 	return id, nil
 }
+
+func (d *Database) EditPost(editPost *model.Post) (err error) {
+	sqlStatement := `
+		UPDATE board.thread_post 
+		SET Body = $1, EditedAt = $2
+		WHERE Id = $3 
+		AND PostedAt::date + '5 days'::interval > now()`
+	res, err := DB.Exec(sqlStatement, editPost.Body, time.Now().Local(), editPost.Id)
+	if err != nil {
+		panic(err)
+	}
+	count, err := res.RowsAffected()
+	if err != nil {
+		panic(err)
+	}
+
+	if (count > 0) {
+		return 
+	}
+
+	return errors.New("Posts can only be edited for 10 minutes")
+}
+
 
 // Internal methods
 

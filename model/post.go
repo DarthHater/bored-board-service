@@ -6,4 +6,5 @@ type Post struct {
 	UserId string
 	Body string
 	PostedAt string
+	EditedAt string
 }

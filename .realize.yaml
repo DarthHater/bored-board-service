@@ -1,0 +1,26 @@
+settings:
+  legacy:
+    force: true
+    interval: 100ms
+server:
+  status: false
+  open: false
+  host: localhost
+  port: 8000
+schema:
+- name: board
+  path: .
+  commands:
+    install:
+      status: true
+    run: 
+      status: true
+    test: 
+      status: true
+  watcher:
+    paths:
+    - .
+    extensions:
+    - go
+    ignored_paths:
+    - vendor
