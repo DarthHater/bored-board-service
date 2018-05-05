@@ -37,6 +37,15 @@ var (
 	}
 )
 
+const (  
+	admin = iota  
+	mod = iota  
+	elite = iota
+	user = iota
+	muted = iota
+	banned = iota
+)
+
 type clientManager struct {
 	clients    map[*client]bool
 	broadcast  chan []byte
@@ -183,6 +192,11 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 		getPosts(c, d, threadId)
 	})
 
+	r.PUT("/posts/:postid", func(c *gin.Context) {
+		postId := c.Param("postid")
+		editPost(c, d, postId)
+	})
+
 	r.GET("/threads", func(c *gin.Context) {
 		getThreads(c, d, 20)
 	})
@@ -193,6 +207,11 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 
 	r.POST("/post", func(c *gin.Context) {
 		postPost(c, d)
+	})
+
+	r.DELETE("/thread/:threadid", func(c *gin.Context) {
+		threadId := c.Param("threadid")
+		deleteThread(c, d, threadId)
 	})
 
 	return r
@@ -285,5 +304,40 @@ func postPost(c *gin.Context, d database.IDatabase) {
 				c.Do("PUBLISH", "posts", bytes)
 			}
 		}
+	}
+}
+
+func editPost(c *gin.Context, d database.IDatabase, postId string) {
+	var post model.Post
+	c.BindJSON(&post)
+	err := d.EditPost(&post)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	} else {		
+		post, err = d.GetPost(postId)
+		if err != nil {
+			log.Error("Cannot get post")
+		}
+		
+		bytes, err := json.Marshal(&post)
+		if err != nil {
+			return
+		} 
+		
+		c.JSON(http.StatusOK, post)
+		if c, err := gRedisConn(); err != nil {
+			log.Printf("Error on redis conn. %s", err)
+		} else {
+			c.Do("PUBLISH", "posts", bytes)
+		}
+	}
+}
+
+func deleteThread(c *gin.Context, d database.IDatabase, threadId string) {
+	err := d.DeleteThread(threadId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	} else {			
+		c.Status(http.StatusOK)
 	}
 }

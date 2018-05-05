@@ -32,6 +32,12 @@ CREATE TABLE board.thread_post(
     PostedAt TIMESTAMP DEFAULT now()
 );
 
+CREATE TABLE board.user_roles(
+    Id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    UserId UUID REFERENCES board.user (Id),
+    RoleId INT
+);
+
 GRANT ALL PRIVILEGES 
     ON ALL TABLES 
     IN SCHEMA board 

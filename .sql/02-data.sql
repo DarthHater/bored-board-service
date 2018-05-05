@@ -6,5 +6,9 @@ WITH tmp AS (
     ('EvilAssMitch666', 'coolassmitch@evilashell.com') 
     RETURNING Id
 )
+
 INSERT INTO board.thread (UserId, Title) 
     SELECT Id, 'A Camaro With Two Dragons' from tmp;
+
+INSERT INTO board.user_roles (UserId, RoleId)
+    SELECT UserId, 0 from tmp;

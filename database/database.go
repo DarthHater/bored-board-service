@@ -17,6 +17,7 @@ type IDatabase interface {
 	GetThreads(i int) ([]model.Thread, error)
 	PostThread(t *model.NewThread) (string, error)
 	PostPost(p *model.Post) (string, error)
+	DeleteThread(s string) (error)
 }
 
 type Database struct {
@@ -149,6 +150,26 @@ func (d *Database) PostPost(post *model.Post) (postid string, err error) {
 	}
 
 	return id, nil
+}
+
+func (d *Database) DeleteThread(threadId string) (err error) {
+	sqlStatement := `
+		DELETE FROM board.thread 
+		WHERE Id = $1`
+	res, err := DB.Exec(sqlStatement, threadId)
+	if err != nil {
+		panic(err)
+	}
+	count, err := res.RowsAffected()
+	if err != nil {
+		panic(err)
+	}
+
+	if (count > 0) {
+		return 
+	}
+
+	return errors.New("Couldn't find that thread")
 }
 
 // Internal methods
