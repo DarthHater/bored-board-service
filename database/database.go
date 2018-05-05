@@ -3,6 +3,8 @@ package database
 import (
 	"database/sql"
 	"fmt"
+	"time"
+	"errors"
 
 	"github.com/DarthHater/bored-board-service/model"
 	_ "github.com/lib/pq"
@@ -18,7 +20,20 @@ type IDatabase interface {
 	PostThread(t *model.NewThread) (string, error)
 	PostPost(p *model.Post) (string, error)
 	DeleteThread(s string) (error)
+	EditPost(p *model.Post) (error)
+	UserIsInRole(i int, r int) (bool, error)
 }
+
+type Role int
+
+const (  
+	Admin Role = 0
+	Mod Role = 1  
+	Elite Role = 2
+	User Role = 3
+	Muted Role = 4
+	Banned Role = 5
+)
 
 type Database struct {
 }
@@ -51,8 +66,8 @@ func (d *Database) GetThread(threadId string) (model.Thread, error) {
 
 func (d *Database) GetPost(postId string) (post model.Post, err error) {
 	post = model.Post{}
-	err = DB.QueryRow("SELECT Id, ThreadId, UserId, Body, PostedAt FROM board.thread_post WHERE Id = $1", postId).
-		Scan(&post.Id, &post.ThreadId, &post.UserId, &post.Body, &post.PostedAt)
+	err = DB.QueryRow("SELECT Id, ThreadId, UserId, Body, PostedAt, EditedAt FROM board.thread_post WHERE Id = $1", postId).
+		Scan(&post.Id, &post.ThreadId, &post.UserId, &post.Body, &post.PostedAt, &post.EditedAt)
 	if err != nil {
 		return post, err
 	}
@@ -170,6 +185,46 @@ func (d *Database) DeleteThread(threadId string) (err error) {
 	}
 
 	return errors.New("Couldn't find that thread")
+}
+
+func (d *Database) EditPost(editPost *model.Post) (err error) {
+	sqlStatement := `
+		UPDATE board.thread_post 
+		SET Body = $1, EditedAt = $2
+		WHERE Id = $3 
+		AND PostedAt::date + '10 minutes'::interval > now()`
+	res, err := DB.Exec(sqlStatement, editPost.Body, time.Now().Local(), editPost.Id)
+	if err != nil {
+		panic(err)
+	}
+	count, err := res.RowsAffected()
+	if err != nil {
+		panic(err)
+	}
+
+	if (count > 0) {
+		return 
+	}
+
+	return errors.New("Posts can only be edited for 10 minutes")
+}
+
+func (d *Database) UserIsInRole(userId int, role int) (bool, error) {
+	var userRoleId int
+	sqlStatement := `
+		SELECT RoleId 
+		FROM board.user_roles 
+		WHERE UserId = $1` 
+	err := DB.QueryRow(sqlStatement, userId).Scan(&userRoleId)
+	if err != nil {
+		return false, err
+	}
+
+	if userRoleId == role {
+		return true, nil
+	}
+
+	return false, nil
 }
 
 // Internal methods

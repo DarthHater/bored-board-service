@@ -37,13 +37,15 @@ var (
 	}
 )
 
+type role int
+
 const (  
-	admin = iota  
-	mod = iota  
-	elite = iota
-	user = iota
-	muted = iota
-	banned = iota
+	admin role = 0  
+	mod role = 1  
+	elite role = 2
+	user role = 3
+	muted role = 4
+	banned role = 5
 )
 
 type clientManager struct {

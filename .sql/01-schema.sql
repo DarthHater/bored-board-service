@@ -29,7 +29,8 @@ CREATE TABLE board.thread_post(
     ThreadId UUID REFERENCES board.thread (Id),
     UserId UUID,
     Body text,
-    PostedAt TIMESTAMP DEFAULT now()
+    PostedAt TIMESTAMP DEFAULT now(),
+    EditedAt TIMESTAMP DEFAULT now()
 );
 
 CREATE TABLE board.user_roles(

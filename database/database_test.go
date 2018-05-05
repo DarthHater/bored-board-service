@@ -59,14 +59,14 @@ func TestGetPost(t *testing.T) {
 	}
 	defer DB.Close()
 
-	row := sqlmock.NewRows([]string{"id", "threadid", "userid", "body", "postedat"}).
-		AddRow("", "", "", "Post Body", "A time")
+	row := sqlmock.NewRows([]string{"id", "threadid", "userid", "body", "postedat", "editedat" }).
+		AddRow("", "", "", "Post Body", "A time", "Rite now")
 
 	mock.ExpectQuery("SELECT (.+) FROM board.thread_post WHERE (.+)").WillReturnRows(row)
 
 	result, err := d.GetPost("a thread")
 
-	expected := model.Post{Id: "", ThreadId: "", UserId: "", Body: "Post Body", PostedAt: "A time"}
+	expected := model.Post{Id: "", ThreadId: "", UserId: "", Body: "Post Body", PostedAt: "A time", EditedAt: "Rite now"}
 
 	assert.Equal(t, result, expected)
 
@@ -191,6 +191,30 @@ func TestPostPost(t *testing.T) {
 		t.Errorf("Error was not expected while inserting post: %s", err)
 	} else {
 		t.Logf("Post inserted with id: %s", id)
+	}
+
+	if err = mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("There were unfulfilled expectations: %s", err)
+	}
+}
+
+func TestEditPost(t *testing.T) {
+	d := Database{}
+	var mock sqlmock.Sqlmock
+	var err error
+	var post model.Post
+	DB, mock, err = sqlmock.New()
+	if err != nil {
+		t.Fatalf("An error %s occurred when opening stub database connection", err)
+	}
+	defer DB.Close()
+
+	mock.ExpectExec("UPDATE board.thread_post").WillReturnResult(sqlmock.NewResult(0, 1))
+
+	if err := d.EditPost(&post); err != nil {
+		t.Errorf("Error was not expected while updating post: %s", err)
+	} else {
+		t.Log("Post updated")
 	}
 
 	if err = mock.ExpectationsWereMet(); err != nil {
