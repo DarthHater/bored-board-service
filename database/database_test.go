@@ -6,6 +6,7 @@ import (
 	"github.com/DarthHater/bored-board-service/model"
 
 	"github.com/stretchr/testify/assert"
+	sqlmock "gopkg.in/DATA-DOG/go-sqlmock.v1"
 )
 
 func TestInitDb(t *testing.T) {
