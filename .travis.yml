@@ -20,6 +20,6 @@ env:
 after_success:
   - curl https://cli-assets.heroku.com/install.sh | sh
   - docker login -u _ -p "$HEROKU_TOKEN" registry.heroku.com
-  - docker build -t registry.heroku.com/vivalavinyl/service .
-  - docker push registry.heroku.com/vivalavinyl/service 
-  - heroku container:release service -a vivalavinyl
+  - docker build -t registry.heroku.com/vivalavinyl-service/web .
+  - docker push registry.heroku.com/vivalavinyl-service/web 
+  - heroku container:release web -a vivalavinyl-service
