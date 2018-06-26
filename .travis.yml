@@ -1,4 +1,8 @@
+sudo: required
 language: go
+
+services:
+  - docker
 
 go:
   - master
@@ -13,8 +17,8 @@ install:
 env: 
   - BBS_DATABASE=database BBS_DATABASE_PORT=5432 BBS_DATABASE_USER=admin BBS_DATABASE_PASSWORD=admin123 BBS_DATABASE_DATABASE=db
 
-deploy:
-  provider: script
-  script: bash docker_push
-  on:
-    branch: master
+after_success:
+  - docker
+  - docker login -u _ -p "$HEROKU_TOKEN" registry.heroku.com
+  - docker build -t registry.heroku.com/vivalavinyl/web .
+  - docker push registry.heroku.com/vivalavinyl/web docker login -u _ -p $HEROKU_TOKEN registry.heroku.com
