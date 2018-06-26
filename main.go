@@ -17,6 +17,7 @@ package main
 import (
 	"encoding/json"
 	"net/http"
+	"os"
 
 	"github.com/DarthHater/bored-board-service/model"
 	"github.com/garyburd/redigo/redis"
@@ -27,7 +28,6 @@ import (
 	"github.com/gorilla/websocket"
 	uuid "github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 	ginlogrus "github.com/toorop/gin-logrus"
 )
 
@@ -35,9 +35,7 @@ var (
 	db          database.IDatabase
 	gPubSubConn *redis.PubSubConn
 	gRedisConn  = func() (redis.Conn, error) {
-		viper.SetEnvPrefix("")
-		viper.BindEnv("REDIS_URL")
-		redisURL := viper.GetString("REDIS_URL")
+		redisURL := os.Getenv("REDIS_URL")
 		log.Print(redisURL)
 		if redisURL != "" {
 			return redis.DialURL(redisURL)
