@@ -1,11 +1,11 @@
 package database
 
 import (
-	"github.com/DarthHater/bored-board-service/model"
 	"testing"
 
+	"github.com/DarthHater/bored-board-service/model"
+
 	"github.com/stretchr/testify/assert"
-	"gopkg.in/DATA-DOG/go-sqlmock.v1"
 )
 
 func TestInitDb(t *testing.T) {
@@ -18,7 +18,7 @@ func TestConnectionString(t *testing.T) {
 	d := Database{}
 	d.setupViper()
 	assert.Equal(t,
-		"postgres://admin:admin123@database:5432/db?sslmode=disable",
+		"postgres://admin:admin123@database:5432/db",
 		d.connectionString(),
 	)
 }
