@@ -16,17 +16,16 @@ package main
 
 import (
 	"encoding/json"
+	"net/http"
+
 	"github.com/DarthHater/bored-board-service/model"
 	"github.com/garyburd/redigo/redis"
-	"net/http"
 
 	"github.com/DarthHater/bored-board-service/database"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
-	"github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
-	"github.com/toorop/gin-logrus"
 )
 
 var (
@@ -202,7 +201,7 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 	conn, err := webSocketUpgrade.Upgrade(w, r, nil)
 	if err != nil {
-		log.Infoln("Failed to set websocket upgrade: %+v", err)
+		log.Error(err)
 		return
 	}
 
