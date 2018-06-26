@@ -27,6 +27,7 @@ import (
 	"github.com/gorilla/websocket"
 	uuid "github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	ginlogrus "github.com/toorop/gin-logrus"
 )
 
@@ -34,7 +35,14 @@ var (
 	db          database.IDatabase
 	gPubSubConn *redis.PubSubConn
 	gRedisConn  = func() (redis.Conn, error) {
-		return redis.Dial("tcp", "redis_db:6379")
+		viper.AutomaticEnv()
+		redisURL := viper.Get("REDIS_URL")
+		if redisURL != "" {
+			return redis.Dial(redisURL)
+		}
+		else {
+			return redis.Dial("tcp", "redis_db:6379")
+		}
 	}
 )
 
