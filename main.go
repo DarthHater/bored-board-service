@@ -16,7 +16,6 @@ package main
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 
 	"github.com/DarthHater/bored-board-service/model"
