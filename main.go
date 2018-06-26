@@ -35,8 +35,9 @@ var (
 	db          database.IDatabase
 	gPubSubConn *redis.PubSubConn
 	gRedisConn  = func() (redis.Conn, error) {
-		viper.AutomaticEnv()
+		viper.BindEnv("REDIS_URL")
 		redisURL := viper.GetString("REDIS_URL")
+		log.Print(redisURL)
 		if redisURL != "" {
 			return redis.DialURL(redisURL)
 		} else {
