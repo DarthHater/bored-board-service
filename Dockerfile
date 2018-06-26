@@ -35,7 +35,7 @@ RUN go build
 # Build on changes to source unless production
 CMD if [ ${APP_ENV} = production ]; \
     then \
-    license-manager; \
+    bored-board-service; \
     else \
     go get github.com/pilu/fresh && \
     fresh -c .environment/fresh_runner.conf; \
