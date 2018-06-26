@@ -39,8 +39,7 @@ var (
 		redisURL := viper.Get("REDIS_URL")
 		if redisURL != "" {
 			return redis.Dial(redisURL)
-		}
-		else {
+		} else {
 			return redis.Dial("tcp", "redis_db:6379")
 		}
 	}
