@@ -21,4 +21,4 @@ after_success:
   - docker
   - docker login -u _ -p "$HEROKU_TOKEN" registry.heroku.com
   - docker build -t registry.heroku.com/vivalavinyl/web .
-  - docker push registry.heroku.com/vivalavinyl/web docker login -u _ -p $HEROKU_TOKEN registry.heroku.com
+  - docker push registry.heroku.com/vivalavinyl/web 
