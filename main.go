@@ -16,6 +16,7 @@ package main
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/DarthHater/bored-board-service/model"
@@ -36,6 +37,7 @@ var (
 	gPubSubConn *redis.PubSubConn
 	gRedisConn  = func() (redis.Conn, error) {
 		viper.AutomaticEnv()
+		log.Print(viper.AllKeys())
 		redisURL := viper.GetString("REDIS_URL")
 		log.Print(redisURL)
 		if redisURL != "" {
