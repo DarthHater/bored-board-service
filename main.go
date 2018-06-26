@@ -36,7 +36,6 @@ var (
 	gPubSubConn *redis.PubSubConn
 	gRedisConn  = func() (redis.Conn, error) {
 		redisURL := os.Getenv("REDIS_URL")
-		log.Print(redisURL)
 		if redisURL != "" {
 			return redis.DialURL(redisURL)
 		} else {
@@ -158,7 +157,12 @@ func main() {
 
 	// TODO: We will need to set this to something sane
 	r.Use(cors.Default())
-	r.Run(":8000")
+	port := os.Getenv("PORT")
+	if port == "" {
+		r.Run(":8000")
+	} else {
+		r.Run(":" + port)
+	}
 
 }
 
