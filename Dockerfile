@@ -32,8 +32,6 @@ RUN dep ensure
 
 RUN go build
 
-RUN ls
-
 CMD /go/src/github.com/darthhater/bored-board-service/bored-board-service
 
 EXPOSE 8000
