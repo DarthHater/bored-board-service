@@ -3,6 +3,7 @@ package database
 import (
 	"database/sql"
 	"fmt"
+	"log"
 
 	"github.com/DarthHater/bored-board-service/model"
 	_ "github.com/lib/pq"
@@ -31,6 +32,8 @@ func (d *Database) InitDb(environment string, configPath string) error {
 	psqlInfo := d.connectionString()
 	err := d.openConnection(psqlInfo)
 	if err != nil {
+		log.Print(psqlInfo)
+		log.Print(err)
 		return err
 	}
 
@@ -168,7 +171,7 @@ func (d *Database) setupViper() {
 }
 
 func (d *Database) connectionString() (connectionString string) {
-	return fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
+	return fmt.Sprintf("postgres://%s:%s@%s:%d/%s",
 		viper.GetString("DATABASE_USER"),
 		viper.GetString("DATABASE_PASSWORD"),
 		viper.GetString("DATABASE"),
