@@ -157,7 +157,7 @@ func main() {
 	go manager.start()
 
 	conf := cors.Config{}
-	conf.AllowOrigins = []string{"localhost", "vivalavinyl-webapp.herokuapp.com"}
+	conf.AllowOrigins = []string{"http://localhost:8080", "https://vivalavinyl-webapp.herokuapp.com"}
 	r.Use(cors.New(conf))
 	port := os.Getenv("PORT")
 	if port == "" {
