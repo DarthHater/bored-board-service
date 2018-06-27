@@ -19,10 +19,9 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/gin-contrib/cors"
-
 	"github.com/DarthHater/bored-board-service/model"
 	"github.com/garyburd/redigo/redis"
+	"github.com/gin-contrib/cors"
 
 	"github.com/DarthHater/bored-board-service/database"
 	"github.com/gin-gonic/gin"
@@ -156,7 +155,6 @@ func main() {
 
 	go manager.start()
 
-	r.Use(cors.Default())
 	port := os.Getenv("PORT")
 	if port == "" {
 		r.Run(":8000")
@@ -168,6 +166,7 @@ func main() {
 func setupRouter(d database.IDatabase) *gin.Engine {
 	log := log.New()
 	r := gin.New()
+	r.Use(cors.Default())
 	r.Use(ginlogrus.Logger(log), gin.Recovery())
 
 	err := d.InitDb("development", "./.environment")
