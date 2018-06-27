@@ -156,16 +156,17 @@ func main() {
 
 	go manager.start()
 
-	conf := cors.Config{}
-	conf.AllowOrigins = []string{"http://localhost:8080", "https://vivalavinyl-webapp.herokuapp.com"}
-	r.Use(cors.New(conf))
+	r.Use(cors.New(cors.Config{
+		AllowOrigins: []string{"http://localhost:8080", "https://vivalavinyl-webapp.herokuapp.com"},
+		AllowMethods: []string{"PUT", "GET", "POST", "PATCH", "HEAD"},
+		AllowHeaders: []string{"Origin"},
+	}))
 	port := os.Getenv("PORT")
 	if port == "" {
 		r.Run(":8000")
 	} else {
 		r.Run(":" + port)
 	}
-
 }
 
 func setupRouter(d database.IDatabase) *gin.Engine {
