@@ -19,8 +19,6 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/gin-contrib/cors"
-
 	"github.com/DarthHater/bored-board-service/model"
 	"github.com/garyburd/redigo/redis"
 
@@ -156,16 +154,28 @@ func main() {
 
 	go manager.start()
 
-	r.Use(cors.New(cors.Config{
-		AllowOrigins: []string{"http://localhost:8080", "https://vivalavinyl-webapp.herokuapp.com"},
-		AllowMethods: []string{"PUT", "GET", "POST", "PATCH", "HEAD"},
-		AllowHeaders: []string{"Origin"},
-	}))
+	r.Use(CORS())
 	port := os.Getenv("PORT")
 	if port == "" {
 		r.Run(":8000")
 	} else {
 		r.Run(":" + port)
+	}
+}
+
+func CORS() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "http://localhost:8000, https://vivalavinyl-webapp.herokuapp.com")
+		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
+
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+
+		c.Next()
 	}
 }
 
