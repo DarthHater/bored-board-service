@@ -19,11 +19,12 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/gin-contrib/cors"
+
 	"github.com/DarthHater/bored-board-service/model"
 	"github.com/garyburd/redigo/redis"
 
 	"github.com/DarthHater/bored-board-service/database"
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	uuid "github.com/satori/go.uuid"
@@ -155,8 +156,9 @@ func main() {
 
 	go manager.start()
 
-	// TODO: We will need to set this to something sane
-	r.Use(cors.Default())
+	conf := cors.Config{}
+	conf.AllowOrigins = []string{"localhost", "vivalavinyl-webapp.herokuapp.com"}
+	r.Use(cors.New(conf))
 	port := os.Getenv("PORT")
 	if port == "" {
 		r.Run(":8000")
