@@ -27,7 +27,7 @@ RUN apt-get update && apt-get install -y unzip openssl --no-install-recommends &
 
 RUN chmod +x /usr/bin/dep
 
-WORKDIR /go/src/github.com/DarthHater/bored-board-service
+WORKDIR /go/src/github.com/darthhater/bored-board-service
 
 COPY . .
 
