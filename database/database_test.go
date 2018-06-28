@@ -198,3 +198,57 @@ func TestPostPost(t *testing.T) {
 		t.Errorf("There were unfulfilled expectations: %s", err)
 	}
 }
+
+func TestGetUser(t *testing.T) {
+	d := Database{}
+	var mock sqlmock.Sqlmock
+	var err error
+	DB, mock, err = sqlmock.New()
+	if err != nil {
+		t.Fatalf("An error %s occurred when opening stub database connection", err)
+	}
+	defer DB.Close()
+
+	row := sqlmock.NewRows([]string{"id", "username", "emailaddress", "userpassword", "isadmin"}).
+		AddRow("1", "CoolGuy420", "hsimpson@springfield.org", []byte("fake password"), false)
+
+	mock.ExpectQuery("SELECT (.+) FROM board.user").WillReturnRows(row)
+
+	result, err := d.GetUser("CoolGuy420")
+
+	expected := model.User{ID: "1", Username: "CoolGuy420", EmailAddress: "hsimpson@springfield.org", UserPassword: []byte("fake password")}
+
+	assert.Equal(t, result, expected)
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expections: %s", err)
+	}
+}
+
+func TestCreateUser(t *testing.T) {
+	d := Database{}
+	var mock sqlmock.Sqlmock
+	var err error
+	var user model.User
+	DB, mock, err = sqlmock.New()
+	if err != nil {
+		t.Fatalf("An error %s occurred when opening stub database connection", err)
+	}
+	defer DB.Close()
+
+	mock.ExpectQuery("INSERT INTO board.user").WithArgs(
+		user.Username,
+		user.EmailAddress,
+		user.UserPassword).
+		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow("1"))
+
+	if id, err := d.CreateUser(&user); err != nil {
+		t.Errorf("Error was not expected while inserting user: %s", err)
+	} else {
+		t.Logf("User inserted with id: %s", id)
+	}
+
+	if err = mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("There were unfulfilled expectations: %s", err)
+	}
+}

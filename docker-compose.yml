@@ -20,7 +20,7 @@ services:
     ports:
       - '8000:8000'
     volumes:
-      - .:/go/src/github.com/darthhater/bored-board-service
+      - .:/go/src/github.com/DarthHater/bored-board-service
     links:
       - redis_db
     env_file: .env
