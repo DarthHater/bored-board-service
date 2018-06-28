@@ -16,7 +16,6 @@ package main
 
 import (
 	"encoding/json"
-<<<<<<< HEAD
 	"fmt"
 	"github.com/DarthHater/bored-board-service/model"
 	"github.com/garyburd/redigo/redis"
@@ -25,22 +24,11 @@ import (
 	"net/http"
 	"os"
 	"time"
-=======
-	"net/http"
-	"os"
-
-	"github.com/DarthHater/bored-board-service/model"
-	"github.com/garyburd/redigo/redis"
-	"github.com/gin-contrib/cors"
->>>>>>> origin/master
 
 	"crypto/rsa"
 	"github.com/DarthHater/bored-board-service/database"
-<<<<<<< HEAD
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-contrib/cors"
-=======
->>>>>>> origin/master
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	uuid "github.com/satori/go.uuid"
@@ -56,16 +44,12 @@ var (
 	db          database.IDatabase
 	gPubSubConn *redis.PubSubConn
 	gRedisConn  = func() (redis.Conn, error) {
-<<<<<<< HEAD
-		return redis.Dial("tcp", redisURL)
-=======
 		redisURL := os.Getenv("REDIS_URL")
 		if redisURL != "" {
 			return redis.DialURL(redisURL)
 		} else {
 			return redis.Dial("tcp", "redis_db:6379")
 		}
->>>>>>> origin/master
 	}
 	signKey   *rsa.PrivateKey
 	verifyKey *rsa.PublicKey
@@ -259,11 +243,7 @@ func main() {
 func setupRouter(d database.IDatabase) *gin.Engine {
 	log := log.New()
 	r := gin.New()
-<<<<<<< HEAD
-
-=======
 	r.Use(cors.Default())
->>>>>>> origin/master
 	r.Use(ginlogrus.Logger(log), gin.Recovery())
 
 	err := d.InitDb("development", "./.environment")
