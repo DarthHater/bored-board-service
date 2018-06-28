@@ -39,13 +39,6 @@ RUN dep ensure
 
 RUN go build
 
-# Build on changes to source unless production
-CMD if [ ${APP_ENV} = production ]; \
-    then \
-    license-manager; \
-    else \
-    go get github.com/pilu/fresh && \
-    fresh -c .environment/fresh_runner.conf; \
-    fi
-    
+CMD /go/src/github.com/darthhater/bored-board-service/bored-board-service
+
 EXPOSE 8000

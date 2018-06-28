@@ -16,6 +16,7 @@ package main
 
 import (
 	"encoding/json"
+<<<<<<< HEAD
 	"fmt"
 	"github.com/DarthHater/bored-board-service/model"
 	"github.com/garyburd/redigo/redis"
@@ -24,16 +25,27 @@ import (
 	"net/http"
 	"os"
 	"time"
+=======
+	"net/http"
+	"os"
+
+	"github.com/DarthHater/bored-board-service/model"
+	"github.com/garyburd/redigo/redis"
+	"github.com/gin-contrib/cors"
+>>>>>>> origin/master
 
 	"crypto/rsa"
 	"github.com/DarthHater/bored-board-service/database"
+<<<<<<< HEAD
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-contrib/cors"
+=======
+>>>>>>> origin/master
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
-	"github.com/satori/go.uuid"
+	uuid "github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
-	"github.com/toorop/gin-logrus"
+	ginlogrus "github.com/toorop/gin-logrus"
 )
 
 const (
@@ -44,7 +56,16 @@ var (
 	db          database.IDatabase
 	gPubSubConn *redis.PubSubConn
 	gRedisConn  = func() (redis.Conn, error) {
+<<<<<<< HEAD
 		return redis.Dial("tcp", redisURL)
+=======
+		redisURL := os.Getenv("REDIS_URL")
+		if redisURL != "" {
+			return redis.DialURL(redisURL)
+		} else {
+			return redis.Dial("tcp", "redis_db:6379")
+		}
+>>>>>>> origin/master
 	}
 	signKey   *rsa.PrivateKey
 	verifyKey *rsa.PublicKey
@@ -227,16 +248,22 @@ func main() {
 
 	go manager.start()
 
-	// TODO: We will need to set this to something sane
-	r.Use(cors.Default())
-	r.Run(":8000")
-
+	port := os.Getenv("PORT")
+	if port == "" {
+		r.Run(":8000")
+	} else {
+		r.Run(":" + port)
+	}
 }
 
 func setupRouter(d database.IDatabase) *gin.Engine {
 	log := log.New()
 	r := gin.New()
+<<<<<<< HEAD
 
+=======
+	r.Use(cors.Default())
+>>>>>>> origin/master
 	r.Use(ginlogrus.Logger(log), gin.Recovery())
 
 	err := d.InitDb("development", "./.environment")
@@ -295,7 +322,7 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 	conn, err := webSocketUpgrade.Upgrade(w, r, nil)
 	if err != nil {
-		log.Infoln("Failed to set websocket upgrade: %+v", err)
+		log.Error(err)
 		return
 	}
 
