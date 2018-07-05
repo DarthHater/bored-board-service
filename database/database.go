@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/DarthHater/bored-board-service/model"
 	_ "github.com/lib/pq"
@@ -32,7 +33,7 @@ var DB *sql.DB
 func (d *Database) InitDb(environment string, configPath string) error {
 	d.setupViper()
 	psqlInfo := d.connectionString()
-	err := d.openConnection(psqlInfo + "?sslmode=disable")
+	err := d.openConnection(psqlInfo)
 	if err != nil {
 		log.Print(err)
 		return err
@@ -201,12 +202,18 @@ func (d *Database) setupViper() {
 }
 
 func (d *Database) connectionString() (connectionString string) {
-	return fmt.Sprintf("postgres://%s:%s@%s:%d/%s",
+	var environment = os.Getenv("ENVIRONMENT")
+	var string = fmt.Sprintf("postgres://%s:%s@%s:%d/%s",
 		viper.GetString("DATABASE_USER"),
 		viper.GetString("DATABASE_PASSWORD"),
 		viper.GetString("DATABASE"),
 		viper.GetInt("DATABASE_PORT"),
 		viper.GetString("DATABASE_DATABASE"))
+	if environment == "development" {
+		return string + "?sslmode=disable"
+	} else {
+		return string
+	}
 }
 
 func (d *Database) openConnection(psqlInfo string) error {
