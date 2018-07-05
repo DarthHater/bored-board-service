@@ -17,15 +17,17 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/DarthHater/bored-board-service/model"
-	"github.com/garyburd/redigo/redis"
-	"golang.org/x/crypto/bcrypt"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"time"
 
+	"github.com/DarthHater/bored-board-service/model"
+	"github.com/garyburd/redigo/redis"
+	"golang.org/x/crypto/bcrypt"
+
 	"crypto/rsa"
+
 	"github.com/DarthHater/bored-board-service/database"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-contrib/cors"
@@ -244,9 +246,19 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 	log := log.New()
 	r := gin.New()
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:8000", "https://vivalavinyl-webapp.herokuapp.com"},
-		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD"},
-		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "Accept-Encoding", "Authorization", "Cache-Control"},
+		AllowOrigins: allowedCorsOrigins(),
+		AllowMethods: []string{"GET",
+			"POST",
+			"PUT",
+			"PATCH",
+			"DELETE",
+			"HEAD"},
+		AllowHeaders: []string{"Origin",
+			"Content-Length",
+			"Content-Type",
+			"Accept-Encoding",
+			"Authorization",
+			"Cache-Control"},
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
@@ -303,6 +315,19 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 	}
 
 	return r
+}
+
+func allowedCorsOrigins() []string {
+	var environment = os.Getenv("ENVIRONMENT")
+	if environment == "development" {
+		return []string{"http://localhost:8090",
+			"http://127.0.0.1:8090",
+			"http://0.0.0.0:8090",
+			"https://vivalavinyl-webapp.herokuapp.com"}
+	} else {
+		return []string{
+			"https://vivalavinyl-webapp.herokuapp.com"}
+	}
 }
 
 // Websocket Handler

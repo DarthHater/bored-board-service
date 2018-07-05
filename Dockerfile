@@ -27,7 +27,7 @@ RUN apt-get update && apt-get install -y unzip openssl --no-install-recommends &
 
 RUN chmod +x /usr/bin/dep
 
-WORKDIR /go/src/github.com/darthhater/bored-board-service
+WORKDIR /go/src/github.com/DarthHater/bored-board-service
 
 COPY . .
 
@@ -39,6 +39,6 @@ RUN dep ensure
 
 RUN go build
 
-CMD /go/src/github.com/darthhater/bored-board-service/bored-board-service
+CMD /go/src/github.com/DarthHater/bored-board-service/bored-board-service
 
 EXPOSE 8000

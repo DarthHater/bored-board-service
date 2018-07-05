@@ -19,10 +19,9 @@ services:
     image: darthhater/bored-board-service:latest
     ports:
       - '8000:8000'
-    volumes:
-      - .:/go/src/github.com/DarthHater/bored-board-service
     links:
       - redis_db
+      - database
     env_file: .env
   database:
     image: postgres:latest

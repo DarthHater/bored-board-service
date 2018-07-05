@@ -32,9 +32,8 @@ var DB *sql.DB
 func (d *Database) InitDb(environment string, configPath string) error {
 	d.setupViper()
 	psqlInfo := d.connectionString()
-	err := d.openConnection(psqlInfo)
+	err := d.openConnection(psqlInfo + "?sslmode=disable")
 	if err != nil {
-		log.Print(psqlInfo)
 		log.Print(err)
 		return err
 	}

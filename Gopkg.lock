@@ -2,6 +2,12 @@
 
 
 [[projects]]
+  branch = "master"
+  name = "github.com/DarthHater/bored-board-service"
+  packages = ["database","model"]
+  revision = "13da8c737aa3fa3c8bb728ea9500afa758e0c20a"
+
+[[projects]]
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
   revision = "346938d642f2ec3594ed81d874461961cd0faa76"
@@ -196,6 +202,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "0c88c1734cff9b50e9eb8386c2afe6c30fc99ab8265288a50bbdbea0b0ace3a7"
+  inputs-digest = "916f812f6a973408d4f521125705638021fb9d81095e831829cffeac5ebc4b92"
   solver-name = "gps-cdcl"
   solver-version = 1
