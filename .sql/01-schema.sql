@@ -13,8 +13,10 @@ CREATE SCHEMA board AUTHORIZATION admin;
 
 CREATE TABLE board.user(
     Id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    Username varchar(250),
-    Emailaddress varchar(250)
+    Username varchar(250) UNIQUE,
+    Emailaddress varchar(250) UNIQUE,
+    UserPassword bytea,
+    IsAdmin boolean DEFAULT FALSE
 );
 
 CREATE TABLE board.thread(

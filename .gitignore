@@ -2,4 +2,12 @@ vendor
 .environment/development.toml
 tmp
 .DS_Store
-.vscode
+.env
+.vscode/
+debug
+.keys/
+.keys/app.rsa
+.keys/app.rsa.pub
+
+supervisord.log
+supervisord.pid

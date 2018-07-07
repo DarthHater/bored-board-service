@@ -25,6 +25,7 @@ services:
       - .:/go/src/github.com/DarthHater/bored-board-service
     links:
       - redis_db
+      - database
     env_file: .env
   database:
     image: postgres:latest

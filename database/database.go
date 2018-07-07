@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 	"errors"
+	"log"
+	"os"
 
 	"github.com/DarthHater/bored-board-service/model"
 	_ "github.com/lib/pq"
@@ -13,6 +15,8 @@ import (
 
 type IDatabase interface {
 	InitDb(s string, e string) error
+	CreateUser(u *model.User) (string, error)
+	GetUser(s string) (model.User, error)
 	GetThread(s string) (model.Thread, error)
 	GetPost(s string) (model.Post, error)
 	GetPosts(s string) ([]model.Post, error)
@@ -47,6 +51,7 @@ func (d *Database) InitDb(environment string, configPath string) error {
 	psqlInfo := d.connectionString()
 	err := d.openConnection(psqlInfo)
 	if err != nil {
+		log.Print(err)
 		return err
 	}
 
@@ -72,6 +77,17 @@ func (d *Database) GetPost(postId string) (post model.Post, err error) {
 		return post, err
 	}
 	return post, nil
+}
+
+func (d *Database) GetUser(username string) (user model.User, err error) {
+	user = model.User{}
+	err = DB.QueryRow("SELECT Id, Username, EmailAddress, UserPassword, IsAdmin FROM board.user WHERE Username = $1", username).
+		Scan(&user.ID, &user.Username, &user.EmailAddress, &user.UserPassword, &user.IsAdmin)
+	if err != nil {
+		return user, err
+	}
+
+	return user, nil
 }
 
 func (d *Database) GetThreads(num int) ([]model.Thread, error) {
@@ -227,6 +243,24 @@ func (d *Database) UserIsInRole(userId int, role int) (bool, error) {
 	return false, nil
 }
 
+func (d *Database) CreateUser(user *model.User) (userid string, err error) {
+	var id string
+	sqlStatement := `
+		INSERT INTO board.user
+		(Username, EmailAddress, UserPassword)
+		VALUES ($1, $2, $3)
+		RETURNING Id`
+	err = DB.QueryRow(sqlStatement,
+		user.Username,
+		user.EmailAddress,
+		user.UserPassword).Scan(&id)
+	if err != nil {
+		return "", err
+	}
+
+	return id, nil
+}
+
 // Internal methods
 
 func (d *Database) setupViper() {
@@ -244,12 +278,18 @@ func (d *Database) setupViper() {
 }
 
 func (d *Database) connectionString() (connectionString string) {
-	return fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
+	var environment = os.Getenv("ENVIRONMENT")
+	var string = fmt.Sprintf("postgres://%s:%s@%s:%d/%s",
 		viper.GetString("DATABASE_USER"),
 		viper.GetString("DATABASE_PASSWORD"),
 		viper.GetString("DATABASE"),
 		viper.GetInt("DATABASE_PORT"),
 		viper.GetString("DATABASE_DATABASE"))
+	if environment == "development" {
+		return string + "?sslmode=disable"
+	} else {
+		return string
+	}
 }
 
 func (d *Database) openConnection(psqlInfo string) error {
