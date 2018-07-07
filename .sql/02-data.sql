@@ -1,7 +1,7 @@
 \connect db;
 
 WITH tmp AS (
-    INSERT INTO board.user (Username, Emailaddress, UserPassword, IsAdmin) VALUES
+    INSERT INTO board.user (Username, Emailaddress, UserPassword, UserRole) VALUES
     ('CoolAssMitch420', 'evilmitch@evilmoneydance.com', decode(crypt('coolassmitch420', gen_salt('bf', 8)), 'escape'), 0),
     ('EvilAssMitch666', 'coolassmitch@evilashell.com', decode(crypt('evilassmitch666', gen_salt('bf', 8)), 'escape'), 3) 
     RETURNING Id

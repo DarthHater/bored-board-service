@@ -143,12 +143,6 @@ func (c *client) write() {
 	}
 }
 
-func checkUserRole() gin.HandlerFunc {
-	return func(c *gin.Context) { 
-
-	}
-}
-
 var webSocketUpgrade = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
