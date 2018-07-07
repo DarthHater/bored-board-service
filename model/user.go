@@ -9,7 +9,7 @@ type User struct {
 	Username     string
 	EmailAddress string
 	UserPassword []byte
-	IsAdmin      bool
+	UserRole      int
 }
 
 type Registration struct {

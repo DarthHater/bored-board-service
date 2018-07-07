@@ -25,13 +25,13 @@ type IDatabase interface {
 	PostPost(p *model.Post) (string, error)
 	DeleteThread(s string) (error)
 	EditPost(p *model.Post) (error)
-	UserIsInRole(i int, r int) (bool, error)
+	UserIsInRole(s string, r Role) (bool, error)
 }
 
 type Role int
 
 const (  
-	Admin Role = 0
+	Admin Role = 0  
 	Mod Role = 1  
 	Elite Role = 2
 	User Role = 3
@@ -81,8 +81,8 @@ func (d *Database) GetPost(postId string) (post model.Post, err error) {
 
 func (d *Database) GetUser(username string) (user model.User, err error) {
 	user = model.User{}
-	err = DB.QueryRow("SELECT Id, Username, EmailAddress, UserPassword, IsAdmin FROM board.user WHERE Username = $1", username).
-		Scan(&user.ID, &user.Username, &user.EmailAddress, &user.UserPassword, &user.IsAdmin)
+	err = DB.QueryRow("SELECT Id, Username, EmailAddress, UserPassword, UserRole FROM board.user WHERE Username = $1", username).
+		Scan(&user.ID, &user.Username, &user.EmailAddress, &user.UserPassword, &user.UserRole)
 	if err != nil {
 		return user, err
 	}
@@ -225,18 +225,18 @@ func (d *Database) EditPost(editPost *model.Post) (err error) {
 	return errors.New("Posts can only be edited for 10 minutes")
 }
 
-func (d *Database) UserIsInRole(userId int, role int) (bool, error) {
+func (d *Database) UserIsInRole(userId string, role Role) (bool, error) {
 	var userRoleId int
 	sqlStatement := `
-		SELECT RoleId 
-		FROM board.user_roles 
+		SELECT UserRole 
+		FROM board.users 
 		WHERE UserId = $1` 
 	err := DB.QueryRow(sqlStatement, userId).Scan(&userRoleId)
 	if err != nil {
 		return false, err
 	}
 
-	if userRoleId == role {
+	if userRoleId == int(role) {
 		return true, nil
 	}
 

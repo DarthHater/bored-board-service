@@ -27,7 +27,7 @@ func (m *MockDatabase) GetPosts(threadId string) ([]model.Post, error) {
 }
 
 func (m *MockDatabase) GetUser(username string) (result model.User, err error) {
-	result = model.User{ID: "1", Username: "CoolGuy420", EmailAddress: "hsimpson@springfield.org", UserPassword: []byte("fake password"), IsAdmin: false}
+	result = model.User{ID: "1", Username: "CoolGuy420", EmailAddress: "hsimpson@springfield.org", UserPassword: []byte("fake password"), UserRole: int(Admin)}
 
 	return result, nil
 }

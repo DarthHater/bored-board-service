@@ -16,6 +16,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -55,17 +56,6 @@ var (
 	}
 	signKey   *rsa.PrivateKey
 	verifyKey *rsa.PublicKey
-)
-
-type role int
-
-const (  
-	admin role = 0  
-	mod role = 1  
-	elite role = 2
-	user role = 3
-	muted role = 4
-	banned role = 5
 )
 
 type clientManager struct {
@@ -167,44 +157,78 @@ var webSocketUpgrade = websocket.Upgrader{
 	},
 }
 
-func validateTokenMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		tokenString := c.GetHeader("Authorization")
+func getToken(c *gin.Context) (*jwt.Token, error) {
+	tokenString := c.GetHeader("Authorization")
 
-		if tokenString == "" {
-			origin := c.GetHeader("Origin")
-			c.JSON(http.StatusUnprocessableEntity, gin.H{"err": "token is required"})
-			log.Error(fmt.Sprintf("Attempt to access resources without token from origin: %s", origin))
+	if tokenString == "" {
+		origin := c.GetHeader("Origin")
+		c.JSON(http.StatusForbidden, gin.H{"err": "token is required"})
+		log.Error(fmt.Sprintf("Attempt to access resources without token from origin: %s", origin))
+		return nil, errors.New("Error")
+	}
+
+	tokenString = tokenString[len("Bearer "):]
+
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		return verifyKey, nil
+	})
+
+	return token, err
+}
+
+func userIsLoggedIn() gin.HandlerFunc {
+	return func(c *gin.Context) {
+
+		token, err := getToken(c)
+
+		if err != nil {
 			c.Abort()
 			return
 		}
-
-		// get token without 'Bearer ' in name
-		tokenString = tokenString[len("Bearer "):]
-
-		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-			return verifyKey, nil
-		})
 
 		if !token.Valid {
 			origin := c.GetHeader("Origin")
 			if ve, ok := err.(*jwt.ValidationError); ok {
 				if ve.Errors&jwt.ValidationErrorMalformed != 0 {
-					c.JSON(http.StatusUnauthorized, gin.H{"err": "token is malformed"})
+					c.JSON(http.StatusForbidden, gin.H{"err": "token is malformed"})
 					log.Error(fmt.Sprintf("Attempt to access resources with malformed token from origin: %s", origin))
 				} else if ve.Errors&(jwt.ValidationErrorExpired) != 0 {
 					// Token is expired
-					c.JSON(http.StatusUnauthorized, gin.H{"err": "token is expired"})
+					c.JSON(http.StatusForbidden, gin.H{"err": "token is expired"})
 				} else {
-					c.JSON(http.StatusUnauthorized, gin.H{"err": "error reading token"})
+					c.JSON(http.StatusForbidden, gin.H{"err": "error reading token"})
 					log.Error(fmt.Sprintf("Error accessing resources with token from origin %s", origin))
 				}
 			} else {
-				c.JSON(http.StatusUnauthorized, gin.H{"err": "error reading token"})
+				c.JSON(http.StatusForbidden, gin.H{"err": "error reading token"})
 				log.Error(fmt.Sprintf("Error accessing resources with token from origin %s", origin))
 			}
 			c.Abort()
 		}
+	}
+}
+
+func userIsInRoles(d database.IDatabase, roles []database.Role) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		token, _ := getToken(c)
+		var id = ""
+
+		
+		if claims, ok := token.Claims.(jwt.MapClaims); ok {
+			id = claims["id"].(string)
+		} else {
+			c.Abort()
+			return
+		}
+
+		for _, role := range roles {
+			if ok, _ := d.UserIsInRole(id, role); ok {
+				return
+			}
+		}
+
+		c.JSON(http.StatusForbidden, gin.H{"err": "User doesn't have access"})
+		c.Abort()
 	}
 }
 
@@ -301,7 +325,7 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 
 	auth := r.Group("/")
 
-	auth.Use(validateTokenMiddleware())
+	auth.Use(userIsLoggedIn())
 	{
 		auth.GET("/thread/:threadid", func(c *gin.Context) {
 			threadId := c.Param("threadid")
@@ -330,16 +354,19 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 			postPost(c, d)
 		})
 
-		r.PUT("/posts/:postid", func(c *gin.Context) {
+		auth.PUT("/posts/:postid", func(c *gin.Context) {
 			postId := c.Param("postid")
 			editPost(c, d, postId)
 		})
-	}
 
-	r.DELETE("/thread/:threadid", func(c *gin.Context) {
-		threadId := c.Param("threadid")
-		deleteThread(c, d, threadId)
-	})
+		auth.Use(userIsInRoles(d, make([]database.Role, database.Admin, database.Mod))) 
+		{
+			auth.DELETE("/thread/:threadid", func(c *gin.Context) {
+				threadId := c.Param("threadid")
+				deleteThread(c, d, threadId)
+			})
+		}
+	}
 
 	return r
 }
@@ -506,7 +533,8 @@ func checkCredentials(c *gin.Context, d database.IDatabase) {
 	claims["exp"] = time.Now().Add(time.Hour * 24 * 7).Unix() // expires in one week
 	claims["iat"] = time.Now().Unix()
 	claims["user"] = user.Username
-	claims["admin"] = user.IsAdmin
+	claims["id"] = user.ID
+	claims["role"] = user.UserRole
 	token.Claims = claims
 
 	tokenString, err := token.SignedString(signKey)
