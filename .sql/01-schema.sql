@@ -1,10 +1,10 @@
 CREATE USER admin
-    WITH PASSWORD 'admin123'
+WITH PASSWORD 'admin123'
     CREATEDB;
 
 CREATE DATABASE db
     WITH OWNER
-    admin;
+admin;
 
 \connect db;
 
@@ -12,7 +12,8 @@ CREATE EXTENSION pgcrypto;
 
 CREATE SCHEMA board AUTHORIZATION admin;
 
-CREATE TABLE board.user(
+CREATE TABLE board.user
+(
     Id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     Username varchar(250) UNIQUE,
     Emailaddress varchar(250) UNIQUE,
@@ -20,14 +21,16 @@ CREATE TABLE board.user(
     UserRole int
 );
 
-CREATE TABLE board.threa(
+CREATE TABLE board.thread
+(
     Id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     UserId UUID,
     Title varchar(250),
     PostedAt TIMESTAMP DEFAULT now()
 );
 
-CREATE TABLE board.thread_post(
+CREATE TABLE board.thread_post
+(
     Id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     ThreadId UUID REFERENCES board.thread (Id),
     UserId UUID,
