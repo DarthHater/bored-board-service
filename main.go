@@ -23,6 +23,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/DarthHater/bored-board-service/constants"
 	"github.com/DarthHater/bored-board-service/model"
 	"github.com/garyburd/redigo/redis"
 	"golang.org/x/crypto/bcrypt"
@@ -202,11 +203,10 @@ func userIsLoggedIn() gin.HandlerFunc {
 	}
 }
 
-func userIsInRoles(d database.IDatabase, roles []database.Role) gin.HandlerFunc {
+func userHasCorrectRole(d database.IDatabase, roles []constants.Role) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token, _ := getToken(c)
 		var id = ""
-
 
 		if claims, ok := token.Claims.(jwt.MapClaims); ok {
 			id = claims["id"].(string)
@@ -215,10 +215,16 @@ func userIsInRoles(d database.IDatabase, roles []database.Role) gin.HandlerFunc 
 			return
 		}
 
-		fmt.Println(roles)
+		userRole, err := d.GetUserRole(id)
+
+		if err != nil {
+			c.JSON(http.StatusForbidden, gin.H{"err": "Couldn't get user role"})
+			c.Abort()
+			return
+		}
 
 		for _, role := range roles {
-			if ok, _ := d.UserIsInRole(id, role); ok {
+			if userRole == role {
 				return
 			}
 		}
@@ -355,7 +361,7 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 			editPost(c, d, postId)
 		})
 
-		auth.Use(userIsInRoles(d, []database.Role{database.Admin, database.Mod}))
+		auth.Use(userHasCorrectRole(d, []constants.Role{constants.Admin, constants.Mod}))
 		{
 			auth.DELETE("/thread/:threadid", func(c *gin.Context) {
 				threadId := c.Param("threadid")

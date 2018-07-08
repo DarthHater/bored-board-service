@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/DarthHater/bored-board-service/constants"
 	"github.com/DarthHater/bored-board-service/model"
 	_ "github.com/lib/pq"
 	"github.com/spf13/viper"
@@ -25,19 +26,8 @@ type IDatabase interface {
 	PostPost(p *model.Post) (string, error)
 	DeleteThread(s string) (error)
 	EditPost(p *model.Post) (error)
-	UserIsInRole(s string, r Role) (bool, error)
+	GetUserRole(s string) (constants.Role, error)
 }
-
-type Role int
-
-const (
-	Admin Role = 0
-	Mod Role = 1
-	Elite Role = 2
-	User Role = 3
-	Muted Role = 4
-	Banned Role = 5
-)
 
 type Database struct {
 }
@@ -225,7 +215,7 @@ func (d *Database) EditPost(editPost *model.Post) (err error) {
 	return errors.New("Posts can only be edited for 10 minutes")
 }
 
-func (d *Database) UserIsInRole(userId string, role Role) (bool, error) {
+func (d *Database) GetUserRole(userId string) (constants.Role, error) {
 	var userRoleId int
 	sqlStatement := `
 		SELECT UserRole
@@ -233,17 +223,10 @@ func (d *Database) UserIsInRole(userId string, role Role) (bool, error) {
 		WHERE Id = $1`
 	err := DB.QueryRow(sqlStatement, userId).Scan(&userRoleId)
 	if err != nil {
-		return false, err
+		// return nil, err
 	}
 
-	fmt.Println(userRoleId)
-	fmt.Println(int(role))
-
-	if userRoleId == int(role) {
-		return true, nil
-	}
-
-	return false, nil
+	return constants.Role(userRoleId), nil
 }
 
 func (d *Database) CreateUser(user *model.User) (userid string, err error) {
