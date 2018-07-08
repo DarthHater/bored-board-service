@@ -48,7 +48,7 @@ func (d *Database) GetThread(threadId string) (model.Thread, error) {
 	err := DB.QueryRow(`SELECT bt.Id, bt.UserId, bt.Title, bt.PostedAt, bu.Username 
 			FROM board.thread bt 
 			INNER JOIN board.user bu ON bt.UserId = bu.Id
-			WHERE Id = $1 
+			WHERE bt.Id = $1 
 			ORDER BY PostedAt DESC limit 20`, threadId).
 		Scan(&thread.Id, &thread.UserId, &thread.Title, &thread.PostedAt, &thread.UserName)
 	if err != nil {
@@ -115,7 +115,7 @@ func (d *Database) GetPosts(threadId string) ([]model.Post, error) {
 
 	for rows.Next() {
 		p := model.Post{}
-		if err := rows.Scan(&p.Id, &p.ThreadId, &p.UserId, &p.Body, &p.PostedAt, &p.Username); err != nil {
+		if err := rows.Scan(&p.Id, &p.ThreadId, &p.UserId, &p.Body, &p.PostedAt, &p.UserName); err != nil {
 			return nil, err
 		}
 		posts = append(posts, p)

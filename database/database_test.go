@@ -95,8 +95,8 @@ func TestGetThreads(t *testing.T) {
 	result, err := d.GetThreads(20)
 
 	expected := []model.Thread{
-		{Id: "", UserId: "admin", Title: "What the heck", PostedAt: "A time", Username: "admin"},
-		{Id: "", UserId: "admin", Title: "DJ Khaled", PostedAt: "A time", Username: "admin"},
+		{Id: "", UserId: "admin", Title: "What the heck", PostedAt: "A time", UserName: "admin"},
+		{Id: "", UserId: "admin", Title: "DJ Khaled", PostedAt: "A time", UserName: "admin"},
 	}
 
 	assert.Equal(t, result, expected)
@@ -125,8 +125,8 @@ func TestGetPosts(t *testing.T) {
 	result, err := d.GetPosts("A thread")
 
 	expected := []model.Post{
-		{Id: "", ThreadId: "", UserId: "", Body: "Post Body", PostedAt: "A time", Username: "admin"},
-		{Id: "", ThreadId: "", UserId: "", Body: "Post Body 2", PostedAt: "A time", Username: "admin"},
+		{Id: "", ThreadId: "", UserId: "", Body: "Post Body", PostedAt: "A time", UserName: "admin"},
+		{Id: "", ThreadId: "", UserId: "", Body: "Post Body 2", PostedAt: "A time", UserName: "admin"},
 	}
 
 	assert.Equal(t, result, expected)
