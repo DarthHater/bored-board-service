@@ -34,14 +34,14 @@ func TestGetThread(t *testing.T) {
 	}
 	defer DB.Close()
 
-	row := sqlmock.NewRows([]string{"id", "userId", "title", "postedat"}).
-		AddRow("", "admin", "What the heck", "A time")
+	row := sqlmock.NewRows([]string{"id", "userId", "title", "postedat", "username"}).
+		AddRow("", "admin", "What the heck", "A time", "admin")
 
 	mock.ExpectQuery("SELECT (.+) FROM board.thread WHERE (.+)").WillReturnRows(row)
 
 	result, err := d.GetThread("a thread")
 
-	expected := model.Thread{Id: "", UserId: "admin", Title: "What the heck", PostedAt: "A time"}
+	expected := model.Thread{Id: "", UserId: "admin", Title: "What the heck", PostedAt: "A time", UserName: "admin"}
 
 	assert.Equal(t, result, expected)
 
