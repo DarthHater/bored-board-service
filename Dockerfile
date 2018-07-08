@@ -39,16 +39,6 @@ RUN dep ensure
 
 RUN go build
 
-CMD if [ ${REMOTE_DEBUGGING} = true ]; \
-    then \
-        go get github.com/derekparker/delve/cmd/dlv && \
-        dlv debug --headless --listen=:2345 --log; \
-    else \
-        go get -u github.com/oxequa/realize && \
-        realize start; \
-    fi
-
-# CMD /go/src/github.com/DarthHater/bored-board-service/bored-board-service
+CMD /go/src/github.com/DarthHater/bored-board-service/bored-board-service
 
 EXPOSE 8000
-# EXPOSE 2345

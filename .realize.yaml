@@ -13,9 +13,9 @@ schema:
   commands:
     install:
       status: true
-    run: 
+    run:
       status: true
-    test: 
+    test:
       status: true
   watcher:
     paths:
@@ -24,4 +24,3 @@ schema:
     - go
     ignored_paths:
     - vendor
-    
