@@ -181,7 +181,10 @@ func userIsLoggedIn() gin.HandlerFunc {
 			return
 		}
 
-		if !token.Valid {
+		if token.Valid {
+			// save token in context for use in other middleware
+			c.Set("token", token)
+		} else {
 			origin := c.GetHeader("Origin")
 			if ve, ok := err.(*jwt.ValidationError); ok {
 				if ve.Errors&jwt.ValidationErrorMalformed != 0 {
@@ -205,10 +208,19 @@ func userIsLoggedIn() gin.HandlerFunc {
 
 func userHasCorrectRole(d database.IDatabase, roles []constants.Role) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		token, _ := getToken(c)
+
+		var token interface{}
+		var ok bool
+
+		if token, ok = c.Get("token"); !ok {
+			c.JSON(http.StatusForbidden, gin.H{"err": "Error accessing token"})
+			c.Abort()
+			return
+		}
+
 		var id = ""
 
-		if claims, ok := token.Claims.(jwt.MapClaims); ok {
+		if claims, ok := token.(*jwt.Token).Claims.(jwt.MapClaims); ok {
 			id = claims["id"].(string)
 		} else {
 			c.Abort()
