@@ -1,10 +1,10 @@
 package model
 
 type Post struct {
-	Id string
+	Id       string
 	ThreadId string
-	UserId string
-	Body string
+	UserId   string
+	Body     string
 	PostedAt string
-	EditedAt string
+	UserName string
 }

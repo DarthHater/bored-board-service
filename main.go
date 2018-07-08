@@ -206,9 +206,8 @@ func userIsLoggedIn() gin.HandlerFunc {
 	}
 }
 
-func userHasCorrectRole(d database.IDatabase, roles []constants.Role) gin.HandlerFunc {
+func userIsInRole(d database.IDatabase, roles []constants.Role) gin.HandlerFunc {
 	return func(c *gin.Context) {
-
 		var token interface{}
 		var ok bool
 
@@ -219,7 +218,6 @@ func userHasCorrectRole(d database.IDatabase, roles []constants.Role) gin.Handle
 		}
 
 		var id = ""
-
 		if claims, ok := token.(*jwt.Token).Claims.(jwt.MapClaims); ok {
 			id = claims["id"].(string)
 		} else {
@@ -228,7 +226,6 @@ func userHasCorrectRole(d database.IDatabase, roles []constants.Role) gin.Handle
 		}
 
 		userRole, err := d.GetUserRole(id)
-
 		if err != nil {
 			c.JSON(http.StatusForbidden, gin.H{"err": "Couldn't get user role"})
 			c.Abort()
@@ -373,7 +370,7 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 			editPost(c, d, postId)
 		})
 
-		auth.Use(userHasCorrectRole(d, []constants.Role{constants.Admin, constants.Mod}))
+		auth.Use(userIsInRole(d, []constants.Role{constants.Admin, constants.Mod}))
 		{
 			auth.DELETE("/thread/:threadid", func(c *gin.Context) {
 				threadId := c.Param("threadid")

@@ -20,8 +20,8 @@ func (m *MockDatabase) GetThread(threadId string) (model.Thread, error) {
 
 func (m *MockDatabase) GetPosts(threadId string) ([]model.Post, error) {
 	result := []model.Post{
-		{Id: "", ThreadId: "", UserId: "", Body: "Post Body", PostedAt: "A time", EditedAt: "Rite now"},
-		{Id: "", ThreadId: "", UserId: "", Body: "Post Body 2", PostedAt: "A time", EditedAt: "Rite now"},
+		{Id: "", ThreadId: "", UserId: "", Body: "Post Body", PostedAt: "A time" },
+		{Id: "", ThreadId: "", UserId: "", Body: "Post Body 2", PostedAt: "A time" },
 	}
 
 	return result, nil

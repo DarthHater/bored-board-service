@@ -51,8 +51,12 @@ func (d *Database) InitDb(environment string, configPath string) error {
 
 func (d *Database) GetThread(threadId string) (model.Thread, error) {
 	thread := model.Thread{}
-	err := DB.QueryRow("SELECT Id, UserId, Title, PostedAt FROM board.thread WHERE Id = $1 ORDER BY PostedAt DESC limit 20", threadId).
-		Scan(&thread.Id, &thread.UserId, &thread.Title, &thread.PostedAt)
+	err := DB.QueryRow(`SELECT bt.Id, bt.UserId, bt.Title, bt.PostedAt, bu.Username
+			FROM board.thread bt
+			INNER JOIN board.user bu ON bt.UserId = bu.Id
+			WHERE bt.Id = $1
+			ORDER BY PostedAt DESC limit 20`, threadId).
+		Scan(&thread.Id, &thread.UserId, &thread.Title, &thread.PostedAt, &thread.UserName)
 	if err != nil {
 		return thread, err
 	}
@@ -61,8 +65,8 @@ func (d *Database) GetThread(threadId string) (model.Thread, error) {
 
 func (d *Database) GetPost(postId string) (post model.Post, err error) {
 	post = model.Post{}
-	err = DB.QueryRow("SELECT Id, ThreadId, UserId, Body, PostedAt, EditedAt FROM board.thread_post WHERE Id = $1", postId).
-		Scan(&post.Id, &post.ThreadId, &post.UserId, &post.Body, &post.PostedAt, &post.EditedAt)
+	err = DB.QueryRow("SELECT Id, ThreadId, UserId, Body, PostedAt FROM board.thread_post WHERE Id = $1", postId).
+		Scan(&post.Id, &post.ThreadId, &post.UserId, &post.Body, &post.PostedAt)
 	if err != nil {
 		return post, err
 	}
@@ -82,7 +86,9 @@ func (d *Database) GetUser(username string) (user model.User, err error) {
 
 func (d *Database) GetThreads(num int) ([]model.Thread, error) {
 	var threads []model.Thread
-	rows, err := DB.Query("SELECT Id, UserId, Title, PostedAt FROM board.thread")
+	rows, err := DB.Query(`SELECT bt.Id, bt.UserId, bt.Title, bt.PostedAt, bu.Username
+		FROM board.thread bt
+		INNER JOIN board.user bu ON bt.UserId = bu.Id`)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +96,7 @@ func (d *Database) GetThreads(num int) ([]model.Thread, error) {
 
 	for rows.Next() {
 		t := model.Thread{}
-		if err := rows.Scan(&t.Id, &t.UserId, &t.Title, &t.PostedAt); err != nil {
+		if err := rows.Scan(&t.Id, &t.UserId, &t.Title, &t.PostedAt, &t.UserName); err != nil {
 			return nil, err
 		}
 		threads = append(threads, t)
@@ -104,7 +110,10 @@ func (d *Database) GetThreads(num int) ([]model.Thread, error) {
 
 func (d *Database) GetPosts(threadId string) ([]model.Post, error) {
 	var posts []model.Post
-	rows, err := DB.Query("SELECT Id, ThreadId, UserId, Body, PostedAt FROM board.thread_post WHERE ThreadId = $1", threadId)
+	rows, err := DB.Query(`SELECT tp.Id, tp.ThreadId, tp.UserId, tp.Body, tp.PostedAt, bu.Username
+			FROM board.thread_post tp
+			INNER JOIN board.user bu ON tp.UserId = bu.Id
+			WHERE ThreadId = $1`, threadId)
 	if err != nil {
 		return nil, err
 	}
@@ -112,7 +121,7 @@ func (d *Database) GetPosts(threadId string) ([]model.Post, error) {
 
 	for rows.Next() {
 		p := model.Post{}
-		if err := rows.Scan(&p.Id, &p.ThreadId, &p.UserId, &p.Body, &p.PostedAt); err != nil {
+		if err := rows.Scan(&p.Id, &p.ThreadId, &p.UserId, &p.Body, &p.PostedAt, &p.UserName); err != nil {
 			return nil, err
 		}
 		posts = append(posts, p)
@@ -196,7 +205,7 @@ func (d *Database) DeleteThread(threadId string) (err error) {
 func (d *Database) EditPost(editPost *model.Post) (err error) {
 	sqlStatement := `
 		UPDATE board.thread_post
-		SET Body = $1, EditedAt = $2
+		SET Body = $1
 		WHERE Id = $3
 		AND PostedAt::date + '10 minutes'::interval > now()`
 	res, err := DB.Exec(sqlStatement, editPost.Body, time.Now().Local(), editPost.Id)
