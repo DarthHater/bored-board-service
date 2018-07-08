@@ -37,7 +37,7 @@ func TestGetThread(t *testing.T) {
 	row := sqlmock.NewRows([]string{"id", "userId", "title", "postedat", "username"}).
 		AddRow("", "admin", "What the heck", "A time", "admin")
 
-	mock.ExpectQuery("SELECT (.+) FROM board.thread WHERE (.+)").WillReturnRows(row)
+	mock.ExpectQuery("SELECT (.+) FROM board.thread").WillReturnRows(row)
 
 	result, err := d.GetThread("a thread")
 
