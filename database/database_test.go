@@ -2,6 +2,7 @@ package database
 
 import (
 	"testing"
+	"os"
 
 	"github.com/DarthHater/bored-board-service/model"
 
@@ -15,8 +16,19 @@ func TestInitDb(t *testing.T) {
 	assert.Equal(t, err, nil)
 }
 
-func TestConnectionString(t *testing.T) {
+func TestConnectionStringDevelopment(t *testing.T) {
 	d := Database{}
+	os.Setenv("ENVIRONMENT", "development")
+	d.setupViper()
+	assert.Equal(t,
+		"postgres://admin:admin123@database:5432/db?sslmode=disable",
+		d.connectionString(),
+	)
+}
+
+func TestConnectionStringProduction(t *testing.T) {
+	d := Database{}
+	os.Setenv("ENVIRONMENT", "production")
 	d.setupViper()
 	assert.Equal(t,
 		"postgres://admin:admin123@database:5432/db",

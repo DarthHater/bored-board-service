@@ -232,7 +232,7 @@ func (d *Database) GetUserRole(userId string) (constants.Role, error) {
 		WHERE Id = $1`
 	err := DB.QueryRow(sqlStatement, userId).Scan(&userRoleId)
 	if err != nil {
-		// return nil, err
+		return -1, err
 	}
 
 	return constants.Role(userRoleId), nil
@@ -254,8 +254,8 @@ func (d *Database) CreateUser(user *model.User) (userid string, err error) {
 	}
 
 	return id, nil
-}
 
+}
 // Internal methods
 
 func (d *Database) setupViper() {
