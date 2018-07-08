@@ -444,6 +444,7 @@ func checkCredentials(c *gin.Context, d database.IDatabase) {
 	claims["exp"] = time.Now().Add(time.Hour * 24 * 7).Unix() // expires in one week
 	claims["iat"] = time.Now().Unix()
 	claims["user"] = user.Username
+	claims["id"] = user.ID
 	claims["admin"] = user.IsAdmin
 	token.Claims = claims
 
