@@ -34,14 +34,14 @@ func TestGetThread(t *testing.T) {
 	}
 	defer DB.Close()
 
-	row := sqlmock.NewRows([]string{"id", "userId", "title", "postedat"}).
-		AddRow("", "admin", "What the heck", "A time")
+	row := sqlmock.NewRows([]string{"id", "userId", "title", "postedat", "username"}).
+		AddRow("", "admin", "What the heck", "A time", "admin")
 
-	mock.ExpectQuery("SELECT (.+) FROM board.thread WHERE (.+)").WillReturnRows(row)
+	mock.ExpectQuery("SELECT (.+) FROM board.thread").WillReturnRows(row)
 
 	result, err := d.GetThread("a thread")
 
-	expected := model.Thread{Id: "", UserId: "admin", Title: "What the heck", PostedAt: "A time"}
+	expected := model.Thread{Id: "", UserId: "admin", Title: "What the heck", PostedAt: "A time", UserName: "admin"}
 
 	assert.Equal(t, result, expected)
 
@@ -86,17 +86,17 @@ func TestGetThreads(t *testing.T) {
 	}
 	defer DB.Close()
 
-	row := sqlmock.NewRows([]string{"id", "userId", "title", "postedat"}).
-		AddRow("", "admin", "What the heck", "A time").
-		AddRow("", "admin", "DJ Khaled", "A time")
+	row := sqlmock.NewRows([]string{"id", "userId", "title", "postedat", "username"}).
+		AddRow("", "admin", "What the heck", "A time", "admin").
+		AddRow("", "admin", "DJ Khaled", "A time", "admin")
 
 	mock.ExpectQuery("SELECT (.+) FROM board.thread").WillReturnRows(row)
 
 	result, err := d.GetThreads(20)
 
 	expected := []model.Thread{
-		{Id: "", UserId: "admin", Title: "What the heck", PostedAt: "A time"},
-		{Id: "", UserId: "admin", Title: "DJ Khaled", PostedAt: "A time"},
+		{Id: "", UserId: "admin", Title: "What the heck", PostedAt: "A time", UserName: "admin"},
+		{Id: "", UserId: "admin", Title: "DJ Khaled", PostedAt: "A time", UserName: "admin"},
 	}
 
 	assert.Equal(t, result, expected)
@@ -116,17 +116,17 @@ func TestGetPosts(t *testing.T) {
 	}
 	defer DB.Close()
 
-	row := sqlmock.NewRows([]string{"id", "threadid", "userid", "body", "postedat"}).
-		AddRow("", "", "", "Post Body", "A time").
-		AddRow("", "", "", "Post Body 2", "A time")
+	row := sqlmock.NewRows([]string{"id", "threadid", "userid", "body", "postedat", "username"}).
+		AddRow("", "", "", "Post Body", "A time", "admin").
+		AddRow("", "", "", "Post Body 2", "A time", "admin")
 
 	mock.ExpectQuery("SELECT (.+) FROM board.thread_post").WillReturnRows(row)
 
 	result, err := d.GetPosts("A thread")
 
 	expected := []model.Post{
-		{Id: "", ThreadId: "", UserId: "", Body: "Post Body", PostedAt: "A time"},
-		{Id: "", ThreadId: "", UserId: "", Body: "Post Body 2", PostedAt: "A time"},
+		{Id: "", ThreadId: "", UserId: "", Body: "Post Body", PostedAt: "A time", UserName: "admin"},
+		{Id: "", ThreadId: "", UserId: "", Body: "Post Body 2", PostedAt: "A time", UserName: "admin"},
 	}
 
 	assert.Equal(t, result, expected)
