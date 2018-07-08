@@ -207,13 +207,15 @@ func userIsInRoles(d database.IDatabase, roles []database.Role) gin.HandlerFunc 
 		token, _ := getToken(c)
 		var id = ""
 
-		
+
 		if claims, ok := token.Claims.(jwt.MapClaims); ok {
 			id = claims["id"].(string)
 		} else {
 			c.Abort()
 			return
 		}
+
+		fmt.Println(roles)
 
 		for _, role := range roles {
 			if ok, _ := d.UserIsInRole(id, role); ok {
@@ -353,7 +355,7 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 			editPost(c, d, postId)
 		})
 
-		auth.Use(userIsInRoles(d, make([]database.Role, database.Admin, database.Mod))) 
+		auth.Use(userIsInRoles(d, []database.Role{database.Admin, database.Mod}))
 		{
 			auth.DELETE("/thread/:threadid", func(c *gin.Context) {
 				threadId := c.Param("threadid")
@@ -474,17 +476,17 @@ func editPost(c *gin.Context, d database.IDatabase, postId string) {
 	err := d.EditPost(&post)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-	} else {		
+	} else {
 		post, err = d.GetPost(postId)
 		if err != nil {
 			log.Error("Cannot get post")
 		}
-		
+
 		bytes, err := json.Marshal(&post)
 		if err != nil {
 			return
-		} 
-		
+		}
+
 		c.JSON(http.StatusOK, post)
 		if c, err := gRedisConn(); err != nil {
 			log.Printf("Error on redis conn. %s", err)
@@ -498,7 +500,7 @@ func deleteThread(c *gin.Context, d database.IDatabase, threadId string) {
 	err := d.DeleteThread(threadId)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-	} else {			
+	} else {
 		c.Status(http.StatusOK)
 	}
 }

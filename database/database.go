@@ -30,9 +30,9 @@ type IDatabase interface {
 
 type Role int
 
-const (  
-	Admin Role = 0  
-	Mod Role = 1  
+const (
+	Admin Role = 0
+	Mod Role = 1
 	Elite Role = 2
 	User Role = 3
 	Muted Role = 4
@@ -185,7 +185,7 @@ func (d *Database) PostPost(post *model.Post) (postid string, err error) {
 
 func (d *Database) DeleteThread(threadId string) (err error) {
 	sqlStatement := `
-		DELETE FROM board.thread 
+		DELETE FROM board.thread
 		WHERE Id = $1`
 	res, err := DB.Exec(sqlStatement, threadId)
 	if err != nil {
@@ -197,7 +197,7 @@ func (d *Database) DeleteThread(threadId string) (err error) {
 	}
 
 	if (count > 0) {
-		return 
+		return
 	}
 
 	return errors.New("Couldn't find that thread")
@@ -205,9 +205,9 @@ func (d *Database) DeleteThread(threadId string) (err error) {
 
 func (d *Database) EditPost(editPost *model.Post) (err error) {
 	sqlStatement := `
-		UPDATE board.thread_post 
+		UPDATE board.thread_post
 		SET Body = $1, EditedAt = $2
-		WHERE Id = $3 
+		WHERE Id = $3
 		AND PostedAt::date + '10 minutes'::interval > now()`
 	res, err := DB.Exec(sqlStatement, editPost.Body, time.Now().Local(), editPost.Id)
 	if err != nil {
@@ -219,7 +219,7 @@ func (d *Database) EditPost(editPost *model.Post) (err error) {
 	}
 
 	if (count > 0) {
-		return 
+		return
 	}
 
 	return errors.New("Posts can only be edited for 10 minutes")
@@ -228,13 +228,16 @@ func (d *Database) EditPost(editPost *model.Post) (err error) {
 func (d *Database) UserIsInRole(userId string, role Role) (bool, error) {
 	var userRoleId int
 	sqlStatement := `
-		SELECT UserRole 
-		FROM board.users 
-		WHERE UserId = $1` 
+		SELECT UserRole
+		FROM board.user
+		WHERE Id = $1`
 	err := DB.QueryRow(sqlStatement, userId).Scan(&userRoleId)
 	if err != nil {
 		return false, err
 	}
+
+	fmt.Println(userRoleId)
+	fmt.Println(int(role))
 
 	if userRoleId == int(role) {
 		return true, nil
