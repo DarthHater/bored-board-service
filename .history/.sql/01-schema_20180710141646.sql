@@ -39,10 +39,8 @@ CREATE TABLE board.thread_post
     UserId UUID,
     Body text,
     PostedAt TIMESTAMP DEFAULT now(),
-    Deleted boolean
+        Deleted boolean
 );
-
-CREATE INDEX deleted_idx ON board.thread_post (Deleted)
 
 GRANT ALL PRIVILEGES
     ON ALL TABLES

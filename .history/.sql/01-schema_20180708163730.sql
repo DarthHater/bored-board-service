@@ -26,11 +26,8 @@ CREATE TABLE board.thread
     Id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     UserId UUID,
     Title varchar(250),
-    PostedAt TIMESTAMP DEFAULT now(),
-    Deleted boolean
+    PostedAt TIMESTAMP DEFAULT now()
 );
-
-CREATE INDEX deleted_idx ON board.thread (Deleted)
 
 CREATE TABLE board.thread_post
 (
@@ -38,11 +35,8 @@ CREATE TABLE board.thread_post
     ThreadId UUID REFERENCES board.thread (Id),
     UserId UUID,
     Body text,
-    PostedAt TIMESTAMP DEFAULT now(),
-    Deleted boolean
+    PostedAt TIMESTAMP DEFAULT now()
 );
-
-CREATE INDEX deleted_idx ON board.thread_post (Deleted)
 
 GRANT ALL PRIVILEGES
     ON ALL TABLES

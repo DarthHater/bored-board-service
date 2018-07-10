@@ -200,7 +200,6 @@ func (d *Database) DeleteThread(threadId string) (err error) {
 		UPDATE board.thread
 		SET Deleted = true
 		WHERE Id = $1`
-
 	res, err := DB.Exec(sqlStatement, threadId)
 
 	if err != nil {
@@ -214,7 +213,7 @@ func (d *Database) DeleteThread(threadId string) (err error) {
 
 	res, err = DB.Exec(sqlStatement, threadId)
 
-	// count, err := res.RowsAffected()
+	count, err := res.RowsAffected()
 
 	if err != nil {
 		panic(err)

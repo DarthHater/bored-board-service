@@ -30,7 +30,7 @@ CREATE TABLE board.thread
     Deleted boolean
 );
 
-CREATE INDEX deleted_idx ON board.thread (Deleted)
+CREATE INDEX deleted_idx ON 
 
 CREATE TABLE board.thread_post
 (
@@ -38,11 +38,8 @@ CREATE TABLE board.thread_post
     ThreadId UUID REFERENCES board.thread (Id),
     UserId UUID,
     Body text,
-    PostedAt TIMESTAMP DEFAULT now(),
-    Deleted boolean
+    PostedAt TIMESTAMP DEFAULT now()
 );
-
-CREATE INDEX deleted_idx ON board.thread_post (Deleted)
 
 GRANT ALL PRIVILEGES
     ON ALL TABLES

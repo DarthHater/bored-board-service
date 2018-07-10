@@ -243,7 +243,7 @@ func (d *Database) EditPost(editPost *model.Post) (err error) {
 	}
 
 	if (count > 0) {
-		return
+		returnp
 	}
 
 	return errors.New("Posts can only be edited for 10 minutes")

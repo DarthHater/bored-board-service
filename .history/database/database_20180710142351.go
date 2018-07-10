@@ -183,8 +183,28 @@ func (d *Database) PostPost(post *model.Post) (postid string, err error) {
 }
 
 func (d *Database) DeleteThread(threadId string) (err error) {
-	tx, err := DB.Begin()
+	sqlStatement := `
+		UPDATE board.thread
+		SET Deleted = true
+		WHERE Id = $1`
+	res, err := DB.Exec(sqlStatement, threadId)
+	if err != nil {
+		panic(err)
+	}
+	count, err := res.RowsAffected()
+	if err != nil {
+		panic(err)
+	}
 
+	if (count > 0) {
+		return
+	}
+
+	return errors.New("Couldn't find that thread")
+}
+
+func (d *Database) EditPost(editPost *model.Post) (err error) {
+	tx, err := DB.Begin()
     if err != nil {
         return
 	}
@@ -193,41 +213,8 @@ func (d *Database) DeleteThread(threadId string) (err error) {
             tx.Rollback()
             return
         }
-		err = tx.Commit()
-	}()
-
-	sqlStatement := `
-		UPDATE board.thread
-		SET Deleted = true
-		WHERE Id = $1`
-
-	res, err := DB.Exec(sqlStatement, threadId)
-
-	if err != nil {
-		panic(err)
-	}
-
-	sqlStatement = `
-		UPDATE board.thread_posts
-		SET Deleted = true
-		WHERE ThreadId = $1`
-
-	res, err = DB.Exec(sqlStatement, threadId)
-
-	// count, err := res.RowsAffected()
-
-	if err != nil {
-		panic(err)
-	}
-
-	// if (count > 0) {
-	// 	return
-	// }
-
-	return errors.New("Couldn't find that thread")
-}
-
-func (d *Database) EditPost(editPost *model.Post) (err error) {
+        err = tx.Commit()
+    }()
 	sqlStatement := `
 		UPDATE board.thread_post
 		SET Body = $1

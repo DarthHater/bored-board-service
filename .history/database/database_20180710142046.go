@@ -54,7 +54,7 @@ func (d *Database) GetThread(threadId string) (model.Thread, error) {
 	err := DB.QueryRow(`SELECT bt.Id, bt.UserId, bt.Title, bt.PostedAt, bu.Username
 			FROM board.thread bt
 			INNER JOIN board.user bu ON bt.UserId = bu.Id
-			WHERE bt.Id = $1 && bt.Deleted != true
+			WHERE bt.Id = $1
 			ORDER BY PostedAt DESC limit 20`, threadId).
 		Scan(&thread.Id, &thread.UserId, &thread.Title, &thread.PostedAt, &thread.UserName)
 	if err != nil {
@@ -65,7 +65,7 @@ func (d *Database) GetThread(threadId string) (model.Thread, error) {
 
 func (d *Database) GetPost(postId string) (post model.Post, err error) {
 	post = model.Post{}
-	err = DB.QueryRow("SELECT Id, ThreadId, UserId, Body, PostedAt FROM board.thread_post WHERE Id = $1 && Deleted != true", postId).
+	err = DB.QueryRow("SELECT Id, ThreadId, UserId, Body, PostedAt FROM board.thread_post WHERE Id = $1", postId).
 		Scan(&post.Id, &post.ThreadId, &post.UserId, &post.Body, &post.PostedAt)
 	if err != nil {
 		return post, err
@@ -88,7 +88,8 @@ func (d *Database) GetThreads(num int) ([]model.Thread, error) {
 	var threads []model.Thread
 	rows, err := DB.Query(`SELECT bt.Id, bt.UserId, bt.Title, bt.PostedAt, bu.Username
 		FROM board.thread bt
-		INNER JOIN board.user bu ON bt.UserId = bu.Id`)
+		INNER JOIN board.user bu ON bt.UserId = bu.Id
+		WHERE `)
 	if err != nil {
 		return nil, err
 	}
@@ -183,46 +184,22 @@ func (d *Database) PostPost(post *model.Post) (postid string, err error) {
 }
 
 func (d *Database) DeleteThread(threadId string) (err error) {
-	tx, err := DB.Begin()
-
-    if err != nil {
-        return
-	}
-	defer func() {
-        if err != nil {
-            tx.Rollback()
-            return
-        }
-		err = tx.Commit()
-	}()
-
 	sqlStatement := `
 		UPDATE board.thread
 		SET Deleted = true
 		WHERE Id = $1`
-
 	res, err := DB.Exec(sqlStatement, threadId)
-
+	if err != nil {
+		panic(err)
+	}
+	count, err := res.RowsAffected()
 	if err != nil {
 		panic(err)
 	}
 
-	sqlStatement = `
-		UPDATE board.thread_posts
-		SET Deleted = true
-		WHERE ThreadId = $1`
-
-	res, err = DB.Exec(sqlStatement, threadId)
-
-	// count, err := res.RowsAffected()
-
-	if err != nil {
-		panic(err)
+	if (count > 0) {
+		return
 	}
-
-	// if (count > 0) {
-	// 	return
-	// }
 
 	return errors.New("Couldn't find that thread")
 }

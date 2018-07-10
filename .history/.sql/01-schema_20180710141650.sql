@@ -42,8 +42,6 @@ CREATE TABLE board.thread_post
     Deleted boolean
 );
 
-CREATE INDEX deleted_idx ON board.thread_post (Deleted)
-
 GRANT ALL PRIVILEGES
     ON ALL TABLES
     IN SCHEMA board
