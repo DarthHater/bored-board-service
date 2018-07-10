@@ -392,7 +392,12 @@ func postThread(c *gin.Context, d database.IDatabase) {
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	} else {
-		c.JSON(http.StatusCreated, gin.H{"id": id})
+		thread, err := d.GetThread(id)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		} else {
+			c.JSON(http.StatusCreated, gin.H{"id": id, "username": thread.UserName})
+		}
 	}
 }
 
