@@ -60,14 +60,14 @@ func TestGetPost(t *testing.T) {
 	}
 	defer DB.Close()
 
-	row := sqlmock.NewRows([]string{"id", "threadid", "userid", "body", "postedat"}).
-		AddRow("", "", "", "Post Body", "A time")
+	row := sqlmock.NewRows([]string{"id", "threadid", "userid", "body", "postedat", "username"}).
+		AddRow("", "", "", "Post Body", "A time", "admin")
 
-	mock.ExpectQuery("SELECT (.+) FROM board.thread_post WHERE (.+)").WillReturnRows(row)
+	mock.ExpectQuery("SELECT (.+) FROM board.thread_post").WillReturnRows(row)
 
 	result, err := d.GetPost("a thread")
 
-	expected := model.Post{Id: "", ThreadId: "", UserId: "", Body: "Post Body", PostedAt: "A time"}
+	expected := model.Post{Id: "", ThreadId: "", UserId: "", Body: "Post Body", PostedAt: "A time", UserName: "admin"}
 
 	assert.Equal(t, result, expected)
 

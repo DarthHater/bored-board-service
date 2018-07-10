@@ -59,8 +59,11 @@ func (d *Database) GetThread(threadId string) (model.Thread, error) {
 
 func (d *Database) GetPost(postId string) (post model.Post, err error) {
 	post = model.Post{}
-	err = DB.QueryRow("SELECT Id, ThreadId, UserId, Body, PostedAt FROM board.thread_post WHERE Id = $1", postId).
-		Scan(&post.Id, &post.ThreadId, &post.UserId, &post.Body, &post.PostedAt)
+	err = DB.QueryRow(`SELECT tp.Id, tp.ThreadId, tp.UserId, tp.Body, tp.PostedAt, bu.UserName 
+		FROM board.thread_post tp
+		INNER JOIN board.user bu ON tp.UserId = bu.Id
+		WHERE tp.Id = $1`, postId).
+		Scan(&post.Id, &post.ThreadId, &post.UserId, &post.Body, &post.PostedAt, &post.UserName)
 	if err != nil {
 		return post, err
 	}

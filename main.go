@@ -392,7 +392,12 @@ func postThread(c *gin.Context, d database.IDatabase) {
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	} else {
-		c.JSON(http.StatusCreated, gin.H{"id": id})
+		thread, err := d.GetThread(id)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		} else {
+			c.JSON(http.StatusCreated, gin.H{"id": id, "username": thread.UserName})
+		}
 	}
 }
 
@@ -410,7 +415,7 @@ func postPost(c *gin.Context, d database.IDatabase) {
 		if bytes, err := json.Marshal(&post); err != nil {
 			return
 		} else {
-			c.JSON(http.StatusCreated, gin.H{"id": id})
+			c.JSON(http.StatusCreated, gin.H{"id": id, "username": post.UserName})
 			if c, err := gRedisConn(); err != nil {
 				log.Printf("Error on redis conn. %s", err)
 			} else {
