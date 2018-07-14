@@ -260,14 +260,13 @@ func (d *Database) CreateUser(user *model.User) (userid string, err error) {
 	var id string
 	sqlStatement := `
 		INSERT INTO board.user
-		(Username, EmailAddress, UserPassword, UserRole)
-		VALUES ($1, $2, $3, $4)
+		(Username, EmailAddress, UserPassword)
+		VALUES ($1, $2, $3)
 		RETURNING Id`
 	err = DB.QueryRow(sqlStatement,
 		user.Username,
 		user.EmailAddress,
-		user.UserPassword,
-		constants.User).Scan(&id)
+		user.UserPassword).Scan(&id)
 	if err != nil {
 		return "", err
 	}

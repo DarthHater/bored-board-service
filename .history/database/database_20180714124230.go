@@ -267,7 +267,7 @@ func (d *Database) CreateUser(user *model.User) (userid string, err error) {
 		user.Username,
 		user.EmailAddress,
 		user.UserPassword,
-		constants.User).Scan(&id)
+		Admin).Scan(&id)
 	if err != nil {
 		return "", err
 	}

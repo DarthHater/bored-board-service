@@ -3,8 +3,7 @@ WITH PASSWORD 'admin123'
     CREATEDB;
 
 CREATE DATABASE db
-    WITH OWNER
-admin;
+    WITH OWNER admin;
 
 \connect db;
 
@@ -30,7 +29,6 @@ CREATE TABLE board.thread
     Deleted boolean
 );
 
--- CREATE INDEX deleted_idx ON board.thread (Deleted)
 
 CREATE TABLE board.thread_post
 (
@@ -42,7 +40,7 @@ CREATE TABLE board.thread_post
     Deleted boolean
 );
 
--- CREATE INDEX deleted_idx ON board.thread_post (Deleted)
+CREATE INDEX deleted_idx ON board.thread_post (Deleted)
 
 GRANT ALL PRIVILEGES
     ON ALL TABLES

@@ -25,7 +25,7 @@ type IDatabase interface {
 	PostThread(t *model.NewThread) (string, error)
 	PostPost(p *model.Post) (string, error)
 	DeleteThread(s string) (error)
-	EditPost(i string, b string) (error)
+	EditPost(i int, b string) (error)
 	GetUserRole(s string) (constants.Role, error)
 }
 
@@ -183,6 +183,11 @@ func (d *Database) PostPost(post *model.Post) (postid string, err error) {
 }
 
 func (d *Database) DeleteThread(threadId string) (err error) {
+
+    if err != nil {
+        return
+	}
+
 	sqlStatement := `
 		UPDATE board.thread
 		SET Deleted = true
@@ -220,7 +225,7 @@ func (d *Database) DeleteThread(threadId string) (err error) {
 	return
 }
 
-func (d *Database) EditPost(id string, body string) (err error) {
+func (d *Database) EditPost(id int, body string) (err error) {
 	sqlStatement := `
 		UPDATE board.thread_post
 		SET Body = $1
@@ -260,14 +265,13 @@ func (d *Database) CreateUser(user *model.User) (userid string, err error) {
 	var id string
 	sqlStatement := `
 		INSERT INTO board.user
-		(Username, EmailAddress, UserPassword, UserRole)
-		VALUES ($1, $2, $3, $4)
+		(Username, EmailAddress, UserPassword)
+		VALUES ($1, $2, $3)
 		RETURNING Id`
 	err = DB.QueryRow(sqlStatement,
 		user.Username,
 		user.EmailAddress,
-		user.UserPassword,
-		constants.User).Scan(&id)
+		user.UserPassword).Scan(&id)
 	if err != nil {
 		return "", err
 	}

@@ -492,7 +492,7 @@ func editPost(c *gin.Context, d database.IDatabase, postId string) {
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	} else {
-		post, err := d.GetPost(postId)
+		post, err = d.GetPost(postId)
 		if err != nil {
 			log.Error("Cannot get post")
 		}
