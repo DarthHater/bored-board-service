@@ -475,7 +475,7 @@ func postPost(c *gin.Context, d database.IDatabase) {
 		if bytes, err := json.Marshal(&post); err != nil {
 			return
 		} else {
-			c.JSON(http.StatusCreated, gin.H{"id": id})
+			c.JSON(http.StatusCreated, post)
 			if c, err := gRedisConn(); err != nil {
 				log.Printf("Error on redis conn. %s", err)
 			} else {

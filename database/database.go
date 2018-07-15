@@ -54,7 +54,7 @@ func (d *Database) GetThread(threadId string) (model.Thread, error) {
 	err := DB.QueryRow(`SELECT bt.Id, bt.UserId, bt.Title, bt.PostedAt, bu.Username
 			FROM board.thread bt
 			INNER JOIN board.user bu ON bt.UserId = bu.Id
-			WHERE bt.Id = $1 && bt.Deleted != true
+			WHERE bt.Id = $1 AND bt.Deleted != true
 			ORDER BY PostedAt DESC limit 20`, threadId).
 		Scan(&thread.Id, &thread.UserId, &thread.Title, &thread.PostedAt, &thread.UserName)
 	if err != nil {
@@ -65,7 +65,7 @@ func (d *Database) GetThread(threadId string) (model.Thread, error) {
 
 func (d *Database) GetPost(postId string) (post model.Post, err error) {
 	post = model.Post{}
-	err = DB.QueryRow("SELECT Id, ThreadId, UserId, Body, PostedAt FROM board.thread_post WHERE Id = $1 && Deleted != true", postId).
+	err = DB.QueryRow("SELECT Id, ThreadId, UserId, Body, PostedAt FROM board.thread_post WHERE Id = $1 AND Deleted != true", postId).
 		Scan(&post.Id, &post.ThreadId, &post.UserId, &post.Body, &post.PostedAt)
 	if err != nil {
 		return post, err
@@ -224,7 +224,7 @@ func (d *Database) EditPost(id string, body string) (err error) {
 	sqlStatement := `
 		UPDATE board.thread_post
 		SET Body = $1
-		WHERE Id = $3 && Deleted != true
+		WHERE Id = $3 AND Deleted != true
 		AND PostedAt::date + '10 minutes'::interval > now()`
 	res, err := DB.Exec(sqlStatement, body, time.Now().UTC(), id)
 	if err != nil {

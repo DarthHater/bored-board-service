@@ -27,7 +27,7 @@ CREATE TABLE board.thread
     UserId UUID,
     Title varchar(250),
     PostedAt TIMESTAMP DEFAULT now(),
-    Deleted boolean
+    Deleted boolean DEFAULT false
 );
 
 CREATE INDEX thread_deleted_idx ON board.thread (Deleted);
@@ -39,7 +39,7 @@ CREATE TABLE board.thread_post
     UserId UUID,
     Body text,
     PostedAt TIMESTAMP DEFAULT now(),
-    Deleted boolean
+    Deleted boolean DEFAULT false
 );
 
 CREATE INDEX thread_post_deleted_idx ON board.thread_post (Deleted);
