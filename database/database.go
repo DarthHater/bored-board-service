@@ -226,7 +226,7 @@ func (d *Database) EditPost(id string, body string) (err error) {
 		SET Body = $1
 		WHERE Id = $3 && Deleted != true
 		AND PostedAt::date + '10 minutes'::interval > now()`
-	res, err := DB.Exec(sqlStatement, body, time.Now().Local(), id)
+	res, err := DB.Exec(sqlStatement, body, time.Now().UTC(), id)
 	if err != nil {
 		panic(err)
 	}
@@ -239,7 +239,7 @@ func (d *Database) EditPost(id string, body string) (err error) {
 		return
 	}
 
-	return errors.New("Posts can only be edited for 10 minutes")
+	return ErrEditPost
 }
 
 func (d *Database) GetUserRole(userId string) (constants.Role, error) {

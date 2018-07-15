@@ -215,7 +215,7 @@ func TestEditPost(t *testing.T) {
 	d := Database{}
 	var mock sqlmock.Sqlmock
 	var err error
-	var post model.Post
+	var body, userID string
 	DB, mock, err = sqlmock.New()
 	if err != nil {
 		t.Fatalf("An error %s occurred when opening stub database connection", err)
@@ -224,10 +224,40 @@ func TestEditPost(t *testing.T) {
 
 	mock.ExpectExec("UPDATE board.thread_post").WillReturnResult(sqlmock.NewResult(0, 1))
 
-	if err := d.EditPost(&post); err != nil {
+	if err := d.EditPost(userID, body); err != nil {
 		t.Errorf("Error was not expected while updating post: %s", err)
 	} else {
 		t.Log("Post updated")
+	}
+
+	if err = mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("There were unfulfilled expectations: %s", err)
+	}
+}
+
+func TestTooLateToEditPost(t *testing.T) {
+	d := Database{}
+	var mock sqlmock.Sqlmock
+	var err error
+	var body, userID string
+
+	DB, mock, err = sqlmock.New()
+	if err != nil {
+		t.Fatalf("An error %s occurred when opening stub database connection", err)
+	}
+	defer DB.Close()
+
+	mock.ExpectExec("UPDATE board.thread_post").
+		WillReturnResult(sqlmock.NewResult(0, 0))
+
+	if err := d.EditPost(userID, body); err != nil {
+		if (err == ErrEditPost) {
+			t.Log("Correct error returned")
+		} else {
+			t.Errorf("Unexpected error")
+		}
+	} else {
+		t.Errorf("Expecting an error but there was none")
 	}
 
 	if err = mock.ExpectationsWereMet(); err != nil {
