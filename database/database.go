@@ -36,6 +36,7 @@ var DB *sql.DB
 
 // Public methods
 
+// InitDb will initalize the database by setting and using environmental variables.
 func (d *Database) InitDb(environment string, configPath string) error {
 	d.setupViper()
 	psqlInfo := d.connectionString()
@@ -49,6 +50,7 @@ func (d *Database) InitDb(environment string, configPath string) error {
 	return nil
 }
 
+// GetThread will get a thread with the given ID.
 func (d *Database) GetThread(threadId string) (model.Thread, error) {
 	thread := model.Thread{}
 	err := DB.QueryRow(`SELECT bt.Id, bt.UserId, bt.Title, bt.PostedAt, bu.Username
@@ -63,16 +65,21 @@ func (d *Database) GetThread(threadId string) (model.Thread, error) {
 	return thread, nil
 }
 
+// GetPost retrieves a single post.
 func (d *Database) GetPost(postId string) (post model.Post, err error) {
 	post = model.Post{}
-	err = DB.QueryRow("SELECT Id, ThreadId, UserId, Body, PostedAt FROM board.thread_post WHERE Id = $1 AND Deleted != true", postId).
-		Scan(&post.Id, &post.ThreadId, &post.UserId, &post.Body, &post.PostedAt)
+	err = DB.QueryRow(`SELECT tp.Id, tp.ThreadId, tp.UserId, tp.Body, tp.PostedAt, bu.Username
+		FROM board.thread_post tp
+		INNER JOIN board.user bu ON tp.UserId = bu.Id
+		WHERE Id = $1 AND Deleted != true`, postId).
+		Scan(&post.Id, &post.ThreadId, &post.UserId, &post.Body, &post.PostedAt, &post.UserName)
 	if err != nil {
 		return post, err
 	}
 	return post, nil
 }
 
+// GetUser retrieves a given user.
 func (d *Database) GetUser(username string) (user model.User, err error) {
 	user = model.User{}
 	err = DB.QueryRow("SELECT Id, Username, EmailAddress, UserPassword, UserRole FROM board.user WHERE Username = $1", username).
@@ -84,11 +91,13 @@ func (d *Database) GetUser(username string) (user model.User, err error) {
 	return user, nil
 }
 
+// GetThreads retrieves a given number of threads.
 func (d *Database) GetThreads(num int) ([]model.Thread, error) {
 	var threads []model.Thread
 	rows, err := DB.Query(`SELECT bt.Id, bt.UserId, bt.Title, bt.PostedAt, bu.Username
 		FROM board.thread bt
-		INNER JOIN board.user bu ON bt.UserId = bu.Id`)
+		INNER JOIN board.user bu ON bt.UserId = bu.Id
+		WHERE Deleted != true`)
 	if err != nil {
 		return nil, err
 	}
@@ -108,6 +117,7 @@ func (d *Database) GetThreads(num int) ([]model.Thread, error) {
 	return threads, nil
 }
 
+// GetPosts will return all posts under a given thread.
 func (d *Database) GetPosts(threadId string) ([]model.Post, error) {
 	var posts []model.Post
 	rows, err := DB.Query(`SELECT tp.Id, tp.ThreadId, tp.UserId, tp.Body, tp.PostedAt, bu.Username
@@ -133,6 +143,7 @@ func (d *Database) GetPosts(threadId string) ([]model.Post, error) {
 	return posts, nil
 }
 
+// PostThread will create a new thread.
 func (d *Database) PostThread(newThread *model.NewThread) (threadid string, err error) {
 	var id string
 	sqlStatement := `
@@ -164,6 +175,7 @@ func (d *Database) PostThread(newThread *model.NewThread) (threadid string, err 
 	return id, nil
 }
 
+// PostPost will create a new post.
 func (d *Database) PostPost(post *model.Post) (postid string, err error) {
 	var id string
 	sqlStatement := `
@@ -182,6 +194,7 @@ func (d *Database) PostPost(post *model.Post) (postid string, err error) {
 	return id, nil
 }
 
+// DeleteThread will do a soft delete on a thread and all of its corresponding posts.
 func (d *Database) DeleteThread(threadId string) (err error) {
 	sqlStatement := `
 		UPDATE board.thread
@@ -220,6 +233,7 @@ func (d *Database) DeleteThread(threadId string) (err error) {
 	return
 }
 
+// EditPost allows a user to edit a post within 10 minutes of posting it.
 func (d *Database) EditPost(id string, body string) (err error) {
 	sqlStatement := `
 		UPDATE board.thread_post
@@ -242,6 +256,7 @@ func (d *Database) EditPost(id string, body string) (err error) {
 	return ErrEditPost
 }
 
+// GetUserRole will retrieve a given user's role.
 func (d *Database) GetUserRole(userId string) (constants.Role, error) {
 	var userRoleId int
 	sqlStatement := `
@@ -256,6 +271,7 @@ func (d *Database) GetUserRole(userId string) (constants.Role, error) {
 	return constants.Role(userRoleId), nil
 }
 
+// CreateUser creates a new user.
 func (d *Database) CreateUser(user *model.User) (userid string, err error) {
 	var id string
 	sqlStatement := `
@@ -275,6 +291,7 @@ func (d *Database) CreateUser(user *model.User) (userid string, err error) {
 	return id, nil
 
 }
+
 // Internal methods
 
 func (d *Database) setupViper() {
