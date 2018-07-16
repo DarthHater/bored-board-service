@@ -149,11 +149,11 @@ func (d *Database) PostThread(newThread *model.NewThread) (thread model.NewThrea
 		INSERT INTO board.thread
 		(UserId, Title)
 		VALUES ($1, $2)
-		RETURNING Id, UserId, Title, PostedAt`
+		RETURNING Id, UserId, Title, PostedAt, (SELECT Username FROM board.user WHERE Id = $1)`
 	err = DB.QueryRow(sqlStatement,
 		newThread.T.UserId,
 		newThread.T.Title).
-		Scan(&thread.T.Id, &thread.T.UserId, &thread.T.Title, &thread.T.PostedAt)
+		Scan(&thread.T.Id, &thread.T.UserId, &thread.T.Title, &thread.T.PostedAt, &thread.T.UserName)
 	if err != nil {
 		return thread, err
 	}
@@ -162,12 +162,12 @@ func (d *Database) PostThread(newThread *model.NewThread) (thread model.NewThrea
 		INSERT INTO board.thread_post
 		(ThreadId, UserId, Body)
 		VALUES ($1, $2, $3)
-		RETURNING Id, ThreadId, UserId, Body, PostedAt`
+		RETURNING Id, ThreadId, UserId, Body, PostedAt, (SELECT Username FROM board.user WHERE Id = $2)`
 	err = DB.QueryRow(sqlStatement,
 		thread.T.Id,
 		newThread.T.UserId,
 		newThread.P.Body).
-		Scan(&thread.P.Id, &thread.P.ThreadId, &thread.P.UserId, &thread.P.Body, &thread.P.PostedAt)
+		Scan(&thread.P.Id, &thread.P.ThreadId, &thread.P.UserId, &thread.P.Body, &thread.P.PostedAt, &thread.P.UserName)
 	if err != nil {
 		return thread, err
 	}
@@ -181,13 +181,13 @@ func (d *Database) PostPost(post *model.Post) (newPost model.Post, err error) {
 		INSERT INTO board.thread_post
 		(ThreadId, UserId, Body)
 		VALUES ($1, $2, $3)
-		RETURNING Id, ThreadId, UserId, Body, PostedAt`
+		RETURNING Id, ThreadId, UserId, Body, PostedAt, (SELECT Username FROM board.user WHERE Id = $2)`
 	err = DB.QueryRow(sqlStatement,
 		post.ThreadId,
 		post.UserId,
 		post.Body).
 		Scan(&newPost.Id, &newPost.ThreadId, &newPost.UserId,
-			 &newPost.Body, &newPost.PostedAt)
+			 &newPost.Body, &newPost.PostedAt, &newPost.UserName)
 	if err != nil {
 		return newPost, err
 	}
