@@ -336,8 +336,8 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 
 	auth := r.Group("/")
 
-	auth.Use(userIsLoggedIn())
-	{
+	// auth.Use(userIsLoggedIn())
+	// {
 		auth.GET("/thread/:threadid", func(c *gin.Context) {
 			threadID := c.Param("threadid")
 			getThread(c, d, threadID)
@@ -376,7 +376,7 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 				threadID := c.Param("threadid")
 				deleteThread(c, d, threadID)
 			})
-		}
+		// }
 	}
 
 	return r
@@ -483,16 +483,12 @@ func postPost(c *gin.Context, d database.IDatabase) {
 }
 
 func editPost(c *gin.Context, d database.IDatabase, postID string) {
-	var body string
-	c.BindJSON(&body)
-	err := d.EditPost(postID, body)
+	var post model.Post
+	c.BindJSON(&post)
+	post, err := d.EditPost(postID, post.Body)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	} else {
-		post, err := d.GetPost(postID)
-		if err != nil {
-			log.Error("Cannot get post")
-		}
 
 		bytes, err := json.Marshal(&post)
 		if err != nil {

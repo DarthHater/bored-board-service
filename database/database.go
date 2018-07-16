@@ -3,7 +3,6 @@ package database
 import (
 	"database/sql"
 	"fmt"
-	"time"
 	"errors"
 	"log"
 	"os"
@@ -25,7 +24,7 @@ type IDatabase interface {
 	PostThread(t *model.NewThread) (model.NewThread, error)
 	PostPost(p *model.Post) (model.Post, error)
 	DeleteThread(s string) (error)
-	EditPost(i string, b string) (error)
+	EditPost(i string, b string) (model.Post, error)
 	GetUserRole(s string) (constants.Role, error)
 }
 
@@ -235,26 +234,25 @@ func (d *Database) DeleteThread(threadId string) (err error) {
 }
 
 // EditPost allows a user to edit a post within 10 minutes of posting it.
-func (d *Database) EditPost(id string, body string) (err error) {
+func (d *Database) EditPost(id string, body string) (post model.Post, err error) {
 	sqlStatement := `
 		UPDATE board.thread_post
 		SET Body = $1
-		WHERE Id = $3 AND Deleted != true
-		AND PostedAt::date + '10 minutes'::interval > now()`
-	res, err := DB.Exec(sqlStatement, body, time.Now().UTC(), id)
+		WHERE Id = $2
+		AND PostedAt + '10 minutes'::interval > localtimestamp
+		RETURNING Id, ThreadId, UserId, Body, PostedAt, (SELECT Username FROM board.user WHERE Id = UserId)`
+	err = DB.QueryRow(sqlStatement, body, id).
+		Scan(&post.Id, &post.ThreadId, &post.UserId, &post.Body,
+			&post.PostedAt, &post.UserName)
+			
 	if err != nil {
-		panic(err)
-	}
-	count, err := res.RowsAffected()
-	if err != nil {
-		panic(err)
+		if err == sql.ErrNoRows {
+			return post, ErrEditPost
+		}
+		return post, err
 	}
 
-	if (count > 0) {
-		return
-	}
-
-	return ErrEditPost
+	return post, nil
 }
 
 // GetUserRole will retrieve a given user's role.
