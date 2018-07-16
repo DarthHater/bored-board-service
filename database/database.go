@@ -22,8 +22,8 @@ type IDatabase interface {
 	GetPost(s string) (model.Post, error)
 	GetPosts(s string) ([]model.Post, error)
 	GetThreads(i int) ([]model.Thread, error)
-	PostThread(t *model.NewThread) (string, error)
-	PostPost(p *model.Post) (string, error)
+	PostThread(t *model.NewThread) (model.NewThread, error)
+	PostPost(p *model.Post) (model.Post, error)
 	DeleteThread(s string) (error)
 	EditPost(i string, b string) (error)
 	GetUserRole(s string) (constants.Role, error)
@@ -36,7 +36,7 @@ var DB *sql.DB
 
 // Public methods
 
-// InitDb will initalize the database by setting and using environmental variables.
+// InitDb will initalize the database by setting and using environmental
 func (d *Database) InitDb(environment string, configPath string) error {
 	d.setupViper()
 	psqlInfo := d.connectionString()
@@ -144,54 +144,55 @@ func (d *Database) GetPosts(threadId string) ([]model.Post, error) {
 }
 
 // PostThread will create a new thread.
-func (d *Database) PostThread(newThread *model.NewThread) (threadid string, err error) {
-	var id string
+func (d *Database) PostThread(newThread *model.NewThread) (thread model.NewThread, err error) {
 	sqlStatement := `
 		INSERT INTO board.thread
-		(UserId, Title, PostedAt)
-		VALUES ($1, $2, $3)
-		RETURNING Id`
+		(UserId, Title)
+		VALUES ($1, $2)
+		RETURNING Id, UserId, Title, PostedAt`
 	err = DB.QueryRow(sqlStatement,
 		newThread.T.UserId,
-		newThread.T.Title,
-		newThread.T.PostedAt).Scan(&id)
+		newThread.T.Title).
+		Scan(&thread.T.Id, &thread.T.UserId, &thread.T.Title, &thread.T.PostedAt)
 	if err != nil {
-		return "", err
+		return thread, err
 	}
 
 	sqlStatement = `
 		INSERT INTO board.thread_post
-		(ThreadId, UserId, Body, PostedAt)
-		VALUES ($1, $2, $3, $4)`
-	_, err = DB.Exec(sqlStatement,
-		id,
+		(ThreadId, UserId, Body)
+		VALUES ($1, $2, $3)
+		RETURNING Id, ThreadId, UserId, Body, PostedAt`
+	err = DB.QueryRow(sqlStatement,
+		thread.T.Id,
 		newThread.T.UserId,
-		newThread.P.Body,
-		newThread.P.PostedAt)
+		newThread.P.Body).
+		Scan(&thread.P.Id, &thread.P.ThreadId, &thread.P.UserId, &thread.P.Body, &thread.P.PostedAt)
 	if err != nil {
-		return "", err
+		return thread, err
 	}
 
-	return id, nil
+	return thread, nil
 }
 
 // PostPost will create a new post.
-func (d *Database) PostPost(post *model.Post) (postid string, err error) {
-	var id string
+func (d *Database) PostPost(post *model.Post) (newPost model.Post, err error) {
 	sqlStatement := `
 		INSERT INTO board.thread_post
 		(ThreadId, UserId, Body)
 		VALUES ($1, $2, $3)
-		RETURNING Id`
+		RETURNING Id, ThreadId, UserId, Body, PostedAt`
 	err = DB.QueryRow(sqlStatement,
 		post.ThreadId,
 		post.UserId,
-		post.Body).Scan(&id)
+		post.Body).
+		Scan(&newPost.Id, &newPost.ThreadId, &newPost.UserId,
+			 &newPost.Body, &newPost.PostedAt)
 	if err != nil {
-		return "", err
+		return newPost, err
 	}
 
-	return id, nil
+	return newPost, nil
 }
 
 // DeleteThread will do a soft delete on a thread and all of its corresponding posts.

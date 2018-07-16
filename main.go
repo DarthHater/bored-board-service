@@ -336,8 +336,8 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 
 	auth := r.Group("/")
 
-	auth.Use(userIsLoggedIn())
-	{
+	// auth.Use(userIsLoggedIn())
+	// {
 		auth.GET("/thread/:threadid", func(c *gin.Context) {
 			threadId := c.Param("threadid")
 			getThread(c, d, threadId)
@@ -377,7 +377,7 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 				deleteThread(c, d, threadId)
 			})
 		}
-	}
+	// }
 
 	return r
 }
@@ -453,29 +453,26 @@ func getPosts(c *gin.Context, d database.IDatabase, threadId string) {
 func postThread(c *gin.Context, d database.IDatabase) {
 	var newThread model.NewThread
 	c.BindJSON(&newThread)
-	id, err := d.PostThread(&newThread)
+	thread, err := d.PostThread(&newThread)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-	} else {
-		c.JSON(http.StatusCreated, gin.H{"id": id})
+		return
 	}
+
+	c.JSON(http.StatusCreated, thread)
 }
 
 func postPost(c *gin.Context, d database.IDatabase) {
 	var post model.Post
 	c.BindJSON(&post)
-	id, err := d.PostPost(&post)
+	newPost, err := d.PostPost(&post)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	} else {
-		post, err = d.GetPost(id)
-		if err != nil {
-			log.Error("Cannot get post")
-		}
-		if bytes, err := json.Marshal(&post); err != nil {
+		if bytes, err := json.Marshal(&newPost); err != nil {
 			return
 		} else {
-			c.JSON(http.StatusCreated, post)
+			c.JSON(http.StatusCreated, newPost)
 			if c, err := gRedisConn(); err != nil {
 				log.Printf("Error on redis conn. %s", err)
 			} else {
