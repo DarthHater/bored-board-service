@@ -51,9 +51,9 @@ var (
 		redisURL := os.Getenv("REDIS_URL")
 		if redisURL != "" {
 			return redis.DialURL(redisURL)
-		} else {
-			return redis.Dial("tcp", "redis_db:6379")
 		}
+
+		return redis.Dial("tcp", "redis_db:6379")
 	}
 	signKey   *rsa.PrivateKey
 	verifyKey *rsa.PublicKey
@@ -336,21 +336,21 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 
 	auth := r.Group("/")
 
-	// auth.Use(userIsLoggedIn())
-	// {
+	auth.Use(userIsLoggedIn())
+	{
 		auth.GET("/thread/:threadid", func(c *gin.Context) {
-			threadId := c.Param("threadid")
-			getThread(c, d, threadId)
+			threadID := c.Param("threadid")
+			getThread(c, d, threadID)
 		})
 
 		auth.GET("/post/:postid", func(c *gin.Context) {
-			postId := c.Param("postid")
-			getPost(c, d, postId)
+			postID := c.Param("postid")
+			getPost(c, d, postID)
 		})
 
 		auth.GET("/posts/:threadid", func(c *gin.Context) {
-			threadId := c.Param("threadid")
-			getPosts(c, d, threadId)
+			threadID := c.Param("threadid")
+			getPosts(c, d, threadID)
 		})
 
 		auth.GET("/threads", func(c *gin.Context) {
@@ -366,18 +366,18 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 		})
 
 		auth.PATCH("/posts/:postid", func(c *gin.Context) {
-			postId := c.Param("postid")
-			editPost(c, d, postId)
+			postID := c.Param("postid")
+			editPost(c, d, postID)
 		})
 
 		auth.Use(userIsInRole(d, []constants.Role{constants.Admin, constants.Mod}))
 		{
 			auth.DELETE("/thread/:threadid", func(c *gin.Context) {
-				threadId := c.Param("threadid")
-				deleteThread(c, d, threadId)
+				threadID := c.Param("threadid")
+				deleteThread(c, d, threadID)
 			})
 		}
-	// }
+	}
 
 	return r
 }
@@ -389,10 +389,9 @@ func allowedCorsOrigins() []string {
 			"http://127.0.0.1:8090",
 			"http://0.0.0.0:8090",
 			"https://vivalavinyl-webapp.herokuapp.com"}
-	} else {
-		return []string{
-			"https://vivalavinyl-webapp.herokuapp.com"}
 	}
+	return []string{
+		"https://vivalavinyl-webapp.herokuapp.com"}
 }
 
 // Websocket Handler
@@ -412,8 +411,8 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // Handlers
-func getThread(c *gin.Context, d database.IDatabase, threadId string) {
-	thread, err := d.GetThread(threadId)
+func getThread(c *gin.Context, d database.IDatabase, threadID string) {
+	thread, err := d.GetThread(threadID)
 	if err != nil {
 		log.Error(err)
 		c.JSON(http.StatusBadRequest, "Uh oh")
@@ -421,8 +420,8 @@ func getThread(c *gin.Context, d database.IDatabase, threadId string) {
 	c.JSON(http.StatusOK, thread)
 }
 
-func getPost(c *gin.Context, d database.IDatabase, postId string) {
-	post, err := d.GetPost(postId)
+func getPost(c *gin.Context, d database.IDatabase, postID string) {
+	post, err := d.GetPost(postID)
 	if err != nil {
 		log.Error(err)
 		c.JSON(http.StatusBadRequest, "Uh oh")
@@ -440,8 +439,8 @@ func getThreads(c *gin.Context, d database.IDatabase, num int) {
 	}
 }
 
-func getPosts(c *gin.Context, d database.IDatabase, threadId string) {
-	posts, err := d.GetPosts(threadId)
+func getPosts(c *gin.Context, d database.IDatabase, threadID string) {
+	posts, err := d.GetPosts(threadID)
 	if err != nil {
 		log.Error(err)
 		c.JSON(http.StatusBadRequest, "Uh oh")
@@ -469,27 +468,28 @@ func postPost(c *gin.Context, d database.IDatabase) {
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	} else {
-		if bytes, err := json.Marshal(&newPost); err != nil {
+		bytes, err := json.Marshal(&newPost)
+		if err != nil {
 			return
+		}
+
+		c.JSON(http.StatusCreated, newPost)
+		if c, err := gRedisConn(); err != nil {
+			log.Printf("Error on redis conn. %s", err)
 		} else {
-			c.JSON(http.StatusCreated, newPost)
-			if c, err := gRedisConn(); err != nil {
-				log.Printf("Error on redis conn. %s", err)
-			} else {
-				c.Do("PUBLISH", "posts", bytes)
-			}
+			c.Do("PUBLISH", "posts", bytes)
 		}
 	}
 }
 
-func editPost(c *gin.Context, d database.IDatabase, postId string) {
+func editPost(c *gin.Context, d database.IDatabase, postID string) {
 	var body string
 	c.BindJSON(&body)
-	err := d.EditPost(postId, body)
+	err := d.EditPost(postID, body)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	} else {
-		post, err := d.GetPost(postId)
+		post, err := d.GetPost(postID)
 		if err != nil {
 			log.Error("Cannot get post")
 		}
@@ -508,8 +508,8 @@ func editPost(c *gin.Context, d database.IDatabase, postId string) {
 	}
 }
 
-func deleteThread(c *gin.Context, d database.IDatabase, threadId string) {
-	err := d.DeleteThread(threadId)
+func deleteThread(c *gin.Context, d database.IDatabase, threadID string) {
+	err := d.DeleteThread(threadID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	} else {
