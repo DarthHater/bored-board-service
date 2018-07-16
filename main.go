@@ -336,8 +336,8 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 
 	auth := r.Group("/")
 
-	// auth.Use(userIsLoggedIn())
-	// {
+	auth.Use(userIsLoggedIn())
+	{
 		auth.GET("/thread/:threadid", func(c *gin.Context) {
 			threadID := c.Param("threadid")
 			getThread(c, d, threadID)
@@ -376,7 +376,7 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 				threadID := c.Param("threadid")
 				deleteThread(c, d, threadID)
 			})
-		// }
+		}
 	}
 
 	return r
