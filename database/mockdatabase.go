@@ -17,7 +17,7 @@ func (m *MockDatabase) GetThread(threadId string) (model.Thread, error) {
 	return result, nil
 }
 
-func (m *MockDatabase) GetPosts(threadId string) ([]model.Post, error) {
+func (m *MockDatabase) GetPosts(threadId string, prevDate string) ([]model.Post, error) {
 	result := []model.Post{
 		{Id: "", ThreadId: "", UserId: "", Body: "Post Body", PostedAt: "A time"},
 		{Id: "", ThreadId: "", UserId: "", Body: "Post Body 2", PostedAt: "A time"},

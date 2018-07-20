@@ -296,9 +296,15 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 			getPost(c, d, postId)
 		})
 
-		auth.GET("/posts/:threadid", func(c *gin.Context) {
+		auth.GET("/posts/:threadid/:date", func(c *gin.Context) {
 			threadId := c.Param("threadid")
-			getPosts(c, d, threadId)
+			prevDate := c.Param("date")
+			if prevDate == "" {
+				// For now set the date to now if nothing comes
+				prevDate = time.Now().String()
+				log.Print(prevDate)
+			}
+			getPosts(c, d, threadId, prevDate)
 		})
 
 		auth.GET("/threads", func(c *gin.Context) {
@@ -375,8 +381,8 @@ func getThreads(c *gin.Context, d database.IDatabase, num int) {
 	}
 }
 
-func getPosts(c *gin.Context, d database.IDatabase, threadId string) {
-	posts, err := d.GetPosts(threadId)
+func getPosts(c *gin.Context, d database.IDatabase, threadId string, prevDate string) {
+	posts, err := d.GetPosts(threadId, prevDate)
 	if err != nil {
 		log.Error(err)
 		c.JSON(http.StatusBadRequest, "Uh oh")

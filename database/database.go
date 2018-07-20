@@ -17,7 +17,7 @@ type IDatabase interface {
 	GetUser(s string) (model.User, error)
 	GetThread(s string) (model.Thread, error)
 	GetPost(s string) (model.Post, error)
-	GetPosts(s string) ([]model.Post, error)
+	GetPosts(s string, d string) ([]model.Post, error)
 	GetThreads(i int) ([]model.Thread, error)
 	PostThread(t *model.NewThread) (string, error)
 	PostPost(p *model.Post) (string, error)
@@ -48,8 +48,7 @@ func (d *Database) GetThread(threadId string) (model.Thread, error) {
 	err := DB.QueryRow(`SELECT bt.Id, bt.UserId, bt.Title, bt.PostedAt, bu.Username 
 			FROM board.thread bt 
 			INNER JOIN board.user bu ON bt.UserId = bu.Id
-			WHERE bt.Id = $1 
-			ORDER BY PostedAt DESC limit 20`, threadId).
+			WHERE bt.Id = $1`, threadId).
 		Scan(&thread.Id, &thread.UserId, &thread.Title, &thread.PostedAt, &thread.UserName)
 	if err != nil {
 		return thread, err
@@ -72,7 +71,8 @@ func (d *Database) GetPost(postId string) (post model.Post, err error) {
 
 func (d *Database) GetUser(username string) (user model.User, err error) {
 	user = model.User{}
-	err = DB.QueryRow("SELECT Id, Username, EmailAddress, UserPassword, IsAdmin FROM board.user WHERE Username = $1", username).
+	err = DB.QueryRow(`SELECT Id, Username, EmailAddress, UserPassword, IsAdmin 
+			FROM board.user WHERE Username = $1`, username).
 		Scan(&user.ID, &user.Username, &user.EmailAddress, &user.UserPassword, &user.IsAdmin)
 	if err != nil {
 		return user, err
@@ -85,7 +85,9 @@ func (d *Database) GetThreads(num int) ([]model.Thread, error) {
 	var threads []model.Thread
 	rows, err := DB.Query(`SELECT bt.Id, bt.UserId, bt.Title, bt.PostedAt, bu.Username
 		FROM board.thread bt
-		INNER JOIN board.user bu ON bt.UserId = bu.Id`)
+		INNER JOIN board.user bu ON bt.UserId = bu.Id
+		ORDER BY bt.PostedAt DESC 
+		LIMIT 20`)
 	if err != nil {
 		return nil, err
 	}
@@ -105,12 +107,14 @@ func (d *Database) GetThreads(num int) ([]model.Thread, error) {
 	return threads, nil
 }
 
-func (d *Database) GetPosts(threadId string) ([]model.Post, error) {
+func (d *Database) GetPosts(threadId string, prevDate string) ([]model.Post, error) {
 	var posts []model.Post
 	rows, err := DB.Query(`SELECT tp.Id, tp.ThreadId, tp.UserId, tp.Body, tp.PostedAt, bu.Username 
 			FROM board.thread_post tp
 			INNER JOIN board.user bu ON tp.UserId = bu.Id
-			WHERE ThreadId = $1`, threadId)
+			WHERE tp.ThreadId = $1 AND tp.PostedAt < $2
+			ORDER BY tp.PostedAt DESC
+			LIMIT 20`, threadId, prevDate)
 	if err != nil {
 		return nil, err
 	}
