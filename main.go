@@ -220,7 +220,6 @@ func userIsInRole(d database.IDatabase, roles []constants.Role) gin.HandlerFunc 
 		var userRole constants.Role
 		if claims, ok := token.(*jwt.Token).Claims.(jwt.MapClaims); ok {
 			userRole = constants.Role(claims["role"].(float64))
-			fmt.Println(userRole)
 		} else {
 			c.Abort()
 			return
