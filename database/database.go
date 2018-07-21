@@ -25,7 +25,6 @@ type IDatabase interface {
 	PostPost(p *model.Post) (model.Post, error)
 	DeleteThread(s string) (error)
 	EditPost(i string, b string) (model.Post, error)
-	GetUserRole(s string) (constants.Role, error)
 }
 
 type Database struct {
@@ -82,7 +81,7 @@ func (d *Database) GetPost(postId string) (post model.Post, err error) {
 func (d *Database) GetUser(username string) (user model.User, err error) {
 	user = model.User{}
 	err = DB.QueryRow("SELECT Id, Username, EmailAddress, UserPassword, UserRole FROM board.user WHERE Username = $1", username).
-		Scan(&user.ID, &user.Username, &user.EmailAddress, &user.UserPassword, &user.UserRole)
+		Scan(&user.ID, &user.Username, &user.EmailAddress, &user.Password, &user.UserRole)
 	if err != nil {
 		return user, err
 	}
@@ -214,7 +213,7 @@ func (d *Database) DeleteThread(threadId string) (err error) {
 	}
 
 	sqlStatement = `
-		UPDATE board.thread_posts
+		UPDATE board.thread_post
 		SET Deleted = true
 		WHERE ThreadId = $1`
 
@@ -238,13 +237,12 @@ func (d *Database) EditPost(id string, body string) (post model.Post, err error)
 	sqlStatement := `
 		UPDATE board.thread_post
 		SET Body = $1
-		WHERE Id = $2
-		AND PostedAt + '10 minutes'::interval > localtimestamp
+		WHERE Id = $2 AND PostedAt + '10 minutes'::interval > localtimestamp
 		RETURNING Id, ThreadId, UserId, Body, PostedAt, (SELECT Username FROM board.user WHERE Id = UserId)`
 	err = DB.QueryRow(sqlStatement, body, id).
 		Scan(&post.Id, &post.ThreadId, &post.UserId, &post.Body,
 			&post.PostedAt, &post.UserName)
-			
+
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return post, ErrEditPost
@@ -256,19 +254,19 @@ func (d *Database) EditPost(id string, body string) (post model.Post, err error)
 }
 
 // GetUserRole will retrieve a given user's role.
-func (d *Database) GetUserRole(userId string) (constants.Role, error) {
-	var userRoleId int
-	sqlStatement := `
-		SELECT UserRole
-		FROM board.user
-		WHERE Id = $1`
-	err := DB.QueryRow(sqlStatement, userId).Scan(&userRoleId)
-	if err != nil {
-		return -1, err
-	}
+// func (d *Database) GetUserRole(userId string) (constants.Role, error) {
+// 	var userRoleId int
+// 	sqlStatement := `
+// 		SELECT UserRole
+// 		FROM board.user
+// 		WHERE Id = $1`
+// 	err := DB.QueryRow(sqlStatement, userId).Scan(&userRoleId)
+// 	if err != nil {
+// 		return -1, err
+// 	}
 
-	return constants.Role(userRoleId), nil
-}
+// 	return constants.Role(userRoleId), nil
+// }
 
 // CreateUser creates a new user.
 func (d *Database) CreateUser(user *model.User) (userid string, err error) {
@@ -281,7 +279,7 @@ func (d *Database) CreateUser(user *model.User) (userid string, err error) {
 	err = DB.QueryRow(sqlStatement,
 		user.Username,
 		user.EmailAddress,
-		user.UserPassword,
+		user.Password,
 		constants.User).Scan(&id)
 	if err != nil {
 		return "", err

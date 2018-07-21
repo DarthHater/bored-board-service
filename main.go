@@ -217,17 +217,11 @@ func userIsInRole(d database.IDatabase, roles []constants.Role) gin.HandlerFunc 
 			return
 		}
 
-		var id = ""
+		var userRole constants.Role
 		if claims, ok := token.(*jwt.Token).Claims.(jwt.MapClaims); ok {
-			id = claims["id"].(string)
+			userRole = constants.Role(claims["role"].(float64))
+			fmt.Println(userRole)
 		} else {
-			c.Abort()
-			return
-		}
-
-		userRole, err := d.GetUserRole(id)
-		if err != nil {
-			c.JSON(http.StatusForbidden, gin.H{"err": "Couldn't get user role"})
 			c.Abort()
 			return
 		}
@@ -525,7 +519,7 @@ func checkCredentials(c *gin.Context, d database.IDatabase) {
 		return
 	}
 
-	err = bcrypt.CompareHashAndPassword(user.UserPassword, []byte(credentials.Password))
+	err = bcrypt.CompareHashAndPassword(user.Password, []byte(credentials.Password))
 	if err != nil {
 		log.WithFields(log.Fields{"username": user.Username}).Error("Wrong password")
 		c.JSON(http.StatusUnauthorized, gin.H{"err": "Wrong password"})
@@ -557,7 +551,7 @@ func createUser(c *gin.Context, d database.IDatabase) {
 	c.BindJSON(&registration)
 
 	user := model.User{Username: registration.Username, EmailAddress: registration.EmailAddress}
-	_ = user.HashPassword(registration.UserPassword)
+	_ = user.HashPassword(registration.Password)
 	id, err := d.CreateUser(&user)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})

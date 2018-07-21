@@ -8,18 +8,18 @@ type User struct {
 	ID           string
 	Username     string
 	EmailAddress string
-	UserPassword []byte
+	Password []byte
 	UserRole      int
 }
 
 type Registration struct {
 	Username     string
 	EmailAddress string
-	UserPassword string
+	Password string
 }
 
 func (u *User) HashPassword(password string) (err error) {
-	u.UserPassword, err = bcrypt.GenerateFromPassword([]byte(password), 8)
+	u.Password, err = bcrypt.GenerateFromPassword([]byte(password), 8)
 	if err != nil {
 		return err
 	}

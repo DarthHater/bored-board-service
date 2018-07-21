@@ -198,12 +198,12 @@ func TestPostPost(t *testing.T) {
 		post.ThreadId,
 		post.UserId,
 		post.Body).
-		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow("1"))
+		WillReturnRows(sqlmock.NewRows([]string{"id", "threadid", "userid", "body", "postedat", "username"}).AddRow("1", "3", "4", "I'm Posting", "datetime", "andy"))
 
-	if id, err := d.PostPost(&post); err != nil {
+	if post, err := d.PostPost(&post); err != nil {
 		t.Errorf("Error was not expected while inserting post: %s", err)
 	} else {
-		t.Logf("Post inserted with id: %s", id)
+		t.Logf("Post inserted with id: %s", post.Id)
 	}
 
 	if err = mock.ExpectationsWereMet(); err != nil {
@@ -222,13 +222,21 @@ func TestEditPost(t *testing.T) {
 	}
 	defer DB.Close()
 
-	mock.ExpectExec("UPDATE board.thread_post").WillReturnResult(sqlmock.NewResult(0, 1))
+	mock.ExpectQuery("UPDATE board.thread_post").
+		WillReturnRows(sqlmock.NewRows([]string{"id", "threadid", "userid", "body", "postedat", "username"}).
+			AddRow("1", "2", "3", ":)", "datetime", "andy"))
 
-	if err := d.EditPost(userID, body); err != nil {
+	post, err := d.EditPost(userID, body)
+
+	if err != nil {
 		t.Errorf("Error was not expected while updating post: %s", err)
 	} else {
 		t.Log("Post updated")
 	}
+
+	expected := model.Post{Id: "1", ThreadId: "2", UserId: "3", Body: ":)", PostedAt: "datetime", UserName: "andy"}
+
+	assert.Equal(t, post, expected)
 
 	if err = mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("There were unfulfilled expectations: %s", err)
@@ -247,10 +255,10 @@ func TestTooLateToEditPost(t *testing.T) {
 	}
 	defer DB.Close()
 
-	mock.ExpectExec("UPDATE board.thread_post").
-		WillReturnResult(sqlmock.NewResult(0, 0))
+	mock.ExpectQuery("UPDATE board.thread_post").
+		WillReturnRows(sqlmock.NewRows([]string{"id", "threadid", "userid", "body", "postedat", "username"}))
 
-	if err := d.EditPost(userID, body); err != nil {
+	if _, err := d.EditPost(userID, body); err != nil {
 		if (err == ErrEditPost) {
 			t.Log("Correct error returned")
 		} else {
@@ -282,7 +290,7 @@ func TestGetUser(t *testing.T) {
 
 	result, err := d.GetUser("CoolGuy420")
 
-	expected := model.User{ID: "1", Username: "CoolGuy420", EmailAddress: "hsimpson@springfield.org", UserPassword: []byte("fake password")}
+	expected := model.User{ID: "1", Username: "CoolGuy420", EmailAddress: "hsimpson@springfield.org", Password: []byte("fake password")}
 
 	assert.Equal(t, result, expected)
 
@@ -305,7 +313,7 @@ func TestCreateUser(t *testing.T) {
 	mock.ExpectQuery("INSERT INTO board.user").WithArgs(
 		user.Username,
 		user.EmailAddress,
-		user.UserPassword).
+		user.Password).
 		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow("1"))
 
 	if id, err := d.CreateUser(&user); err != nil {
