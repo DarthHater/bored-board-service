@@ -12,6 +12,7 @@ before_install:
   - chmod +x $GOPATH/bin/dep
   - mkdir .keys && openssl aes-256-cbc -K $encrypted_bdb0e2d25710_key -iv $encrypted_bdb0e2d25710_iv -in secrets.tar.enc -out .keys/secrets.tar -d
   - tar xvf .keys/secrets.tar
+  - chmod +x deploy.sh
 
 install:
   - dep ensure
@@ -20,8 +21,4 @@ env:
   - BBS_DATABASE=database BBS_DATABASE_PORT=5432 BBS_DATABASE_USER=admin BBS_DATABASE_PASSWORD=admin123 BBS_DATABASE_DATABASE=db PRIVATE_KEY_PATH=.keys/app.rsa PUBLIC_KEY_PATH=.keys/app.rsa.pub SECRET_KEY=vivalavinyl
 
 after_success:
-  - curl https://cli-assets.heroku.com/install.sh | sh
-  - docker login -u _ -p "$HEROKU_TOKEN" registry.heroku.com
-  - docker build -t registry.heroku.com/vivalavinyl-service/web .
-  - docker push registry.heroku.com/vivalavinyl-service/web 
-  - heroku container:release web -a vivalavinyl-service
+  - ./deploy.sh
