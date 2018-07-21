@@ -26,8 +26,7 @@ CREATE TABLE board.thread
     Id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     UserId UUID,
     Title varchar(250),
-    PostedAt TIMESTAMP DEFAULT now(),
-    LastPost TIMESTAMP DEFAULT now()
+    PostedAt TIMESTAMP DEFAULT now()
 );
 
 CREATE INDEX thread_id_idx ON board.thread (Id);

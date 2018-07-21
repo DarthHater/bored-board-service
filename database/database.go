@@ -87,7 +87,7 @@ func (d *Database) GetThreads(num int, prevDate string) ([]model.Thread, error) 
 	rows, err := DB.Query(`SELECT bt.Id, bt.UserId, bt.Title, bt.PostedAt, bu.Username
 		FROM board.thread bt
 		INNER JOIN board.user bu ON bt.UserId = bu.Id
-		WHERE bt.PostedAt < to_timestamp($1, 'YYYY-MM-DD HH24:MI:SS.US')
+		WHERE bt.PostedAt < $1
 		ORDER BY bt.PostedAt DESC
 		LIMIT 20`, prevDate)
 	if err != nil {
