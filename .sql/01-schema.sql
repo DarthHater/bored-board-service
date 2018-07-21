@@ -1,9 +1,10 @@
 CREATE USER admin
-    WITH PASSWORD 'admin123'
+WITH PASSWORD 'admin123'
     CREATEDB;
 
 CREATE DATABASE db
-    WITH OWNER admin;
+    WITH OWNER
+admin;
 
 \connect db;
 
@@ -11,7 +12,8 @@ CREATE EXTENSION pgcrypto;
 
 CREATE SCHEMA board AUTHORIZATION admin;
 
-CREATE TABLE board.user(
+CREATE TABLE board.user
+(
     Id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     Username varchar(250) UNIQUE,
     Emailaddress varchar(250) UNIQUE,
@@ -19,14 +21,20 @@ CREATE TABLE board.user(
     IsAdmin boolean DEFAULT FALSE
 );
 
-CREATE TABLE board.thread(
+CREATE TABLE board.thread
+(
     Id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     UserId UUID,
     Title varchar(250),
-    PostedAt TIMESTAMP DEFAULT now()
+    PostedAt TIMESTAMP DEFAULT now(),
+    LastPost TIMESTAMP DEFAULT now()
 );
 
-CREATE TABLE board.thread_post(
+CREATE INDEX thread_id_idx ON board.thread (Id);
+CREATE INDEX thread_posted_at_idx ON board.thread (PostedAt);
+
+CREATE TABLE board.thread_post
+(
     Id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     ThreadId UUID REFERENCES board.thread (Id),
     UserId UUID,
@@ -34,7 +42,7 @@ CREATE TABLE board.thread_post(
     PostedAt TIMESTAMP DEFAULT now()
 );
 
-GRANT ALL PRIVILEGES 
-    ON ALL TABLES 
-    IN SCHEMA board 
+GRANT ALL PRIVILEGES
+    ON ALL TABLES
+    IN SCHEMA board
     TO admin;

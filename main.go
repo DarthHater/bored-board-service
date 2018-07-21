@@ -308,7 +308,13 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 		})
 
 		auth.GET("/threads", func(c *gin.Context) {
-			getThreads(c, d, 20)
+			prevDate := time.Now().UTC().Format(time.RFC3339)
+			getThreads(c, d, 20, prevDate)
+		})
+
+		auth.GET("/threads/:date", func(c *gin.Context) {
+			prevDate := c.Param("date")
+			getThreads(c, d, 20, prevDate)
 		})
 
 		auth.POST("/thread", func(c *gin.Context) {
@@ -371,8 +377,8 @@ func getPost(c *gin.Context, d database.IDatabase, postId string) {
 	c.JSON(http.StatusOK, post)
 }
 
-func getThreads(c *gin.Context, d database.IDatabase, num int) {
-	threads, err := d.GetThreads(num)
+func getThreads(c *gin.Context, d database.IDatabase, num int, prevDate string) {
+	threads, err := d.GetThreads(num, prevDate)
 	if err != nil {
 		log.Error(err)
 		c.JSON(http.StatusBadRequest, "Uh oh")

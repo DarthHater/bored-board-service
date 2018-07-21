@@ -2,6 +2,7 @@ package database
 
 import (
 	"testing"
+	"time"
 
 	"github.com/DarthHater/bored-board-service/model"
 
@@ -79,12 +80,14 @@ func TestGetPost(t *testing.T) {
 func TestGetThreads(t *testing.T) {
 	d := Database{}
 	var mock sqlmock.Sqlmock
-	var err error
+	var err 
 	DB, mock, err = sqlmock.New()
 	if err != nil {
 		t.Fatalf("An error %s occurred when opening stub database connection", err)
 	}
 	defer DB.Close()
+
+	prevDate := time.Now().UTC().String()
 
 	row := sqlmock.NewRows([]string{"id", "userId", "title", "postedat", "username"}).
 		AddRow("", "admin", "What the heck", "A time", "admin").
@@ -92,7 +95,7 @@ func TestGetThreads(t *testing.T) {
 
 	mock.ExpectQuery("SELECT (.+) FROM board.thread").WillReturnRows(row)
 
-	result, err := d.GetThreads(20)
+	result, err := d.GetThreads(20, prevDate)
 
 	expected := []model.Thread{
 		{Id: "", UserId: "admin", Title: "What the heck", PostedAt: "A time", UserName: "admin"},
