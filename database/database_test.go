@@ -80,7 +80,7 @@ func TestGetPost(t *testing.T) {
 func TestGetThreads(t *testing.T) {
 	d := Database{}
 	var mock sqlmock.Sqlmock
-	var err 
+	var err error
 	DB, mock, err = sqlmock.New()
 	if err != nil {
 		t.Fatalf("An error %s occurred when opening stub database connection", err)
