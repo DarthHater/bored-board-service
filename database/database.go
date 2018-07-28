@@ -253,21 +253,6 @@ func (d *Database) EditPost(id string, body string) (post model.Post, err error)
 	return post, nil
 }
 
-// GetUserRole will retrieve a given user's role.
-// func (d *Database) GetUserRole(userId string) (constants.Role, error) {
-// 	var userRoleId int
-// 	sqlStatement := `
-// 		SELECT UserRole
-// 		FROM board.user
-// 		WHERE Id = $1`
-// 	err := DB.QueryRow(sqlStatement, userId).Scan(&userRoleId)
-// 	if err != nil {
-// 		return -1, err
-// 	}
-
-// 	return constants.Role(userRoleId), nil
-// }
-
 // CreateUser creates a new user.
 func (d *Database) CreateUser(user *model.User) (userid string, err error) {
 	var id string

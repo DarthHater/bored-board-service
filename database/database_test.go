@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/DarthHater/bored-board-service/model"
+	"github.com/DarthHater/bored-board-service/constants"
 
 	"github.com/stretchr/testify/assert"
 	sqlmock "gopkg.in/DATA-DOG/go-sqlmock.v1"
@@ -159,18 +160,19 @@ func TestPostThread(t *testing.T) {
 	}
 	defer DB.Close()
 
+	threadMock := sqlmock.NewRows([]string{"id", "userId", "title", "postedat", "username"}).AddRow("", "", "Ok", "", "andy")
+	postMock := sqlmock.NewRows([]string{"id", "threadid", "userid", "body", "postedat", "username"}).AddRow("", "", "", "I'm Posting", "datetime", "andy")
+
 	mock.ExpectQuery("INSERT INTO board.thread").WithArgs(
 		newThread.T.Title,
-		newThread.T.UserId,
-		newThread.T.PostedAt).
-		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow("1"))
+		newThread.T.UserId).
+		WillReturnRows(threadMock)
 
-	mock.ExpectExec("INSERT INTO board.thread_post").WithArgs(
-		"1",
+	mock.ExpectQuery("INSERT INTO board.thread_post").WithArgs(
+		newThread.T.Id,
 		newThread.T.UserId,
-		newThread.P.Body,
-		newThread.P.PostedAt).
-		WillReturnResult(sqlmock.NewResult(1, 1))
+		newThread.P.Body).
+		WillReturnRows(postMock)
 
 	if id, err := d.PostThread(&newThread); err != nil {
 		t.Errorf("Error was not expected while inserting thread: %s", err)
@@ -313,7 +315,8 @@ func TestCreateUser(t *testing.T) {
 	mock.ExpectQuery("INSERT INTO board.user").WithArgs(
 		user.Username,
 		user.EmailAddress,
-		user.Password).
+		user.Password,
+		constants.User).
 		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow("1"))
 
 	if id, err := d.CreateUser(&user); err != nil {
