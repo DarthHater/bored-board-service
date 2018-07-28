@@ -223,12 +223,6 @@ func (d *Database) DeleteThread(threadId string) (err error) {
 		panic(err)
 	}
 
-	count, err = res.RowsAffected()
-
-	if (count == 0) {
-		return errors.New("Couldn't find any thread posts")
-	}
-
 	return
 }
 
