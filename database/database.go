@@ -3,9 +3,11 @@ package database
 import (
 	"database/sql"
 	"fmt"
+	"errors"
 	"log"
 	"os"
 
+	"github.com/DarthHater/bored-board-service/constants"
 	"github.com/DarthHater/bored-board-service/model"
 	_ "github.com/lib/pq"
 	"github.com/spf13/viper"
@@ -19,8 +21,10 @@ type IDatabase interface {
 	GetPost(s string) (model.Post, error)
 	GetPosts(s string) ([]model.Post, error)
 	GetThreads(i int) ([]model.Thread, error)
-	PostThread(t *model.NewThread) (string, error)
-	PostPost(p *model.Post) (string, error)
+	PostThread(t *model.NewThread) (model.NewThread, error)
+	PostPost(p *model.Post) (model.Post, error)
+	DeleteThread(s string) (error)
+	EditPost(i string, b string) (model.Post, error)
 }
 
 type Database struct {
@@ -30,6 +34,7 @@ var DB *sql.DB
 
 // Public methods
 
+// InitDb will initalize the database by setting and using environmental
 func (d *Database) InitDb(environment string, configPath string) error {
 	d.setupViper()
 	psqlInfo := d.connectionString()
@@ -43,12 +48,13 @@ func (d *Database) InitDb(environment string, configPath string) error {
 	return nil
 }
 
+// GetThread will get a thread with the given ID.
 func (d *Database) GetThread(threadId string) (model.Thread, error) {
 	thread := model.Thread{}
-	err := DB.QueryRow(`SELECT bt.Id, bt.UserId, bt.Title, bt.PostedAt, bu.Username 
-			FROM board.thread bt 
+	err := DB.QueryRow(`SELECT bt.Id, bt.UserId, bt.Title, bt.PostedAt, bu.Username
+			FROM board.thread bt
 			INNER JOIN board.user bu ON bt.UserId = bu.Id
-			WHERE bt.Id = $1 
+			WHERE bt.Id = $1 AND bt.Deleted != true
 			ORDER BY PostedAt DESC limit 20`, threadId).
 		Scan(&thread.Id, &thread.UserId, &thread.Title, &thread.PostedAt, &thread.UserName)
 	if err != nil {
@@ -57,12 +63,13 @@ func (d *Database) GetThread(threadId string) (model.Thread, error) {
 	return thread, nil
 }
 
+// GetPost retrieves a single post.
 func (d *Database) GetPost(postId string) (post model.Post, err error) {
 	post = model.Post{}
-	err = DB.QueryRow(`SELECT tp.Id, tp.ThreadId, tp.UserId, tp.Body, tp.PostedAt, bu.UserName 
+	err = DB.QueryRow(`SELECT tp.Id, tp.ThreadId, tp.UserId, tp.Body, tp.PostedAt, bu.Username
 		FROM board.thread_post tp
 		INNER JOIN board.user bu ON tp.UserId = bu.Id
-		WHERE tp.Id = $1`, postId).
+		WHERE Id = $1 AND Deleted != true`, postId).
 		Scan(&post.Id, &post.ThreadId, &post.UserId, &post.Body, &post.PostedAt, &post.UserName)
 	if err != nil {
 		return post, err
@@ -70,10 +77,11 @@ func (d *Database) GetPost(postId string) (post model.Post, err error) {
 	return post, nil
 }
 
+// GetUser retrieves a given user.
 func (d *Database) GetUser(username string) (user model.User, err error) {
 	user = model.User{}
-	err = DB.QueryRow("SELECT Id, Username, EmailAddress, UserPassword, IsAdmin FROM board.user WHERE Username = $1", username).
-		Scan(&user.ID, &user.Username, &user.EmailAddress, &user.UserPassword, &user.IsAdmin)
+	err = DB.QueryRow("SELECT Id, Username, EmailAddress, UserPassword, UserRole FROM board.user WHERE Username = $1", username).
+		Scan(&user.ID, &user.Username, &user.EmailAddress, &user.Password, &user.UserRole)
 	if err != nil {
 		return user, err
 	}
@@ -81,11 +89,13 @@ func (d *Database) GetUser(username string) (user model.User, err error) {
 	return user, nil
 }
 
+// GetThreads retrieves a given number of threads.
 func (d *Database) GetThreads(num int) ([]model.Thread, error) {
 	var threads []model.Thread
 	rows, err := DB.Query(`SELECT bt.Id, bt.UserId, bt.Title, bt.PostedAt, bu.Username
 		FROM board.thread bt
-		INNER JOIN board.user bu ON bt.UserId = bu.Id`)
+		INNER JOIN board.user bu ON bt.UserId = bu.Id
+		WHERE Deleted != true`)
 	if err != nil {
 		return nil, err
 	}
@@ -105,9 +115,10 @@ func (d *Database) GetThreads(num int) ([]model.Thread, error) {
 	return threads, nil
 }
 
+// GetPosts will return all posts under a given thread.
 func (d *Database) GetPosts(threadId string) ([]model.Post, error) {
 	var posts []model.Post
-	rows, err := DB.Query(`SELECT tp.Id, tp.ThreadId, tp.UserId, tp.Body, tp.PostedAt, bu.Username 
+	rows, err := DB.Query(`SELECT tp.Id, tp.ThreadId, tp.UserId, tp.Body, tp.PostedAt, bu.Username
 			FROM board.thread_post tp
 			INNER JOIN board.user bu ON tp.UserId = bu.Id
 			WHERE ThreadId = $1`, threadId)
@@ -130,71 +141,131 @@ func (d *Database) GetPosts(threadId string) ([]model.Post, error) {
 	return posts, nil
 }
 
-func (d *Database) PostThread(newThread *model.NewThread) (threadid string, err error) {
-	var id string
+// PostThread will create a new thread.
+func (d *Database) PostThread(newThread *model.NewThread) (thread model.NewThread, err error) {
 	sqlStatement := `
 		INSERT INTO board.thread
-		(UserId, Title, PostedAt)
-		VALUES ($1, $2, $3)
-		RETURNING Id`
+		(UserId, Title)
+		VALUES ($1, $2)
+		RETURNING Id, UserId, Title, PostedAt, (SELECT Username FROM board.user WHERE Id = $1)`
 	err = DB.QueryRow(sqlStatement,
 		newThread.T.UserId,
-		newThread.T.Title,
-		newThread.T.PostedAt).Scan(&id)
+		newThread.T.Title).
+		Scan(&thread.T.Id, &thread.T.UserId, &thread.T.Title, &thread.T.PostedAt, &thread.T.UserName)
 	if err != nil {
-		return "", err
+		return thread, err
 	}
 
 	sqlStatement = `
 		INSERT INTO board.thread_post
-		(ThreadId, UserId, Body, PostedAt)
-		VALUES ($1, $2, $3, $4)`
-	_, err = DB.Exec(sqlStatement,
-		id,
+		(ThreadId, UserId, Body)
+		VALUES ($1, $2, $3)
+		RETURNING Id, ThreadId, UserId, Body, PostedAt, (SELECT Username FROM board.user WHERE Id = $2)`
+	err = DB.QueryRow(sqlStatement,
+		thread.T.Id,
 		newThread.T.UserId,
-		newThread.P.Body,
-		newThread.P.PostedAt)
+		newThread.P.Body).
+		Scan(&thread.P.Id, &thread.P.ThreadId, &thread.P.UserId, &thread.P.Body, &thread.P.PostedAt, &thread.P.UserName)
 	if err != nil {
-		return "", err
+		return thread, err
 	}
 
-	return id, nil
+	return thread, nil
 }
 
-func (d *Database) PostPost(post *model.Post) (postid string, err error) {
-	var id string
+// PostPost will create a new post.
+func (d *Database) PostPost(post *model.Post) (newPost model.Post, err error) {
 	sqlStatement := `
 		INSERT INTO board.thread_post
 		(ThreadId, UserId, Body)
 		VALUES ($1, $2, $3)
-		RETURNING Id`
+		RETURNING Id, ThreadId, UserId, Body, PostedAt, (SELECT Username FROM board.user WHERE Id = $2)`
 	err = DB.QueryRow(sqlStatement,
 		post.ThreadId,
 		post.UserId,
-		post.Body).Scan(&id)
+		post.Body).
+		Scan(&newPost.Id, &newPost.ThreadId, &newPost.UserId,
+			 &newPost.Body, &newPost.PostedAt, &newPost.UserName)
 	if err != nil {
-		return "", err
+		return newPost, err
 	}
 
-	return id, nil
+	return newPost, nil
 }
 
+// DeleteThread will do a soft delete on a thread and all of its corresponding posts.
+func (d *Database) DeleteThread(threadId string) (err error) {
+	sqlStatement := `
+		UPDATE board.thread
+		SET Deleted = true
+		WHERE Id = $1`
+
+	res, err := DB.Exec(sqlStatement, threadId)
+
+	if err != nil {
+		panic(err)
+	}
+
+	count, err := res.RowsAffected()
+
+	if (count == 0) {
+		return errors.New("Couldn't find that thread")
+	}
+
+	sqlStatement = `
+		UPDATE board.thread_post
+		SET Deleted = true
+		WHERE ThreadId = $1`
+
+	res, err = DB.Exec(sqlStatement, threadId)
+
+	if err != nil {
+		panic(err)
+	}
+
+	return
+}
+
+// EditPost allows a user to edit a post within 10 minutes of posting it.
+func (d *Database) EditPost(id string, body string) (post model.Post, err error) {
+	sqlStatement := `
+		UPDATE board.thread_post
+		SET Body = $1
+		WHERE Id = $2 AND PostedAt + '10 minutes'::interval > localtimestamp
+		RETURNING Id, ThreadId, UserId, Body, PostedAt, (SELECT Username FROM board.user WHERE Id = UserId)`
+	err = DB.QueryRow(sqlStatement, body, id).
+		Scan(&post.Id, &post.ThreadId, &post.UserId, &post.Body,
+			&post.PostedAt, &post.UserName)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return post, ErrEditPost
+		}
+		return post, err
+	}
+
+	return post, nil
+}
+
+// CreateUser creates a new user.
 func (d *Database) CreateUser(user *model.User) (userid string, err error) {
 	var id string
 	sqlStatement := `
 		INSERT INTO board.user
-		(Username, EmailAddress, UserPassword)
-		VALUES ($1, $2, $3)
+		(Username, EmailAddress, UserPassword, UserRole)
+		VALUES ($1, $2, $3, $4)
 		RETURNING Id`
 	err = DB.QueryRow(sqlStatement,
 		user.Username,
 		user.EmailAddress,
-		user.UserPassword).Scan(&id)
+		user.Password,
+		constants.User).Scan(&id)
 	if err != nil {
 		return "", err
 	}
 
 	return id, nil
+
 }
 
 // Internal methods
