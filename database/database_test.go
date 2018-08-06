@@ -2,10 +2,8 @@ package database
 
 import (
 	"testing"
-	"os"
 
 	"github.com/DarthHater/bored-board-service/model"
-	"github.com/DarthHater/bored-board-service/constants"
 
 	"github.com/stretchr/testify/assert"
 	sqlmock "gopkg.in/DATA-DOG/go-sqlmock.v1"
@@ -17,19 +15,8 @@ func TestInitDb(t *testing.T) {
 	assert.Equal(t, err, nil)
 }
 
-func TestConnectionStringDevelopment(t *testing.T) {
+func TestConnectionString(t *testing.T) {
 	d := Database{}
-	os.Setenv("ENVIRONMENT", "development")
-	d.setupViper()
-	assert.Equal(t,
-		"postgres://admin:admin123@database:5432/db?sslmode=disable",
-		d.connectionString(),
-	)
-}
-
-func TestConnectionStringProduction(t *testing.T) {
-	d := Database{}
-	os.Setenv("ENVIRONMENT", "production")
 	d.setupViper()
 	assert.Equal(t,
 		"postgres://admin:admin123@database:5432/db",
@@ -160,19 +147,18 @@ func TestPostThread(t *testing.T) {
 	}
 	defer DB.Close()
 
-	threadMock := sqlmock.NewRows([]string{"id", "userId", "title", "postedat", "username"}).AddRow("", "", "Ok", "", "andy")
-	postMock := sqlmock.NewRows([]string{"id", "threadid", "userid", "body", "postedat", "username"}).AddRow("", "", "", "I'm Posting", "datetime", "andy")
-
 	mock.ExpectQuery("INSERT INTO board.thread").WithArgs(
 		newThread.T.Title,
-		newThread.T.UserId).
-		WillReturnRows(threadMock)
-
-	mock.ExpectQuery("INSERT INTO board.thread_post").WithArgs(
-		newThread.T.Id,
 		newThread.T.UserId,
-		newThread.P.Body).
-		WillReturnRows(postMock)
+		newThread.T.PostedAt).
+		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow("1"))
+
+	mock.ExpectExec("INSERT INTO board.thread_post").WithArgs(
+		"1",
+		newThread.T.UserId,
+		newThread.P.Body,
+		newThread.P.PostedAt).
+		WillReturnResult(sqlmock.NewResult(1, 1))
 
 	if id, err := d.PostThread(&newThread); err != nil {
 		t.Errorf("Error was not expected while inserting thread: %s", err)
@@ -200,74 +186,12 @@ func TestPostPost(t *testing.T) {
 		post.ThreadId,
 		post.UserId,
 		post.Body).
-		WillReturnRows(sqlmock.NewRows([]string{"id", "threadid", "userid", "body", "postedat", "username"}).AddRow("1", "3", "4", "I'm Posting", "datetime", "andy"))
+		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow("1"))
 
-	if post, err := d.PostPost(&post); err != nil {
+	if id, err := d.PostPost(&post); err != nil {
 		t.Errorf("Error was not expected while inserting post: %s", err)
 	} else {
-		t.Logf("Post inserted with id: %s", post.Id)
-	}
-
-	if err = mock.ExpectationsWereMet(); err != nil {
-		t.Errorf("There were unfulfilled expectations: %s", err)
-	}
-}
-
-func TestEditPost(t *testing.T) {
-	d := Database{}
-	var mock sqlmock.Sqlmock
-	var err error
-	var body, userID string
-	DB, mock, err = sqlmock.New()
-	if err != nil {
-		t.Fatalf("An error %s occurred when opening stub database connection", err)
-	}
-	defer DB.Close()
-
-	mock.ExpectQuery("UPDATE board.thread_post").
-		WillReturnRows(sqlmock.NewRows([]string{"id", "threadid", "userid", "body", "postedat", "username"}).
-			AddRow("1", "2", "3", ":)", "datetime", "andy"))
-
-	post, err := d.EditPost(userID, body)
-
-	if err != nil {
-		t.Errorf("Error was not expected while updating post: %s", err)
-	} else {
-		t.Log("Post updated")
-	}
-
-	expected := model.Post{Id: "1", ThreadId: "2", UserId: "3", Body: ":)", PostedAt: "datetime", UserName: "andy"}
-
-	assert.Equal(t, post, expected)
-
-	if err = mock.ExpectationsWereMet(); err != nil {
-		t.Errorf("There were unfulfilled expectations: %s", err)
-	}
-}
-
-func TestTooLateToEditPost(t *testing.T) {
-	d := Database{}
-	var mock sqlmock.Sqlmock
-	var err error
-	var body, userID string
-
-	DB, mock, err = sqlmock.New()
-	if err != nil {
-		t.Fatalf("An error %s occurred when opening stub database connection", err)
-	}
-	defer DB.Close()
-
-	mock.ExpectQuery("UPDATE board.thread_post").
-		WillReturnRows(sqlmock.NewRows([]string{"id", "threadid", "userid", "body", "postedat", "username"}))
-
-	if _, err := d.EditPost(userID, body); err != nil {
-		if (err == ErrEditPost) {
-			t.Log("Correct error returned")
-		} else {
-			t.Errorf("Unexpected error")
-		}
-	} else {
-		t.Errorf("Expecting an error but there was none")
+		t.Logf("Post inserted with id: %s", id)
 	}
 
 	if err = mock.ExpectationsWereMet(); err != nil {
@@ -292,7 +216,7 @@ func TestGetUser(t *testing.T) {
 
 	result, err := d.GetUser("CoolGuy420")
 
-	expected := model.User{ID: "1", Username: "CoolGuy420", EmailAddress: "hsimpson@springfield.org", Password: []byte("fake password")}
+	expected := model.User{ID: "1", Username: "CoolGuy420", EmailAddress: "hsimpson@springfield.org", UserPassword: []byte("fake password")}
 
 	assert.Equal(t, result, expected)
 
@@ -315,8 +239,7 @@ func TestCreateUser(t *testing.T) {
 	mock.ExpectQuery("INSERT INTO board.user").WithArgs(
 		user.Username,
 		user.EmailAddress,
-		user.Password,
-		constants.User).
+		user.UserPassword).
 		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow("1"))
 
 	if id, err := d.CreateUser(&user); err != nil {
