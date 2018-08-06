@@ -39,7 +39,6 @@ RUN dep ensure
 
 RUN go build
 
-# CMD /go/src/github.com/DarthHater/bored-board-service/bored-board-service
 CMD go get github.com/oxequa/realize && realize start
 
 EXPOSE 8000
