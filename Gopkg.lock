@@ -2,6 +2,12 @@
 
 
 [[projects]]
+  branch = "master"
+  name = "github.com/DavidHuie/gomigrate"
+  packages = ["."]
+  revision = "4004e6142040f5d622e9d2be6e833a4652741571"
+
+[[projects]]
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
   revision = "346938d642f2ec3594ed81d874461961cd0faa76"
@@ -196,6 +202,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "0c88c1734cff9b50e9eb8386c2afe6c30fc99ab8265288a50bbdbea0b0ace3a7"
+  inputs-digest = "7bd5e2c6f15efe0df2c00dee90ec9a29bb585a693f9884c78cbe4bf1d16680ef"
   solver-name = "gps-cdcl"
   solver-version = 1
