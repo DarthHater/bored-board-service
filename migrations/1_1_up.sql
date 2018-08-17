@@ -44,3 +44,4 @@ INSERT INTO board.thread (UserId, Title)
 INSERT INTO board.thread_post (ThreadId, UserId, Body) VALUES
     ((SELECT bt.Id FROM board.thread bt INNER JOIN board.user bu on bu.Id = bt.UserId WHERE bu.Username = 'CoolAssMitch420'), (SELECT Id FROM board.user WHERE Username = 'CoolAssMitch420'), 'Test reply'),
     ((SELECT bt.Id FROM board.thread bt INNER JOIN board.user bu on bu.Id = bt.UserId WHERE bu.Username = 'EvilAssMitch666'), (SELECT Id FROM board.user WHERE Username = 'EvilAssMitch666'), 'Test reply');
+    
