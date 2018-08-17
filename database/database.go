@@ -9,6 +9,7 @@ import (
 
 	"github.com/DarthHater/bored-board-service/constants"
 	"github.com/DarthHater/bored-board-service/model"
+	"github.com/DavidHuie/gomigrate"
 	_ "github.com/lib/pq"
 	"github.com/spf13/viper"
 )
@@ -45,6 +46,14 @@ func (d *Database) InitDb(environment string, configPath string) error {
 	}
 
 	fmt.Println("Successfully connected")
+
+	migrator, _ := gomigrate.NewMigrator(DB, gomigrate.Postgres{}, "./migrations")
+	err = migrator.Migrate()
+
+	if err != nil {
+		panic(err)
+	}
+
 	return nil
 }
 
