@@ -30,7 +30,6 @@ CREATE TABLE board.thread_post
 
 CREATE INDEX thread_post_deleted_idx ON board.thread_post (Deleted);
 
-
 WITH tmp AS (
     INSERT INTO board.user (Username, Emailaddress, UserPassword, UserRole) VALUES
     ('CoolAssMitch420', 'evilmitch@evilmoneydance.com', decode(crypt('coolassmitch420', gen_salt('bf', 8)), 'escape'), 0),

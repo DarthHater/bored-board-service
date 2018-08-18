@@ -347,7 +347,8 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 		})
 
 		auth.GET("/threads", func(c *gin.Context) {
-			getThreads(c, d, 20)
+			userID := c.Query("userid")
+			getThreads(c, d, 20, userID)
 		})
 
 		auth.POST("/thread", func(c *gin.Context) {
@@ -361,6 +362,11 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 		auth.PATCH("/posts/:postid", func(c *gin.Context) {
 			postID := c.Param("postid")
 			editPost(c, d, postID)
+		})
+
+		auth.GET("/users/:userid", func(c *gin.Context) {
+			userID := c.Param("userid")
+			getUserInfo(c, d, userID)
 		})
 
 		auth.Use(userIsInRole(d, []constants.Role{constants.Admin, constants.Mod}))
@@ -422,8 +428,18 @@ func getPost(c *gin.Context, d database.IDatabase, postID string) {
 	c.JSON(http.StatusOK, post)
 }
 
-func getThreads(c *gin.Context, d database.IDatabase, num int) {
-	threads, err := d.GetThreads(num)
+func getThreads(c *gin.Context, d database.IDatabase, num int, userID string) {
+	threads, err := d.GetThreads(num, userID)
+	if err != nil {
+		log.Error(err)
+		c.JSON(http.StatusBadRequest, "Uh oh")
+	} else {
+		c.JSON(http.StatusOK, threads)
+	}
+}
+
+func getUserInfo(c *gin.Context, d database.IDatabase, userID string) {
+	threads, err := d.GetUserInfo(userID)
 	if err != nil {
 		log.Error(err)
 		c.JSON(http.StatusBadRequest, "Uh oh")
