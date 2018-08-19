@@ -20,6 +20,7 @@ type IDatabase interface {
 	GetUser(s string) (model.User, error)
 	GetThread(s string) (model.Thread, error)
 	GetMessages(i int, u string) ([]model.Message, error)
+	GetMessagePosts(s string) ([]model.MessagePost, error)
 	GetPost(s string) (model.Post, error)
 	GetPosts(s string) ([]model.Post, error)
 	GetThreads(i int) ([]model.Thread, error)
@@ -284,6 +285,32 @@ func (d *Database) GetMessages(num int, userid string) ([]model.Message, error) 
 	}
 
 	return messages, nil
+}
+
+// GetPosts will return all posts under a given thread.
+func (d *Database) GetMessagePosts(messageID string) ([]model.MessagePost, error) {
+	var messageposts []model.MessagePost
+	rows, err := DB.Query(`SELECT mp.Id, mp.MessageId, mp.UserId, mp.Body, mp.PostedAt, bu.Username
+			FROM board.message_post mp
+			INNER JOIN board.user bu ON mp.UserId = bu.Id
+			WHERE mp.MessageId = $1`, messageID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		mp := model.MessagePost{}
+		if err := rows.Scan(&mp.Id, &mp.MessageId, &mp.UserId, &mp.Body, &mp.PostedAt, &mp.UserName); err != nil {
+			return nil, err
+		}
+		messageposts = append(messageposts, mp)
+	}
+	if rows.Err() != nil {
+		panic(rows.Err())
+	}
+
+	return messageposts, nil
 }
 
 // PostMessage will create a new message "thread".
