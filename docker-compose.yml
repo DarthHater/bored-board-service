@@ -22,7 +22,7 @@ services:
     ports:
       - '8000:8000'
     volumes:
-      - .:/Users/jeffryhesse/go/src/github.com/DarthHater/bored-board-service
+      - .:/go/src/github.com/DarthHater/bored-board-service
     links:
       - redis_db
       - database

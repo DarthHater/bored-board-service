@@ -260,8 +260,6 @@ func (d *Database) EditPost(id string, body string) (post model.Post, err error)
 
 // PostMessage will create a new message "thread".
 func (d *Database) PostMessage(newMessage *model.NewMessage) (message model.NewMessage, err error) {
-	fmt.Print(newMessage)
-
 	sqlStatement := `
 		INSERT INTO board.message
 		(UserId, Title)
@@ -275,15 +273,15 @@ func (d *Database) PostMessage(newMessage *model.NewMessage) (message model.NewM
 		return message, err
 	}
 
-	for muid := range newMessage.M {
-		log.Print(muid)
+	for _, mm := range newMessage.M {
+		log.Print(mm)
 		log.Print(message.T.Id)
 		sqlStatement = `
 		INSERT INTO board.message_member
 		(UserId, MessageId)
 		VALUES ($1, $2)`
 		_, err = DB.Exec(sqlStatement,
-			muid,
+			mm.UserId,
 			message.T.Id)
 		if err != nil {
 			return message, err
