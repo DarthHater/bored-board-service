@@ -2,8 +2,8 @@ package database
 
 import (
 	"database/sql"
-	"fmt"
 	"errors"
+	"fmt"
 	"log"
 	"os"
 
@@ -24,7 +24,9 @@ type IDatabase interface {
 	GetThreads(i int) ([]model.Thread, error)
 	PostThread(t *model.NewThread) (model.NewThread, error)
 	PostPost(p *model.Post) (model.Post, error)
-	DeleteThread(s string) (error)
+	PostMessage(t *model.NewMessage) (model.NewMessage, error)
+	PostMessagePost(p *model.MessagePost) (model.MessagePost, error)
+	DeleteThread(s string) error
 	EditPost(i string, b string) (model.Post, error)
 }
 
@@ -194,7 +196,7 @@ func (d *Database) PostPost(post *model.Post) (newPost model.Post, err error) {
 		post.UserId,
 		post.Body).
 		Scan(&newPost.Id, &newPost.ThreadId, &newPost.UserId,
-			 &newPost.Body, &newPost.PostedAt, &newPost.UserName)
+			&newPost.Body, &newPost.PostedAt, &newPost.UserName)
 	if err != nil {
 		return newPost, err
 	}
@@ -217,7 +219,7 @@ func (d *Database) DeleteThread(threadId string) (err error) {
 
 	count, err := res.RowsAffected()
 
-	if (count == 0) {
+	if count == 0 {
 		return errors.New("Couldn't find that thread")
 	}
 
@@ -254,6 +256,75 @@ func (d *Database) EditPost(id string, body string) (post model.Post, err error)
 	}
 
 	return post, nil
+}
+
+// PostMessage will create a new message "thread".
+func (d *Database) PostMessage(newMessage *model.NewMessage) (message model.NewMessage, err error) {
+	fmt.Print(newMessage)
+
+	sqlStatement := `
+		INSERT INTO board.message
+		(UserId, Title)
+		VALUES ($1, $2)
+		RETURNING Id, UserId, Title, PostedAt, (SELECT Username FROM board.user WHERE Id = $1)`
+	err = DB.QueryRow(sqlStatement,
+		newMessage.T.UserId,
+		newMessage.T.Title).
+		Scan(&message.T.Id, &message.T.UserId, &message.T.Title, &message.T.PostedAt, &message.T.UserName)
+	if err != nil {
+		return message, err
+	}
+
+	for muid := range newMessage.M {
+		log.Print(muid)
+		log.Print(message.T.Id)
+		sqlStatement = `
+		INSERT INTO board.message_member
+		(UserId, MessageId)
+		VALUES ($1, $2)`
+		_, err = DB.Exec(sqlStatement,
+			muid,
+			message.T.Id)
+		if err != nil {
+			return message, err
+		}
+	}
+
+	sqlStatement = `
+		INSERT INTO board.message_post
+		(MessageId, UserId, Body)
+		VALUES ($1, $2, $3)
+		RETURNING Id, MessageId, UserId, Body, PostedAt, (SELECT Username FROM board.user WHERE Id = $2)`
+	err = DB.QueryRow(sqlStatement,
+		message.T.Id,
+		newMessage.T.UserId,
+		newMessage.P.Body).
+		Scan(&message.P.Id, &message.P.MessageId, &message.P.UserId, &message.P.Body, &message.P.PostedAt, &message.P.UserName)
+	if err != nil {
+		return message, err
+	}
+
+	return message, nil
+}
+
+// PostMessagePost will create a new message_post in an existing message.
+func (d *Database) PostMessagePost(message *model.MessagePost) (newMessage model.MessagePost, err error) {
+	sqlStatement := `
+		INSERT INTO board.message_post
+		(MessageId, UserId, Body)
+		VALUES ($1, $2, $3)
+		RETURNING Id, MessageId, UserId, Body, PostedAt, (SELECT Username FROM board.user WHERE Id = $2)`
+	err = DB.QueryRow(sqlStatement,
+		message.MessageId,
+		message.UserId,
+		message.Body).
+		Scan(&newMessage.Id, &newMessage.MessageId, &newMessage.UserId,
+			&newMessage.Body, &newMessage.PostedAt, &newMessage.UserName)
+	if err != nil {
+		return newMessage, err
+	}
+
+	return newMessage, nil
 }
 
 // CreateUser creates a new user.

@@ -358,6 +358,14 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 			postPost(c, d)
 		})
 
+		auth.POST("/newmessage", func(c *gin.Context) {
+			postMessage(c, d)
+		})
+
+		auth.POST("/message", func(c *gin.Context) {
+			postMessagePost(c, d)
+		})
+
 		auth.PATCH("/posts/:postid", func(c *gin.Context) {
 			postID := c.Param("postid")
 			editPost(c, d, postID)
@@ -439,6 +447,35 @@ func getPosts(c *gin.Context, d database.IDatabase, threadID string) {
 		c.JSON(http.StatusBadRequest, "Uh oh")
 	} else {
 		c.JSON(http.StatusOK, posts)
+	}
+}
+
+func postMessage(c *gin.Context, d database.IDatabase) {
+	var newMessage model.NewMessage
+	c.BindJSON(&newMessage)
+	log.Info(newMessage)
+	message, err := d.PostMessage(&newMessage)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, message)
+}
+
+func postMessagePost(c *gin.Context, d database.IDatabase) {
+	var message model.MessagePost
+	c.BindJSON(&message)
+	newMessage, err := d.PostMessagePost(&message)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	} else {
+		_, err := json.Marshal(&newMessage)
+		if err != nil {
+			return
+		}
+
+		c.JSON(http.StatusCreated, newMessage)
 	}
 }
 
