@@ -19,6 +19,7 @@ type IDatabase interface {
 	CreateUser(u *model.User) (string, error)
 	GetUser(s string) (model.User, error)
 	GetThread(s string) (model.Thread, error)
+	GetMessages(i int, u string) ([]model.Message, error)
 	GetPost(s string) (model.Post, error)
 	GetPosts(s string) ([]model.Post, error)
 	GetThreads(i int) ([]model.Thread, error)
@@ -256,6 +257,33 @@ func (d *Database) EditPost(id string, body string) (post model.Post, err error)
 	}
 
 	return post, nil
+}
+
+// GetMessages retrieves a given number of messages.
+func (d *Database) GetMessages(num int, userid string) ([]model.Message, error) {
+	var messages []model.Message
+	rows, err := DB.Query(`SELECT bm.Id, bm.UserId, bm.Title, bm.PostedAt, bu.Username
+		FROM board.message_member bmm
+		INNER JOIN board.message bm ON bmm.MessageId = bm.Id
+		INNER JOIN board.user bu ON bm.UserId = bu.Id
+		WHERE bmm.UserId = $1 Deleted != true`, userid)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		m := model.Message{}
+		if err := rows.Scan(&m.Id, &m.UserId, &m.Title, &m.PostedAt, &m.UserName); err != nil {
+			return nil, err
+		}
+		messages = append(messages, m)
+	}
+	if rows.Err() != nil {
+		panic(rows.Err())
+	}
+
+	return messages, nil
 }
 
 // PostMessage will create a new message "thread".

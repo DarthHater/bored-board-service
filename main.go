@@ -350,6 +350,11 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 			getThreads(c, d, 20)
 		})
 
+		auth.GET("/messages/:userid", func(c *gin.Context) {
+			userID := c.Param("userid")
+			getMessages(c, d, 20, userID)
+		})
+
 		auth.POST("/thread", func(c *gin.Context) {
 			postThread(c, d)
 		})
@@ -437,6 +442,16 @@ func getThreads(c *gin.Context, d database.IDatabase, num int) {
 		c.JSON(http.StatusBadRequest, "Uh oh")
 	} else {
 		c.JSON(http.StatusOK, threads)
+	}
+}
+
+func getMessages(c *gin.Context, d database.IDatabase, num int, userID string) {
+	messages, err := d.GetMessages(num, userID)
+	if err != nil {
+		log.Error(err)
+		c.JSON(http.StatusBadRequest, "Uh oh")
+	} else {
+		c.JSON(http.StatusOK, messages)
 	}
 }
 
