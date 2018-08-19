@@ -4,6 +4,6 @@ package model
 type UserInfo struct {
 	TotalPosts		string	`json:"totalPosts"`
 	TotalThreads	string	`json:"totalThreads"`
-	DateJoined 		string	`json:"dateJoined"`
+	DateJoined		string	`json:"dateJoined"`
 	LastPosted		string	`json:"lastPosted"`
 }
