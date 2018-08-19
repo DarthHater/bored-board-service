@@ -266,7 +266,7 @@ func (d *Database) GetMessages(num int, userid string) ([]model.Message, error) 
 		FROM board.message_member bmm
 		INNER JOIN board.message bm ON bmm.MessageId = bm.Id
 		INNER JOIN board.user bu ON bm.UserId = bu.Id
-		WHERE bmm.UserId = $1 Deleted != true`, userid)
+		WHERE bmm.UserId = $1 AND bm.Deleted != true`, userid)
 	if err != nil {
 		return nil, err
 	}
@@ -302,8 +302,6 @@ func (d *Database) PostMessage(newMessage *model.NewMessage) (message model.NewM
 	}
 
 	for _, mm := range newMessage.M {
-		log.Print(mm)
-		log.Print(message.T.Id)
 		sqlStatement = `
 		INSERT INTO board.message_member
 		(UserId, MessageId)
