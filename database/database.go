@@ -111,7 +111,7 @@ func (d *Database) GetUserInfo(userID string) (userInfo model.UserInfo, err erro
 		WHERE u.id = $1`
 
 	err = DB.QueryRow(sqlStatement, userID).
-		Scan(&userInfo.NumberThreads, &userInfo.NumberPosts, &userInfo.LastPosted)
+		Scan(&userInfo.TotalThreads, &userInfo.TotalPosts, &userInfo.LastPosted)
 	if err != nil {
 		return userInfo, err
 	}

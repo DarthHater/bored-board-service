@@ -2,8 +2,8 @@ package model
 
 // UserInfo is for holding information about the user.
 type UserInfo struct {
-	NumberPosts		string
-	NumberThreads	string
-	DateJoined 		string
-	LastPosted		string
+	TotalPosts		string	`json:"totalPosts"`
+	TotalThreads	string	`json:"totalThreads"`
+	DateJoined 		string	`json:"dateJoined"`
+	LastPosted		string	`json:"lastPosted"`
 }
