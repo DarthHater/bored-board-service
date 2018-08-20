@@ -209,6 +209,70 @@ func TestGetMessagePosts(t *testing.T) {
 	}
 }
 
+func TestPostMessage(t *testing.T) {
+	d := Database{}
+	var mock sqlmock.Sqlmock
+	var err error
+	var newMessage model.NewMessage
+	DB, mock, err = sqlmock.New()
+	if err != nil {
+		t.Fatalf("An error %s occurred when opening stub database connection", err)
+	}
+	defer DB.Close()
+
+	messageMock := sqlmock.NewRows([]string{"id", "userId", "title", "postedat", "username"}).AddRow("", "", "Ok", "", "andy")
+	messagePostMock := sqlmock.NewRows([]string{"id", "messageid", "userid", "body", "postedat", "username"}).AddRow("", "", "", "I'm Posting", "datetime", "andy")
+
+	mock.ExpectQuery("INSERT INTO board.message").WithArgs(
+		newMessage.T.Title,
+		newMessage.T.UserId).
+		WillReturnRows(messageMock)
+
+	mock.ExpectQuery("INSERT INTO board.message_post").WithArgs(
+		newMessage.T.Id,
+		newMessage.T.UserId,
+		newMessage.P.Body).
+		WillReturnRows(messagePostMock)
+
+	if id, err := d.PostMessage(&newMessage); err != nil {
+		t.Errorf("Error was not expected while inserting thread: %s", err)
+	} else {
+		t.Logf("Thread inserted with id: %s", id)
+	}
+
+	if err = mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("There were unfulfilled expectations: %s", err)
+	}
+}
+
+func TestPostMessagePost(t *testing.T) {
+	d := Database{}
+	var mock sqlmock.Sqlmock
+	var err error
+	var message model.MessagePost
+	DB, mock, err = sqlmock.New()
+	if err != nil {
+		t.Fatalf("An error %s occurred when opening stub database connection", err)
+	}
+	defer DB.Close()
+
+	mock.ExpectQuery("INSERT INTO board.message_post").WithArgs(
+		message.MessageId,
+		message.UserId,
+		message.Body).
+		WillReturnRows(sqlmock.NewRows([]string{"id", "messageid", "userid", "body", "postedat", "username"}).AddRow("1", "3", "4", "I'm Posting", "datetime", "andy"))
+
+	if message, err := d.PostMessagePost(&message); err != nil {
+		t.Errorf("Error was not expected while inserting message: %s", err)
+	} else {
+		t.Logf("Message post inserted with id: %s", message.Id)
+	}
+
+	if err = mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("There were unfulfilled expectations: %s", err)
+	}
+}
+
 func TestPostThread(t *testing.T) {
 	d := Database{}
 	var mock sqlmock.Sqlmock
