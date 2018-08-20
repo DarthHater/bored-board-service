@@ -1,11 +1,11 @@
 package database
 
 import (
-	"testing"
 	"os"
+	"testing"
 
-	"github.com/DarthHater/bored-board-service/model"
 	"github.com/DarthHater/bored-board-service/constants"
+	"github.com/DarthHater/bored-board-service/model"
 
 	"github.com/stretchr/testify/assert"
 	sqlmock "gopkg.in/DATA-DOG/go-sqlmock.v1"
@@ -149,6 +149,66 @@ func TestGetPosts(t *testing.T) {
 	}
 }
 
+func TestGetMessages(t *testing.T) {
+	d := Database{}
+	var mock sqlmock.Sqlmock
+	var err error
+	DB, mock, err = sqlmock.New()
+	if err != nil {
+		t.Fatalf("An error %s occurred when opening stub database connection", err)
+	}
+	defer DB.Close()
+
+	row := sqlmock.NewRows([]string{"id", "userId", "title", "postedat", "username"}).
+		AddRow("", "admin", "What the heck", "A time", "admin").
+		AddRow("", "admin", "DJ Khaled", "A time", "admin")
+
+	mock.ExpectQuery("SELECT (.+) FROM board.message").WillReturnRows(row)
+
+	result, err := d.GetMessages(20, "")
+
+	expected := []model.Message{
+		{Id: "", UserId: "admin", Title: "What the heck", PostedAt: "A time", UserName: "admin"},
+		{Id: "", UserId: "admin", Title: "DJ Khaled", PostedAt: "A time", UserName: "admin"},
+	}
+
+	assert.Equal(t, result, expected)
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expections: %s", err)
+	}
+}
+
+func TestGetMessagePosts(t *testing.T) {
+	d := Database{}
+	var mock sqlmock.Sqlmock
+	var err error
+	DB, mock, err = sqlmock.New()
+	if err != nil {
+		t.Fatalf("An error %s occurred when opening stub database connection", err)
+	}
+	defer DB.Close()
+
+	row := sqlmock.NewRows([]string{"id", "threadid", "userid", "body", "postedat", "username"}).
+		AddRow("", "", "", "Post Body", "A time", "admin").
+		AddRow("", "", "", "Post Body 2", "A time", "admin")
+
+	mock.ExpectQuery("SELECT (.+) FROM board.message_post").WillReturnRows(row)
+
+	result, err := d.GetMessagePosts("A thread")
+
+	expected := []model.MessagePost{
+		{Id: "", MessageId: "", UserId: "", Body: "Post Body", PostedAt: "A time", UserName: "admin"},
+		{Id: "", MessageId: "", UserId: "", Body: "Post Body 2", PostedAt: "A time", UserName: "admin"},
+	}
+
+	assert.Equal(t, result, expected)
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expections: %s", err)
+	}
+}
+
 func TestPostThread(t *testing.T) {
 	d := Database{}
 	var mock sqlmock.Sqlmock
@@ -261,7 +321,7 @@ func TestTooLateToEditPost(t *testing.T) {
 		WillReturnRows(sqlmock.NewRows([]string{"id", "threadid", "userid", "body", "postedat", "username"}))
 
 	if _, err := d.EditPost(userID, body); err != nil {
-		if (err == ErrEditPost) {
+		if err == ErrEditPost {
 			t.Log("Correct error returned")
 		} else {
 			t.Errorf("Unexpected error")
