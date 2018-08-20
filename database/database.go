@@ -21,7 +21,8 @@ type IDatabase interface {
 	GetThread(s string) (model.Thread, error)
 	GetPost(s string) (model.Post, error)
 	GetPosts(s string) ([]model.Post, error)
-	GetThreads(i int) ([]model.Thread, error)
+	GetThreads(i int, userID string) ([]model.Thread, error)
+	GetUserInfo(userID string) (model.UserInfo, error)
 	PostThread(t *model.NewThread) (model.NewThread, error)
 	PostPost(p *model.Post) (model.Post, error)
 	DeleteThread(s string) (error)
@@ -58,13 +59,13 @@ func (d *Database) InitDb(environment string, configPath string) error {
 }
 
 // GetThread will get a thread with the given ID.
-func (d *Database) GetThread(threadId string) (model.Thread, error) {
+func (d *Database) GetThread(threadID string) (model.Thread, error) {
 	thread := model.Thread{}
 	err := DB.QueryRow(`SELECT bt.Id, bt.UserId, bt.Title, bt.PostedAt, bu.Username
 			FROM board.thread bt
 			INNER JOIN board.user bu ON bt.UserId = bu.Id
 			WHERE bt.Id = $1 AND bt.Deleted != true
-			ORDER BY PostedAt DESC limit 20`, threadId).
+			ORDER BY PostedAt DESC limit 20`, threadID).
 		Scan(&thread.Id, &thread.UserId, &thread.Title, &thread.PostedAt, &thread.UserName)
 	if err != nil {
 		return thread, err
@@ -73,12 +74,12 @@ func (d *Database) GetThread(threadId string) (model.Thread, error) {
 }
 
 // GetPost retrieves a single post.
-func (d *Database) GetPost(postId string) (post model.Post, err error) {
+func (d *Database) GetPost(postID string) (post model.Post, err error) {
 	post = model.Post{}
 	err = DB.QueryRow(`SELECT tp.Id, tp.ThreadId, tp.UserId, tp.Body, tp.PostedAt, bu.Username
 		FROM board.thread_post tp
 		INNER JOIN board.user bu ON tp.UserId = bu.Id
-		WHERE Id = $1 AND Deleted != true`, postId).
+		WHERE Id = $1 AND Deleted != true`, postID).
 		Scan(&post.Id, &post.ThreadId, &post.UserId, &post.Body, &post.PostedAt, &post.UserName)
 	if err != nil {
 		return post, err
@@ -98,13 +99,41 @@ func (d *Database) GetUser(username string) (user model.User, err error) {
 	return user, nil
 }
 
+// GetUserInfo retrieves metadata about a user.
+func (d *Database) GetUserInfo(userID string) (userInfo model.UserInfo, err error) {
+	userInfo = model.UserInfo{}
+
+	sqlStatement := `
+		SELECT COUNT(t), COUNT(tp), MAX(tp.postedat)
+			FROM board.thread t
+				INNER JOIN board.thread_post tp ON t.id = tp.threadid
+				INNER JOIN board.user u on tp.userid = u.id
+		WHERE u.id = $1`
+
+	err = DB.QueryRow(sqlStatement, userID).
+		Scan(&userInfo.TotalThreads, &userInfo.TotalPosts, &userInfo.LastPosted)
+	if err != nil {
+		return userInfo, err
+	}
+
+	return userInfo, nil
+}
+
 // GetThreads retrieves a given number of threads.
-func (d *Database) GetThreads(num int) ([]model.Thread, error) {
+func (d *Database) GetThreads(num int, userID string) ([]model.Thread, error) {
 	var threads []model.Thread
-	rows, err := DB.Query(`SELECT bt.Id, bt.UserId, bt.Title, bt.PostedAt, bu.Username
+
+	sqlStatement := `SELECT bt.Id, bt.UserId, bt.Title, bt.PostedAt, bu.Username
 		FROM board.thread bt
 		INNER JOIN board.user bu ON bt.UserId = bu.Id
-		WHERE Deleted != true`)
+		WHERE Deleted != true`
+
+	if userID != "" {
+		sqlStatement += " AND board.user = 1$"
+	}
+
+	rows, err := DB.Query(sqlStatement)
+
 	if err != nil {
 		return nil, err
 	}
@@ -150,7 +179,7 @@ func (d *Database) GetPosts(threadId string) ([]model.Post, error) {
 	return posts, nil
 }
 
-// PostThread will create a new thread.
+// PostThread creates a new thread.
 func (d *Database) PostThread(newThread *model.NewThread) (thread model.NewThread, err error) {
 	sqlStatement := `
 		INSERT INTO board.thread
@@ -203,13 +232,13 @@ func (d *Database) PostPost(post *model.Post) (newPost model.Post, err error) {
 }
 
 // DeleteThread will do a soft delete on a thread and all of its corresponding posts.
-func (d *Database) DeleteThread(threadId string) (err error) {
+func (d *Database) DeleteThread(threadID string) (err error) {
 	sqlStatement := `
 		UPDATE board.thread
 		SET Deleted = true
 		WHERE Id = $1`
 
-	res, err := DB.Exec(sqlStatement, threadId)
+	res, err := DB.Exec(sqlStatement, threadID)
 
 	if err != nil {
 		panic(err)
@@ -226,7 +255,7 @@ func (d *Database) DeleteThread(threadId string) (err error) {
 		SET Deleted = true
 		WHERE ThreadId = $1`
 
-	res, err = DB.Exec(sqlStatement, threadId)
+	res, err = DB.Exec(sqlStatement, threadID)
 
 	if err != nil {
 		panic(err)

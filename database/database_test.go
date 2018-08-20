@@ -105,7 +105,7 @@ func TestGetThreads(t *testing.T) {
 
 	mock.ExpectQuery("SELECT (.+) FROM board.thread").WillReturnRows(row)
 
-	result, err := d.GetThreads(20)
+	result, err := d.GetThreads(20, "")
 
 	expected := []model.Thread{
 		{Id: "", UserId: "admin", Title: "What the heck", PostedAt: "A time", UserName: "admin"},
