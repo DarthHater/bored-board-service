@@ -351,12 +351,30 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 			getThreads(c, d, 20, userID)
 		})
 
+		auth.GET("/messages/:userid", func(c *gin.Context) {
+			userID := c.Param("userid")
+			getMessages(c, d, 20, userID)
+		})
+
+		auth.GET("/messageposts/:messageid", func(c *gin.Context) {
+			messageID := c.Param("messageid")
+			getPosts(c, d, messageID)
+		})
+
 		auth.POST("/thread", func(c *gin.Context) {
 			postThread(c, d)
 		})
 
 		auth.POST("/post", func(c *gin.Context) {
 			postPost(c, d)
+		})
+
+		auth.POST("/newmessage", func(c *gin.Context) {
+			postMessage(c, d)
+		})
+
+		auth.POST("/message", func(c *gin.Context) {
+			postMessagePost(c, d)
 		})
 
 		auth.PATCH("/posts/:postid", func(c *gin.Context) {
@@ -438,6 +456,16 @@ func getThreads(c *gin.Context, d database.IDatabase, num int, userID string) {
 	}
 }
 
+func getMessages(c *gin.Context, d database.IDatabase, num int, userID string) {
+	messages, err := d.GetMessages(num, userID)
+	if err != nil {
+		log.Error(err)
+		c.JSON(http.StatusBadRequest, "Uh oh")
+	} else {
+		c.JSON(http.StatusOK, messages)
+	}
+}
+
 func getUserInfo(c *gin.Context, d database.IDatabase, userID string) {
 	userInfo, err := d.GetUserInfo(userID)
 	if err != nil {
@@ -448,6 +476,16 @@ func getUserInfo(c *gin.Context, d database.IDatabase, userID string) {
 	}
 }
 
+func getMessagePosts(c *gin.Context, d database.IDatabase, messageID string) {
+	messages, err := d.GetMessagePosts(messageID)
+	if err != nil {
+		log.Error(err)
+		c.JSON(http.StatusBadRequest, "Uh oh")
+	} else {
+		c.JSON(http.StatusOK, messages)
+	}
+}
+
 func getPosts(c *gin.Context, d database.IDatabase, threadID string) {
 	posts, err := d.GetPosts(threadID)
 	if err != nil {
@@ -455,6 +493,35 @@ func getPosts(c *gin.Context, d database.IDatabase, threadID string) {
 		c.JSON(http.StatusBadRequest, "Uh oh")
 	} else {
 		c.JSON(http.StatusOK, posts)
+	}
+}
+
+func postMessage(c *gin.Context, d database.IDatabase) {
+	var newMessage model.NewMessage
+	c.BindJSON(&newMessage)
+	log.Info(newMessage)
+	message, err := d.PostMessage(&newMessage)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, message)
+}
+
+func postMessagePost(c *gin.Context, d database.IDatabase) {
+	var message model.MessagePost
+	c.BindJSON(&message)
+	newMessage, err := d.PostMessagePost(&message)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	} else {
+		_, err := json.Marshal(&newMessage)
+		if err != nil {
+			return
+		}
+
+		c.JSON(http.StatusCreated, newMessage)
 	}
 }
 
