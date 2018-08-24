@@ -19,6 +19,7 @@ type IDatabase interface {
 	CreateUser(u *model.User) (string, error)
 	GetUser(s string) (model.User, error)
 	GetThread(s string) (model.Thread, error)
+	GetMessage(s string) (model.Message, error)
 	GetMessages(i int, u string) ([]model.Message, error)
 	GetMessagePosts(s string) ([]model.MessagePost, error)
 	GetPost(s string) (model.Post, error)
@@ -75,6 +76,21 @@ func (d *Database) GetThread(threadID string) (model.Thread, error) {
 		return thread, err
 	}
 	return thread, nil
+}
+
+// GetMessage will get a message with the given ID.
+func (d *Database) GetMessage(messageID string) (model.Message, error) {
+	message := model.Message{}
+	err := DB.QueryRow(`SELECT bm.Id, bm.UserId, bm.Title, bm.PostedAt, bu.Username
+			FROM board.message bm
+			INNER JOIN board.user bu ON bm.UserId = bu.Id
+			WHERE bm.Id = $1 AND bm.Deleted != true
+			ORDER BY PostedAt DESC limit 20`, messageID).
+		Scan(&message.Id, &message.UserId, &message.Title, &message.PostedAt, &message.UserName)
+	if err != nil {
+		return message, err
+	}
+	return message, nil
 }
 
 // GetPost retrieves a single post.

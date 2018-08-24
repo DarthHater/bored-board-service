@@ -63,6 +63,32 @@ func TestGetThread(t *testing.T) {
 	}
 }
 
+func TestGetMessage(t *testing.T) {
+	d := Database{}
+	var mock sqlmock.Sqlmock
+	var err error
+	DB, mock, err = sqlmock.New()
+	if err != nil {
+		t.Fatalf("An error %s occurred when opening stub database connection", err)
+	}
+	defer DB.Close()
+
+	row := sqlmock.NewRows([]string{"id", "userId", "title", "postedat", "username"}).
+		AddRow("", "admin", "What the heck", "A time", "admin")
+
+	mock.ExpectQuery("SELECT (.+) FROM board.message").WillReturnRows(row)
+
+	result, err := d.GetMessage("a message")
+
+	expected := model.Message{Id: "", UserId: "admin", Title: "What the heck", PostedAt: "A time", UserName: "admin"}
+
+	assert.Equal(t, result, expected)
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expections: %s", err)
+	}
+}
+
 func TestGetPost(t *testing.T) {
 	d := Database{}
 	var mock sqlmock.Sqlmock
