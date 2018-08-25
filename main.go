@@ -363,7 +363,7 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 
 		auth.GET("/messageposts/:messageid", func(c *gin.Context) {
 			messageID := c.Param("messageid")
-			getPosts(c, d, messageID)
+			getMessagePosts(c, d, messageID)
 		})
 
 		auth.POST("/thread", func(c *gin.Context) {
