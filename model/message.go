@@ -6,4 +6,5 @@ type Message struct {
 	Title    string
 	PostedAt string
 	UserName string
+	Members  []MessageMember
 }

@@ -90,6 +90,27 @@ func (d *Database) GetMessage(messageID string) (model.Message, error) {
 	if err != nil {
 		return message, err
 	}
+
+	rows, err := DB.Query(`SELECT bmm.UserId, bu.Username
+			FROM board.message_member bmm
+			INNER JOIN board.user bu ON bmm.UserId = bu.Id
+			WHERE bmm.MessageId = $1`, messageID)
+	if err != nil {
+		return message, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		mm := model.MessageMember{}
+		if err := rows.Scan(&mm.UserId, &mm.UserName); err != nil {
+			return message, err
+		}
+		message.Members = append(message.Members, mm)
+	}
+	if rows.Err() != nil {
+		panic(rows.Err())
+	}
+
 	return message, nil
 }
 
@@ -338,7 +359,7 @@ func (d *Database) GetMessagePosts(messageID string) ([]model.MessagePost, error
 	rows, err := DB.Query(`SELECT mp.Id, mp.MessageId, mp.UserId, mp.Body, mp.PostedAt, bu.Username
 			FROM board.message_post mp
 			INNER JOIN board.user bu ON mp.UserId = bu.Id
-			WHERE mp.MessageId = $1`, messageID)
+			WHERE mp.MessageId = $1 ORDER BY mp.PostedAt`, messageID)
 	if err != nil {
 		return nil, err
 	}
