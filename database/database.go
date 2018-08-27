@@ -147,9 +147,7 @@ func (d *Database) GetUsers(search string) ([]model.User, error) {
 	users := []model.User{}
 	sqlStatement := `
 		SELECT Id, Username
-		FROM (SELECT Id, to_tsvector(Username) as lex,
-				UserRole,
-				Username
+		FROM (SELECT Id, to_tsvector(Username) as lex, UserRole, Username
 				FROM board.user) doc
 		WHERE doc.lex @@ to_tsquery($1) AND UserRole != 2`
 
