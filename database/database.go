@@ -145,13 +145,15 @@ func (d *Database) GetUser(username string) (user model.User, err error) {
 // GetUsers will return a list of users whose username matches a search string.
 func (d *Database) GetUsers(search string) ([]model.User, error) {
 	users := []model.User{}
-	sqlStatement := `SELECT Id, Username
-		FROM board.user
-		WHERE LOWER(Username) LIKE $1 AND UserRole != $2
-		ORDER BY Username
-		LIMIT 15`;
+	sqlStatement := `
+		SELECT Id, Username
+		FROM (SELECT Id, to_tsvector(Username) as lex,
+				UserRole,
+				Username
+				FROM board.user) doc
+		WHERE doc.lex @@ to_tsquery($1) AND UserRole != 2`
 
-	rows, err := DB.Query(sqlStatement, fmt.Sprintf("%%%s%%", strings.ToLower(search)), constants.Banned)
+	rows, err := DB.Query(sqlStatement, strings.ToLower(search) + ":*")
 
 	if err != nil {
 		return nil, err
