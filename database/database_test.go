@@ -465,7 +465,7 @@ func TestGetUsers(t *testing.T) {
 		AddRow("1", "CoolGuy420").
 		AddRow("2", "CoolGuyChiller")
 
-	mock.ExpectQuery(`SELECT (.+) FROM board.user`).WillReturnRows(row)
+	mock.ExpectQuery(`SELECT (.+) FROM \(SELECT (.+) FROM board.user\)`).WillReturnRows(row)
 
 	result, err := d.GetUsers("coolguy")
 

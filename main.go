@@ -353,7 +353,6 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 
 		auth.GET("/message/:messageid", func(c *gin.Context) {
 			messageID := c.Param("messageid")
-			fmt.Println("sup")
 			getMessage(c, d, messageID)
 		})
 
