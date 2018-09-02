@@ -18,6 +18,7 @@ type IDatabase interface {
 	InitDb(s string, e string) error
 	CreateUser(u *model.User) (string, error)
 	GetUser(s string) (model.User, error)
+	GetUsers(s string) ([]model.User, error)
 	GetThread(s string) (model.Thread, error)
 	GetMessage(s string) (model.Message, error)
 	GetMessages(i int, u string) ([]model.Message, error)
@@ -138,6 +139,36 @@ func (d *Database) GetUser(username string) (user model.User, err error) {
 	}
 
 	return user, nil
+}
+
+// GetUsers will return a list of users whose username matches a search string.
+func (d *Database) GetUsers(search string) ([]model.User, error) {
+	users := []model.User{}
+	sqlStatement := `
+		SELECT Id, Username
+		FROM (SELECT Id, to_tsvector(Username) as lex, UserRole, Username
+				FROM board.user) doc
+		WHERE doc.lex @@ to_tsquery($1) AND UserRole != $2`
+
+	rows, err := DB.Query(sqlStatement, search + ":*", constants.Banned)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		u := model.User{}
+		if err := rows.Scan(&u.ID, &u.Username); err != nil {
+			return nil, err
+		}
+		users = append(users, u)
+	}
+	if rows.Err() != nil {
+		panic(rows.Err())
+	}
+
+	return users, nil
 }
 
 // GetUserInfo retrieves metadata about a user.

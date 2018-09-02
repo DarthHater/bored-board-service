@@ -451,6 +451,36 @@ func TestGetUser(t *testing.T) {
 	}
 }
 
+func TestGetUsers(t *testing.T) {
+	d := Database{}
+	var mock sqlmock.Sqlmock
+	var err error
+	DB, mock, err = sqlmock.New()
+	if err != nil {
+		t.Fatalf("An error %s occurred when opening stub database connection", err)
+	}
+	defer DB.Close()
+
+	row := sqlmock.NewRows([]string{"id", "username"}).
+		AddRow("1", "CoolGuy420").
+		AddRow("2", "CoolGuyChiller")
+
+	mock.ExpectQuery(`SELECT (.+) FROM \(SELECT (.+) FROM board.user\)`).WillReturnRows(row)
+
+	result, err := d.GetUsers("coolguy")
+
+	expected := []model.User{
+		{ID: "1", Username: "CoolGuy420" },
+		{ID: "2", Username: "CoolGuyChiller" },
+	}
+
+	assert.Equal(t, result, expected)
+
+	if err = mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expections: %s", err)
+	}
+}
+
 func TestCreateUser(t *testing.T) {
 	d := Database{}
 	var mock sqlmock.Sqlmock

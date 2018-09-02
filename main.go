@@ -392,6 +392,11 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 			getUserInfo(c, d, userID)
 		})
 
+		auth.GET("/users", func(c *gin.Context) {
+			search := c.Query("search")
+			getUsers(c, d, search)
+		})
+
 		auth.Use(userIsInRole(d, []constants.Role{constants.Admin, constants.Mod}))
 		{
 			auth.DELETE("/thread/:threadid", func(c *gin.Context) {
@@ -473,6 +478,17 @@ func getMessages(c *gin.Context, d database.IDatabase, num int, userID string) {
 
 func getUserInfo(c *gin.Context, d database.IDatabase, userID string) {
 	userInfo, err := d.GetUserInfo(userID)
+	if err != nil {
+		log.Error(err)
+		c.JSON(http.StatusBadRequest, "Uh oh")
+	} else {
+		c.JSON(http.StatusOK, userInfo)
+	}
+}
+
+
+func getUsers(c *gin.Context, d database.IDatabase, search string) {
+	userInfo, err := d.GetUsers(search)
 	if err != nil {
 		log.Error(err)
 		c.JSON(http.StatusBadRequest, "Uh oh")
