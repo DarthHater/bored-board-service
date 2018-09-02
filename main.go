@@ -162,6 +162,7 @@ func main() {
 
 	gPubSubConn = &redis.PubSubConn{Conn: gRedisConn}
 	gPubSubConn.Subscribe("posts")
+	gPubSubConn.Subscribe("message_posts")
 	defer gPubSubConn.Close()
 
 	go manager.start()
@@ -433,12 +434,18 @@ func postMessagePost(c *gin.Context, d database.IDatabase) {
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	} else {
-		_, err := json.Marshal(&newMessage)
+		bytes, err := json.Marshal(&newMessage)
 		if err != nil {
 			return
 		}
 
 		c.JSON(http.StatusCreated, newMessage)
+
+		if c, err := gRedisConn(); err != nil {
+			log.Printf("Error on redis conn. %s", err)
+		} else {
+			c.Do("PUBLISH", "message_posts", bytes)
+		}
 	}
 }
 
