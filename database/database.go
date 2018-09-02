@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"strings"
 	"log"
 	"os"
 
@@ -151,7 +150,7 @@ func (d *Database) GetUsers(search string) ([]model.User, error) {
 				FROM board.user) doc
 		WHERE doc.lex @@ to_tsquery($1) AND UserRole != $2`
 
-	rows, err := DB.Query(sqlStatement, strings.ToLower(search) + ":*")
+	rows, err := DB.Query(sqlStatement, search + ":*", constants.Banned)
 
 	if err != nil {
 		return nil, err
