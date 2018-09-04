@@ -346,9 +346,9 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 			getPosts(c, d, threadID)
 		})
 
-		auth.GET("/threads", func(c *gin.Context) {
-			userID := c.Query("userid")
-			getThreads(c, d, 20, userID)
+		auth.GET("/threads/:since", func(c *gin.Context) {
+			since := c.Param("since")
+			getThreads(c, d, 20, since)
 		})
 
 		auth.GET("/message/:messageid", func(c *gin.Context) {
@@ -456,8 +456,8 @@ func getPost(c *gin.Context, d database.IDatabase, postID string) {
 	c.JSON(http.StatusOK, post)
 }
 
-func getThreads(c *gin.Context, d database.IDatabase, num int, userID string) {
-	threads, err := d.GetThreads(num, userID)
+func getThreads(c *gin.Context, d database.IDatabase, num int, since string) {
+	threads, err := d.GetThreads(num, since)
 	if err != nil {
 		log.Error(err)
 		c.JSON(http.StatusBadRequest, "Uh oh")

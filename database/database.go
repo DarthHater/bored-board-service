@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
+	"time"
 
 	"github.com/DarthHater/bored-board-service/constants"
 	"github.com/DarthHater/bored-board-service/model"
@@ -25,7 +27,7 @@ type IDatabase interface {
 	GetMessagePosts(s string) ([]model.MessagePost, error)
 	GetPost(s string) (model.Post, error)
 	GetPosts(s string) ([]model.Post, error)
-	GetThreads(i int, userID string) ([]model.Thread, error)
+	GetThreads(i int, since string) ([]model.Thread, error)
 	GetUserInfo(userID string) (model.UserInfo, error)
 	PostThread(t *model.NewThread) (model.NewThread, error)
 	PostPost(p *model.Post) (model.Post, error)
@@ -192,19 +194,17 @@ func (d *Database) GetUserInfo(userID string) (userInfo model.UserInfo, err erro
 }
 
 // GetThreads retrieves a given number of threads.
-func (d *Database) GetThreads(num int, userID string) ([]model.Thread, error) {
+func (d *Database) GetThreads(num int, since string) ([]model.Thread, error) {
 	var threads []model.Thread
+	i, _ := strconv.ParseInt(since, 10, 64)
 
-	sqlStatement := `SELECT bt.Id, bt.UserId, bt.Title, bt.PostedAt, bu.Username
+	t := time.Unix(0, i*int64(time.Millisecond))
+
+	rows, err := DB.Query(`SELECT bt.Id, bt.UserId, bt.Title, bt.PostedAt, bu.Username
 		FROM board.thread bt
 		INNER JOIN board.user bu ON bt.UserId = bu.Id
-		WHERE Deleted != true`
-
-	if userID != "" {
-		sqlStatement += " AND board.user = 1$"
-	}
-
-	rows, err := DB.Query(sqlStatement)
+		WHERE Deleted != true AND PostedAt < $1 
+		ORDER BY PostedAt DESC LIMIT $2`, t, num)
 
 	if err != nil {
 		return nil, err
