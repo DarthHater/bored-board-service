@@ -40,6 +40,7 @@ const (
 
 var (
 	db          database.IDatabase
+	a			auth.IAuth
 	gPubSubConn *redis.PubSubConn
 	gRedisConn  = func() (redis.Conn, error) {
 		redisURL := os.Getenv("REDIS_URL")
@@ -145,7 +146,10 @@ var webSocketUpgrade = websocket.Upgrader{
 }
 
 func init() {
-	auth.ReadAndSetKeys();
+	auth := auth.Auth{}
+	a = &auth
+
+	a.ReadAndSetKeys();
 }
 
 func main() {
@@ -217,7 +221,7 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 
 	authGroup := r.Group("/")
 
-	authGroup.Use(auth.UserIsLoggedIn())
+	authGroup.Use(a.UserIsLoggedIn())
 	{
 		authGroup.GET("/thread/:threadid", func(c *gin.Context) {
 			threadID := c.Param("threadid")
@@ -285,7 +289,7 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 			getUsers(c, d, search)
 		})
 
-		authGroup.Use(auth.UserIsInRole(d, []constants.Role{constants.Admin, constants.Mod}))
+		authGroup.Use(a.UserIsInRole(d, []constants.Role{constants.Admin, constants.Mod}))
 		{
 			authGroup.DELETE("/thread/:threadid", func(c *gin.Context) {
 				threadID := c.Param("threadid")
@@ -532,7 +536,7 @@ func checkCredentials(c *gin.Context, d database.IDatabase) {
 		return
 	}
 
-	tokenString, err := auth.CreateToken(user);
+	tokenString, err := a.CreateToken(user);
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})

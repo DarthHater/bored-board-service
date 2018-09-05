@@ -3,7 +3,6 @@ package auth
 import (
 	"errors"
 	"net/http"
-	"os"
 	"fmt"
 	"io/ioutil"
 	"crypto/rsa"
@@ -15,7 +14,19 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/dgrijalva/jwt-go"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
+
+// IAuth defines an interface for auth related functionality.
+type IAuth interface {
+	ReadAndSetKeys()
+	UserIsLoggedIn() gin.HandlerFunc
+	UserIsInRole(d database.IDatabase, roles []constants.Role) gin.HandlerFunc
+	CreateToken(user model.User) (string, error)
+}
+
+type Auth struct {
+}
 
 var (
 	signKey   *rsa.PrivateKey
@@ -23,13 +34,17 @@ var (
 )
 
 // ReadAndSetKeys will read public and private RSA keys and create a key for signing JWTs.
-func ReadAndSetKeys() {
-	privKeyPath := os.Getenv("PRIVATE_KEY_PATH")
-	pubKeyPath := os.Getenv("PUBLIC_KEY_PATH")
+func (a *Auth) ReadAndSetKeys() {
+	a.setUpViper()
+
+	privKeyPath := viper.GetString("PRIVATE_KEY_PATH")
+	pubKeyPath := viper.GetString("PUBLIC_KEY_PATH")
 
 	signBytes, err := ioutil.ReadFile(privKeyPath)
 	if err != nil {
-		log.Fatal(err)
+		log.WithFields(log.Fields{
+			"privateKeyPath": privKeyPath,
+		}).Fatal(err)
 	}
 
 	signKey, err = jwt.ParseRSAPrivateKeyFromPEM(signBytes)
@@ -39,7 +54,9 @@ func ReadAndSetKeys() {
 
 	verifyBytes, err := ioutil.ReadFile(pubKeyPath)
 	if err != nil {
-		log.Fatal(err)
+		log.WithFields(log.Fields{
+			"publiceKeyPath": pubKeyPath,
+		}).Fatal(err)
 	}
 
 	verifyKey, err = jwt.ParseRSAPublicKeyFromPEM(verifyBytes)
@@ -49,10 +66,10 @@ func ReadAndSetKeys() {
 }
 
 // UserIsLoggedIn will read the JWT in the request header and verify that it is legitimate.
-func UserIsLoggedIn() gin.HandlerFunc {
+func (a *Auth) UserIsLoggedIn() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
-		token, err := getToken(c)
+		token, err := a.getToken(c)
 
 		if err != nil {
 			c.Abort()
@@ -69,7 +86,6 @@ func UserIsLoggedIn() gin.HandlerFunc {
 					c.JSON(http.StatusForbidden, gin.H{"err": "token is malformed"})
 					log.Error(fmt.Sprintf("Attempt to access resources with malformed token from origin: %s", origin))
 				} else if ve.Errors&(jwt.ValidationErrorExpired) != 0 {
-					// Token is expired
 					c.JSON(http.StatusForbidden, gin.H{"err": "token is expired"})
 				} else {
 					c.JSON(http.StatusForbidden, gin.H{"err": "error reading token"})
@@ -85,7 +101,7 @@ func UserIsLoggedIn() gin.HandlerFunc {
 }
 
 // UserIsInRole accepts a list of roles and determines whether a user's role in a JWT is in that list.
-func UserIsInRole(d database.IDatabase, roles []constants.Role) gin.HandlerFunc {
+func (a *Auth) UserIsInRole(d database.IDatabase, roles []constants.Role) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var token interface{}
 		var ok bool
@@ -116,7 +132,7 @@ func UserIsInRole(d database.IDatabase, roles []constants.Role) gin.HandlerFunc 
 }
 
 // CreateToken generates a signed JWT string based on user info.
-func CreateToken(user model.User) (string, error) {
+func (a *Auth) CreateToken(user model.User) (string, error) {
 	token := jwt.New(jwt.SigningMethodRS256)
 	claims := make(jwt.MapClaims)
 	claims["exp"] = time.Now().Add(time.Hour * 24 * 7).Unix() // expires in one week
@@ -129,7 +145,7 @@ func CreateToken(user model.User) (string, error) {
 	return token.SignedString(signKey)
 }
 
-func getToken(c *gin.Context) (*jwt.Token, error) {
+func (a *Auth) getToken(c *gin.Context) (*jwt.Token, error) {
 	tokenString := c.GetHeader("Authorization")
 
 	if tokenString == "" {
@@ -146,4 +162,11 @@ func getToken(c *gin.Context) (*jwt.Token, error) {
 	})
 
 	return token, err
+}
+
+func (a *Auth) setUpViper() {
+	viper.SetDefault("PRIVATE_KEY_PATH", "/var/bored-board-service/.keys/app.rsa")
+	viper.SetDefault("PUBLIC_KEY_PATH", "/var/bored-board-service/.keys/app.rsa.pub")
+	viper.BindEnv("PRIVATE_KEY_PATH")
+	viper.BindEnv("PUBLIC_KEY_PATH")
 }
