@@ -40,7 +40,7 @@ const (
 
 var (
 	db          database.IDatabase
-	a		auth.IAuth
+	a	auth.IAuth
 	gPubSubConn *redis.PubSubConn
 	gRedisConn  = func() (redis.Conn, error) {
 		redisURL := os.Getenv("REDIS_URL")
