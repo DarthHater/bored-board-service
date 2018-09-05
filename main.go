@@ -238,7 +238,7 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 			getPosts(c, d, threadID)
 		})
 
-		auth.GET("/threads/:since", func(c *gin.Context) {
+		authGroup.GET("/threads/:since", func(c *gin.Context) {
 			since := c.Param("since")
 			getThreads(c, d, 20, since)
 		})
