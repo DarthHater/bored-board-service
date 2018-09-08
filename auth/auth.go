@@ -158,8 +158,6 @@ func (a *Auth) getToken(c *gin.Context) (*jwt.Token, error) {
 
 	tokenString = strings.Replace(tokenString, "Bearer ", "", 1)
 
-	fmt.Println("TOKENTKENTKENTEKNT: ", tokenString)
-
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		return verifyKey, nil
 	})
