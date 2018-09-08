@@ -114,7 +114,7 @@ func (a *Auth) UserIsInRole(d database.IDatabase, roles []constants.Role) gin.Ha
 		}
 
 		var userRole constants.Role
-		if claims, ok := token.(*jwt.Token).Claims.(jwt.MapClaims); ok {
+		if claims, ok := token.(jwt.Token).Claims.(jwt.MapClaims); ok {
 			userRole = constants.Role(claims["role"].(int))
 		} else {
 			c.Abort()
