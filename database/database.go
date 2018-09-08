@@ -204,7 +204,7 @@ func (d *Database) GetThreads(num int, since string) ([]model.Thread, error) {
 	rows, err := DB.Query(`SELECT bt.Id, bt.UserId, bt.Title, bt.PostedAt, bu.Username
 		FROM board.thread bt
 		INNER JOIN board.user bu ON bt.UserId = bu.Id
-		WHERE Deleted != true AND PostedAt < $1 
+		WHERE Deleted != true AND PostedAt < $1
 		ORDER BY PostedAt DESC LIMIT $2`, t, num)
 
 	if err != nil {

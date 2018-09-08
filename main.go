@@ -146,8 +146,8 @@ var webSocketUpgrade = websocket.Upgrader{
 }
 
 func init() {
-	auth := auth.Auth{}
-	a = &auth
+	au := auth.Auth{}
+	a = &au
 
 	a.ReadAndSetKeys();
 }

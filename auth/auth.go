@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"crypto/rsa"
 	"time"
+	"strings"
 
 	"github.com/DarthHater/bored-board-service/database"
 	"github.com/DarthHater/bored-board-service/model"
@@ -114,7 +115,7 @@ func (a *Auth) UserIsInRole(d database.IDatabase, roles []constants.Role) gin.Ha
 
 		var userRole constants.Role
 		if claims, ok := token.(*jwt.Token).Claims.(jwt.MapClaims); ok {
-			userRole = constants.Role(claims["role"].(float64))
+			userRole = constants.Role(claims["role"].(int))
 		} else {
 			c.Abort()
 			return
@@ -155,7 +156,9 @@ func (a *Auth) getToken(c *gin.Context) (*jwt.Token, error) {
 		return nil, errors.New("Error")
 	}
 
-	tokenString = tokenString[len("Bearer "):]
+	tokenString = strings.Replace(tokenString, "Bearer ", "", 1)
+
+	fmt.Println("TOKENTKENTKENTEKNT: ", tokenString)
 
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		return verifyKey, nil
