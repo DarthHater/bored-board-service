@@ -178,14 +178,15 @@ func (d *Database) GetUserInfo(userID string) (userInfo model.UserInfo, err erro
 	userInfo = model.UserInfo{}
 
 	sqlStatement := `
-		SELECT COUNT(t), COUNT(tp), MAX(tp.postedat)
+		SELECT COUNT(t), COUNT(tp), MAX(tp.postedat), u.Username
 			FROM board.thread t
 				INNER JOIN board.thread_post tp ON t.id = tp.threadid
 				INNER JOIN board.user u on tp.userid = u.id
-		WHERE u.id = $1`
+		WHERE u.id = $1
+		GROUP BY u.Username`
 
 	err = DB.QueryRow(sqlStatement, userID).
-		Scan(&userInfo.TotalThreads, &userInfo.TotalPosts, &userInfo.LastPosted)
+		Scan(&userInfo.TotalThreads, &userInfo.TotalPosts, &userInfo.LastPosted, &userInfo.Username)
 	if err != nil {
 		return userInfo, err
 	}
@@ -203,7 +204,7 @@ func (d *Database) GetThreads(num int, since string) ([]model.Thread, error) {
 	rows, err := DB.Query(`SELECT bt.Id, bt.UserId, bt.Title, bt.PostedAt, bu.Username
 		FROM board.thread bt
 		INNER JOIN board.user bu ON bt.UserId = bu.Id
-		WHERE Deleted != true AND PostedAt < $1 
+		WHERE Deleted != true AND PostedAt < $1
 		ORDER BY PostedAt DESC LIMIT $2`, t, num)
 
 	if err != nil {
@@ -384,7 +385,7 @@ func (d *Database) GetMessages(num int, userid string) ([]model.Message, error) 
 	return messages, nil
 }
 
-// GetPosts will return all posts under a given thread.
+// GetMessagePosts will return all posts under a given thread.
 func (d *Database) GetMessagePosts(messageID string) ([]model.MessagePost, error) {
 	var messageposts []model.MessagePost
 	rows, err := DB.Query(`SELECT mp.Id, mp.MessageId, mp.UserId, mp.Body, mp.PostedAt, bu.Username
@@ -493,7 +494,6 @@ func (d *Database) CreateUser(user *model.User) (userid string, err error) {
 	}
 
 	return id, nil
-
 }
 
 // Internal methods

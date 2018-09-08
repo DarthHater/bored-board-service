@@ -16,22 +16,16 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
-	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"time"
 
+	"github.com/DarthHater/bored-board-service/auth"
 	"github.com/DarthHater/bored-board-service/constants"
 	"github.com/DarthHater/bored-board-service/model"
 	"github.com/garyburd/redigo/redis"
 	"golang.org/x/crypto/bcrypt"
-
-	"crypto/rsa"
-
 	"github.com/DarthHater/bored-board-service/database"
-	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -45,7 +39,8 @@ const (
 )
 
 var (
-	db          database.IDatabase
+	db         database.IDatabase
+	a		auth.IAuth
 	gPubSubConn *redis.PubSubConn
 	gRedisConn  = func() (redis.Conn, error) {
 		redisURL := os.Getenv("REDIS_URL")
@@ -55,8 +50,6 @@ var (
 
 		return redis.Dial("tcp", "redis_db:6379")
 	}
-	signKey   *rsa.PrivateKey
-	verifyKey *rsa.PublicKey
 )
 
 type clientManager struct {
@@ -152,113 +145,11 @@ var webSocketUpgrade = websocket.Upgrader{
 	},
 }
 
-func getToken(c *gin.Context) (*jwt.Token, error) {
-	tokenString := c.GetHeader("Authorization")
-
-	if tokenString == "" {
-		origin := c.GetHeader("Origin")
-		c.JSON(http.StatusForbidden, gin.H{"err": "token is required"})
-		log.Error(fmt.Sprintf("Attempt to access resources without token from origin: %s", origin))
-		return nil, errors.New("Error")
-	}
-
-	tokenString = tokenString[len("Bearer "):]
-
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		return verifyKey, nil
-	})
-
-	return token, err
-}
-
-func userIsLoggedIn() gin.HandlerFunc {
-	return func(c *gin.Context) {
-
-		token, err := getToken(c)
-
-		if err != nil {
-			c.Abort()
-			return
-		}
-
-		if token.Valid {
-			// save token in context for use in other middleware
-			c.Set("token", token)
-		} else {
-			origin := c.GetHeader("Origin")
-			if ve, ok := err.(*jwt.ValidationError); ok {
-				if ve.Errors&jwt.ValidationErrorMalformed != 0 {
-					c.JSON(http.StatusForbidden, gin.H{"err": "token is malformed"})
-					log.Error(fmt.Sprintf("Attempt to access resources with malformed token from origin: %s", origin))
-				} else if ve.Errors&(jwt.ValidationErrorExpired) != 0 {
-					// Token is expired
-					c.JSON(http.StatusForbidden, gin.H{"err": "token is expired"})
-				} else {
-					c.JSON(http.StatusForbidden, gin.H{"err": "error reading token"})
-					log.Error(fmt.Sprintf("Error accessing resources with token from origin %s", origin))
-				}
-			} else {
-				c.JSON(http.StatusForbidden, gin.H{"err": "error reading token"})
-				log.Error(fmt.Sprintf("Error accessing resources with token from origin %s", origin))
-			}
-			c.Abort()
-		}
-	}
-}
-
-func userIsInRole(d database.IDatabase, roles []constants.Role) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		var token interface{}
-		var ok bool
-
-		if token, ok = c.Get("token"); !ok {
-			c.JSON(http.StatusForbidden, gin.H{"err": "Error accessing token"})
-			c.Abort()
-			return
-		}
-
-		var userRole constants.Role
-		if claims, ok := token.(*jwt.Token).Claims.(jwt.MapClaims); ok {
-			userRole = constants.Role(claims["role"].(float64))
-		} else {
-			c.Abort()
-			return
-		}
-
-		for _, role := range roles {
-			if userRole == role {
-				return
-			}
-		}
-
-		c.JSON(http.StatusForbidden, gin.H{"err": "User doesn't have access"})
-		c.Abort()
-	}
-}
-
 func init() {
-	privKeyPath := os.Getenv("PRIVATE_KEY_PATH")
-	pubKeyPath := os.Getenv("PUBLIC_KEY_PATH")
+	au := auth.Auth{}
+	a = &au
 
-	signBytes, err := ioutil.ReadFile(privKeyPath)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	signKey, err = jwt.ParseRSAPrivateKeyFromPEM(signBytes)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	verifyBytes, err := ioutil.ReadFile(pubKeyPath)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	verifyKey, err = jwt.ParseRSAPublicKeyFromPEM(verifyBytes)
-	if err != nil {
-		log.Fatal(err)
-	}
+	a.ReadAndSetKeys();
 }
 
 func main() {
@@ -275,6 +166,7 @@ func main() {
 
 	gPubSubConn = &redis.PubSubConn{Conn: gRedisConn}
 	gPubSubConn.Subscribe("posts")
+	gPubSubConn.Subscribe("message_posts")
 	defer gPubSubConn.Close()
 
 	go manager.start()
@@ -327,79 +219,79 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 		webSocketHandler(c.Writer, c.Request)
 	})
 
-	auth := r.Group("/")
+	authGroup := r.Group("/")
 
-	auth.Use(userIsLoggedIn())
+	authGroup.Use(a.UserIsLoggedIn())
 	{
-		auth.GET("/thread/:threadid", func(c *gin.Context) {
+		authGroup.GET("/thread/:threadid", func(c *gin.Context) {
 			threadID := c.Param("threadid")
 			getThread(c, d, threadID)
 		})
 
-		auth.GET("/post/:postid", func(c *gin.Context) {
+		authGroup.GET("/post/:postid", func(c *gin.Context) {
 			postID := c.Param("postid")
 			getPost(c, d, postID)
 		})
 
-		auth.GET("/posts/:threadid", func(c *gin.Context) {
+		authGroup.GET("/posts/:threadid", func(c *gin.Context) {
 			threadID := c.Param("threadid")
 			getPosts(c, d, threadID)
 		})
 
-		auth.GET("/threads/:since", func(c *gin.Context) {
+		authGroup.GET("/threads/:since", func(c *gin.Context) {
 			since := c.Param("since")
 			getThreads(c, d, 20, since)
 		})
 
-		auth.GET("/message/:messageid", func(c *gin.Context) {
+		authGroup.GET("/message/:messageid", func(c *gin.Context) {
 			messageID := c.Param("messageid")
 			getMessage(c, d, messageID)
 		})
 
-		auth.GET("/messages/:userid", func(c *gin.Context) {
+		authGroup.GET("/messages/:userid", func(c *gin.Context) {
 			userID := c.Param("userid")
 			getMessages(c, d, 20, userID)
 		})
 
-		auth.GET("/messageposts/:messageid", func(c *gin.Context) {
+		authGroup.GET("/messageposts/:messageid", func(c *gin.Context) {
 			messageID := c.Param("messageid")
 			getMessagePosts(c, d, messageID)
 		})
 
-		auth.POST("/thread", func(c *gin.Context) {
+		authGroup.POST("/thread", func(c *gin.Context) {
 			postThread(c, d)
 		})
 
-		auth.POST("/post", func(c *gin.Context) {
+		authGroup.POST("/post", func(c *gin.Context) {
 			postPost(c, d)
 		})
 
-		auth.POST("/newmessage", func(c *gin.Context) {
+		authGroup.POST("/newmessage", func(c *gin.Context) {
 			postMessage(c, d)
 		})
 
-		auth.POST("/message", func(c *gin.Context) {
+		authGroup.POST("/message", func(c *gin.Context) {
 			postMessagePost(c, d)
 		})
 
-		auth.PATCH("/posts/:postid", func(c *gin.Context) {
+		authGroup.PATCH("/posts/:postid", func(c *gin.Context) {
 			postID := c.Param("postid")
 			editPost(c, d, postID)
 		})
 
-		auth.GET("/user/:userid", func(c *gin.Context) {
+		authGroup.GET("/user/:userid", func(c *gin.Context) {
 			userID := c.Param("userid")
 			getUserInfo(c, d, userID)
 		})
 
-		auth.GET("/users", func(c *gin.Context) {
+		authGroup.GET("/users", func(c *gin.Context) {
 			search := c.Query("search")
 			getUsers(c, d, search)
 		})
 
-		auth.Use(userIsInRole(d, []constants.Role{constants.Admin, constants.Mod}))
+		authGroup.Use(a.UserIsInRole(d, []constants.Role{constants.Admin, constants.Mod}))
 		{
-			auth.DELETE("/thread/:threadid", func(c *gin.Context) {
+			authGroup.DELETE("/thread/:threadid", func(c *gin.Context) {
 				threadID := c.Param("threadid")
 				deleteThread(c, d, threadID)
 			})
@@ -546,12 +438,18 @@ func postMessagePost(c *gin.Context, d database.IDatabase) {
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	} else {
-		_, err := json.Marshal(&newMessage)
+		bytes, err := json.Marshal(&newMessage)
 		if err != nil {
 			return
 		}
 
 		c.JSON(http.StatusCreated, newMessage)
+
+		if c, err := gRedisConn(); err != nil {
+			log.Printf("Error on redis conn. %s", err)
+		} else {
+			c.Do("PUBLISH", "message_posts", bytes)
+		}
 	}
 }
 
@@ -638,16 +536,7 @@ func checkCredentials(c *gin.Context, d database.IDatabase) {
 		return
 	}
 
-	token := jwt.New(jwt.SigningMethodRS256)
-	claims := make(jwt.MapClaims)
-	claims["exp"] = time.Now().Add(time.Hour * 24 * 7).Unix() // expires in one week
-	claims["iat"] = time.Now().Unix()
-	claims["user"] = user.Username
-	claims["id"] = user.ID
-	claims["role"] = user.UserRole
-	token.Claims = claims
-
-	tokenString, err := token.SignedString(signKey)
+	tokenString, err := a.CreateToken(user);
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
