@@ -233,9 +233,10 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 			getPost(c, d, postID)
 		})
 
-		authGroup.GET("/posts/:threadid", func(c *gin.Context) {
+		authGroup.GET("/posts/:threadid/:since", func(c *gin.Context) {
 			threadID := c.Param("threadid")
-			getPosts(c, d, threadID)
+			since := c.Param("since")
+			getPosts(c, d, threadID, 20, since)
 		})
 
 		authGroup.GET("/threads/:since", func(c *gin.Context) {
@@ -399,8 +400,10 @@ func getMessagePosts(c *gin.Context, d database.IDatabase, messageID string) {
 	}
 }
 
-func getPosts(c *gin.Context, d database.IDatabase, threadID string) {
-	posts, err := d.GetPosts(threadID)
+func getPosts(c *gin.Context, d database.IDatabase, threadID string, num int, since string) {
+	value, _ := a.GetTokenKey(c, constants.UserID)
+	userID := value.(string)
+	posts, err := d.GetPosts(threadID, 20, since, userID)
 	if err != nil {
 		log.Error(err)
 		c.JSON(http.StatusBadRequest, "Uh oh")

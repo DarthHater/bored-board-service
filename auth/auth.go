@@ -23,6 +23,7 @@ type IAuth interface {
 	ReadAndSetKeys()
 	UserIsLoggedIn() gin.HandlerFunc
 	UserIsInRole(d database.IDatabase, roles []constants.Role) gin.HandlerFunc
+	GetTokenKey(c *gin.Context, keyName string) (interface{}, error)
 	CreateToken(user model.User) (string, error)
 }
 
@@ -104,22 +105,15 @@ func (a *Auth) UserIsLoggedIn() gin.HandlerFunc {
 // UserIsInRole accepts a list of roles and determines whether a user's role in a JWT is in that list.
 func (a *Auth) UserIsInRole(d database.IDatabase, roles []constants.Role) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var token interface{}
-		var ok bool
-
-		if token, ok = c.Get("token"); !ok {
-			c.JSON(http.StatusForbidden, gin.H{"err": "Error accessing token"})
-			c.Abort()
-			return
-		}
 
 		var userRole constants.Role
-		if claims, ok := token.(jwt.Token).Claims.(jwt.MapClaims); ok {
-			userRole = constants.Role(claims["role"].(int))
-		} else {
-			c.Abort()
-			return
+		value, err := a.GetTokenKey(c, constants.UserRole)
+
+		if err != nil {
+			panic(err)
 		}
+
+		userRole = constants.Role(value.(int))
 
 		for _, role := range roles {
 			if userRole == role {
@@ -132,15 +126,33 @@ func (a *Auth) UserIsInRole(d database.IDatabase, roles []constants.Role) gin.Ha
 	}
 }
 
+func (a *Auth) GetTokenKey(c *gin.Context, keyName string) (interface{}, error) {
+	var token interface{}
+	var ok bool
+
+	if token, ok = c.Get("token"); !ok {
+		c.JSON(http.StatusForbidden, gin.H{"err": "Error accessing token"})
+		c.Abort()
+		return nil, nil
+	}
+
+	if claims, ok := token.(jwt.Token).Claims.(jwt.MapClaims); ok {
+		return claims[keyName], nil
+	} else {
+		c.Abort()
+		return nil, nil
+	}
+}
+
 // CreateToken generates a signed JWT string based on user info.
 func (a *Auth) CreateToken(user model.User) (string, error) {
 	token := jwt.New(jwt.SigningMethodRS256)
 	claims := make(jwt.MapClaims)
-	claims["exp"] = time.Now().Add(time.Hour * 24 * 7).Unix() // expires in one week
-	claims["iat"] = time.Now().Unix()
-	claims["user"] = user.Username
-	claims["id"] = user.ID
-	claims["role"] = user.UserRole
+	claims[constants.Expires] = time.Now().Add(time.Hour * 24 * 7).Unix() // expires in one week
+	claims[constants.IssuedAt] = time.Now().Unix()
+	claims[constants.UserName] = user.Username
+	claims[constants.UserID] = user.ID
+	claims[constants.UserRole] = user.UserRole
 	token.Claims = claims
 
 	return token.SignedString(signKey)

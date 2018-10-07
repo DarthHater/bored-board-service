@@ -26,7 +26,7 @@ type IDatabase interface {
 	GetMessages(i int, u string) ([]model.Message, error)
 	GetMessagePosts(s string) ([]model.MessagePost, error)
 	GetPost(s string) (model.Post, error)
-	GetPosts(s string) ([]model.Post, error)
+	GetPosts(s string, i int, since string, userID string) ([]model.Post, error)
 	GetThreads(i int, since string) ([]model.Thread, error)
 	GetUserInfo(userID string) (model.UserInfo, error)
 	PostThread(t *model.NewThread) (model.NewThread, error)
@@ -197,9 +197,9 @@ func (d *Database) GetUserInfo(userID string) (userInfo model.UserInfo, err erro
 // GetThreads retrieves a given number of threads.
 func (d *Database) GetThreads(num int, since string) ([]model.Thread, error) {
 	var threads []model.Thread
-	i, _ := strconv.ParseInt(since, 10, 64)
 
-	t := time.Unix(0, i*int64(time.Millisecond))
+	i := d.stringToInt64(since)
+	t := d.int64ToTime(i)
 
 	rows, err := DB.Query(`SELECT bt.Id, bt.UserId, bt.Title, bt.PostedAt, bu.Username
 		FROM board.thread bt
@@ -227,15 +227,35 @@ func (d *Database) GetThreads(num int, since string) ([]model.Thread, error) {
 }
 
 // GetPosts will return all posts under a given thread.
-func (d *Database) GetPosts(threadId string) ([]model.Post, error) {
+func (d *Database) GetPosts(threadID string, num int, since string, userID string) ([]model.Post, error) {
 	var posts []model.Post
+	var i int64
+	var t time.Time
+
+	// if this is the first time a user is (re)visiting the thread, try to get their last location in it
+	// otherwise, use the passed paramater
+	if (since != "") {
+		i = d.stringToInt64(since)
+		t = d.int64ToTime(i)
+	} else {
+		i, _ = d.getLastViewedTime(userID, threadID)
+		t = d.int64ToTime(i)
+	}
+
 	rows, err := DB.Query(`SELECT tp.Id, tp.ThreadId, tp.UserId, tp.Body, tp.PostedAt, bu.Username
 			FROM board.thread_post tp
 			INNER JOIN board.user bu ON tp.UserId = bu.Id
-			WHERE ThreadId = $1`, threadId)
+			WHERE ThreadId = $1 AND PostedAt < $2
+			ORDER BY PostedAt DESC LIMIT $2`, threadID, t, num)
+
 	if err != nil {
 		return nil, err
 	}
+
+	if since != "" {
+		d.setLastViewedTime(userID, threadID, since)
+	}
+
 	defer rows.Close()
 
 	for rows.Next() {
@@ -245,6 +265,7 @@ func (d *Database) GetPosts(threadId string) ([]model.Post, error) {
 		}
 		posts = append(posts, p)
 	}
+
 	if rows.Err() != nil {
 		panic(rows.Err())
 	}
@@ -538,4 +559,51 @@ func (d *Database) openConnection(psqlInfo string) error {
 		return err
 	}
 	return nil
+}
+
+func (d *Database) getLastViewedTime(userID string, threadID string) (lastViewed int64, err error) {
+	sqlStatement := `
+		SELECT LastViewedPostUnixTime
+		FROM board.message_post
+		WHERE UserId = $1 AND threadID = $2`
+
+	err = DB.QueryRow(sqlStatement,
+		userID,
+		threadID).
+		Scan(&lastViewed)
+
+	if err != nil {
+		return -1, err
+	}
+
+	return lastViewed, nil
+}
+
+func (d *Database) setLastViewedTime(userID string, threadID string, since string) error {
+	sqlStatement := `
+		UPDATE board.message_post
+		SET LastViewedPostUnixTime = $1
+		WHERE UserId = $2 AND threadID = $3`
+
+	res, _ := DB.Exec(sqlStatement,
+		userID,
+		threadID,
+		since)
+
+	rows, err := res.RowsAffected()
+
+	if rows > 0 {
+		return nil
+	}
+
+	return err
+}
+
+func (d *Database) stringToInt64(since string) int64 {
+	i, _ := strconv.ParseInt(since, 10, 64)
+	return i;
+}
+
+func (d *Database) int64ToTime(i int64) time.Time {
+	return time.Unix(0, i*int64(time.Millisecond))
 }
