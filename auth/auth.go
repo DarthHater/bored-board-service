@@ -126,22 +126,18 @@ func (a *Auth) UserIsInRole(d database.IDatabase, roles []constants.Role) gin.Ha
 	}
 }
 
+// GetTokenKey will retrieve a value with the given key from the gin context.
 func (a *Auth) GetTokenKey(c *gin.Context, keyName string) (interface{}, error) {
 	var token interface{}
-	var ok bool
 
-	if token, ok = c.Get("token"); !ok {
-		c.JSON(http.StatusForbidden, gin.H{"err": "Error accessing token"})
-		c.Abort()
-		return nil, nil
-	}
+	token, _ = c.Get("token");
 
 	if claims, ok := token.(jwt.Token).Claims.(jwt.MapClaims); ok {
 		return claims[keyName], nil
-	} else {
-		c.Abort()
-		return nil, nil
 	}
+
+	c.Abort()
+	return nil, errors.New("Couldn't access token")
 }
 
 // CreateToken generates a signed JWT string based on user info.
