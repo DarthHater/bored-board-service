@@ -161,7 +161,7 @@ func TestGetPosts(t *testing.T) {
 
 	mock.ExpectQuery("SELECT (.+) FROM board.thread_post").WillReturnRows(row)
 
-	result, err := d.GetPosts("A thread", 20, "")
+	result, err := d.GetPosts("A thread", 20, "", "", constants.None)
 
 	expected := []model.Post{
 		{Id: "", ThreadId: "", UserId: "", Body: "Post Body", PostedAt: "A time", UserName: "admin"},
