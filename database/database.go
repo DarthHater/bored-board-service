@@ -232,8 +232,8 @@ func (d *Database) GetPosts(threadID string, num int, since string, userID strin
 	var t time.Time
 	var rows *sql.Rows
 
-	// if this is the user is entering the thread, try to get their last location in it
-	// otherwise, use the passed paramater
+	// if the since param is empty, the user is probably visiting the thread for the first time or revisiting the thread
+	// if revisiting, attempt to get time of last post that was viewed
 	if (since != "") {
 		i = d.stringToInt64(since)
 		t = d.int64ToTime(i)
@@ -255,7 +255,7 @@ func (d *Database) GetPosts(threadID string, num int, since string, userID strin
 				ORDER BY PostedAt DESC LIMIT $3
 			) AS a ORDER BY a.PostedAt ASC`, threadID, t, num)
 	} else if !t.IsZero() && direction == constants.Down || direction == constants.None {
-		 statement := baseQuery + ` AND PostedAt >= $2
+		statement := baseQuery + ` AND PostedAt >= $2
 			ORDER BY PostedAt ASC LIMIT $3`
 		rows, err = DB.Query(statement, threadID, t, num)
 	} else {
