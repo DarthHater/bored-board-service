@@ -23,7 +23,7 @@ type IAuth interface {
 	ReadAndSetKeys()
 	UserIsLoggedIn() gin.HandlerFunc
 	UserIsInRole(d database.IDatabase, roles []constants.Role) gin.HandlerFunc
-	GetTokenKey(c *gin.Context, keyName string) (interface{}, error)
+	GetTokenValue(c *gin.Context, keyName string) (interface{}, error)
 	CreateToken(user model.User) (string, error)
 }
 
@@ -78,10 +78,7 @@ func (a *Auth) UserIsLoggedIn() gin.HandlerFunc {
 			return
 		}
 
-		if token.Valid {
-			// save token in context for use in other middleware
-			c.Set("token", token)
-		} else {
+		if !token.Valid {
 			origin := c.GetHeader("Origin")
 			if ve, ok := err.(*jwt.ValidationError); ok {
 				if ve.Errors&jwt.ValidationErrorMalformed != 0 {
@@ -98,7 +95,11 @@ func (a *Auth) UserIsLoggedIn() gin.HandlerFunc {
 				log.Error(fmt.Sprintf("Error accessing resources with token from origin %s", origin))
 			}
 			c.Abort()
+			return
 		}
+
+		// save token in context for use in other middleware
+		c.Set("token", token)
 	}
 }
 
@@ -107,7 +108,7 @@ func (a *Auth) UserIsInRole(d database.IDatabase, roles []constants.Role) gin.Ha
 	return func(c *gin.Context) {
 
 		var userRole constants.Role
-		value, err := a.GetTokenKey(c, constants.UserRole)
+		value, err := a.GetTokenValue(c, constants.UserRole)
 
 		if err != nil {
 			panic(err)
@@ -126,13 +127,13 @@ func (a *Auth) UserIsInRole(d database.IDatabase, roles []constants.Role) gin.Ha
 	}
 }
 
-// GetTokenKey will retrieve a value with the given key from the gin context.
-func (a *Auth) GetTokenKey(c *gin.Context, keyName string) (interface{}, error) {
+// GetTokenValue will retrieve a value with the given key from the gin context.
+func (a *Auth) GetTokenValue(c *gin.Context, keyName string) (interface{}, error) {
 	var token interface{}
 
 	token, _ = c.Get("token");
 
-	if claims, ok := token.(jwt.Token).Claims.(jwt.MapClaims); ok {
+	if claims, ok := token.(*jwt.Token).Claims.(jwt.MapClaims); ok {
 		return claims[keyName], nil
 	}
 

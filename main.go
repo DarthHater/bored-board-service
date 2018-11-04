@@ -19,6 +19,7 @@ import (
 	"net/http"
 	"os"
 	"time"
+	"strconv"
 
 	"github.com/DarthHater/bored-board-service/auth"
 	"github.com/DarthHater/bored-board-service/constants"
@@ -233,10 +234,16 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 			getPost(c, d, postID)
 		})
 
+		authGroup.GET("/posts/:threadid", func(c *gin.Context) {
+			threadID := c.Param("threadid")
+			getPosts(c, d, threadID, 20, "", "")
+		})
+
 		authGroup.GET("/posts/:threadid/:since", func(c *gin.Context) {
 			threadID := c.Param("threadid")
 			since := c.Param("since")
-			getPosts(c, d, threadID, 20, since)
+			direction := c.Query("direction")
+			getPosts(c, d, threadID, 20, since, direction)
 		})
 
 		authGroup.GET("/threads/:since", func(c *gin.Context) {
@@ -400,10 +407,12 @@ func getMessagePosts(c *gin.Context, d database.IDatabase, messageID string) {
 	}
 }
 
-func getPosts(c *gin.Context, d database.IDatabase, threadID string, num int, since string) {
-	value, _ := a.GetTokenKey(c, constants.UserID)
+func getPosts(c *gin.Context, d database.IDatabase, threadID string, num int, since string, direction string) {
+	value, _ := a.GetTokenValue(c, constants.UserID)
 	userID := value.(string)
-	posts, err := d.GetPosts(threadID, 20, since, userID)
+	dir, _ := strconv.Atoi(direction)
+	posts, err := d.GetPosts(threadID, 20, since, userID, constants.Direction(dir))
+
 	if err != nil {
 		log.Error(err)
 		c.JSON(http.StatusBadRequest, "Uh oh")

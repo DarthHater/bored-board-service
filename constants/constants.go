@@ -21,3 +21,12 @@ const (
 	UserID = "id"
 	UserRole = "role"
 )
+
+type Direction int
+
+// Constants for loading threads above or below specified time.
+const (
+	None Direction = 0
+	Up Direction = 1
+	Down Direction = 2
+)

@@ -26,7 +26,7 @@ type IDatabase interface {
 	GetMessages(i int, u string) ([]model.Message, error)
 	GetMessagePosts(s string) ([]model.MessagePost, error)
 	GetPost(s string) (model.Post, error)
-	GetPosts(s string, i int, since string, userID string) ([]model.Post, error)
+	GetPosts(s string, i int, since string, userID string, direction constants.Direction) ([]model.Post, error)
 	GetThreads(i int, since string) ([]model.Thread, error)
 	GetUserInfo(userID string) (model.UserInfo, error)
 	PostThread(t *model.NewThread) (model.NewThread, error)
@@ -227,33 +227,44 @@ func (d *Database) GetThreads(num int, since string) ([]model.Thread, error) {
 }
 
 // GetPosts will return all posts under a given thread.
-func (d *Database) GetPosts(threadID string, num int, since string, userID string) ([]model.Post, error) {
-	var posts []model.Post
+func (d *Database) GetPosts(threadID string, num int, since string, userID string, direction constants.Direction) (posts []model.Post, err error) {
 	var i int64
 	var t time.Time
+	var rows *sql.Rows
 
-	// if this is the first time a user is (re)visiting the thread, try to get their last location in it
+	// if this is the user is entering the thread, try to get their last location in it
 	// otherwise, use the passed paramater
 	if (since != "") {
 		i = d.stringToInt64(since)
 		t = d.int64ToTime(i)
 	} else {
 		i, _ = d.getLastViewedTime(userID, threadID)
-		t = d.int64ToTime(i)
+		if i != 0 {
+			t = d.int64ToTime(i)
+		}
 	}
 
-	rows, err := DB.Query(`SELECT tp.Id, tp.ThreadId, tp.UserId, tp.Body, tp.PostedAt, bu.Username
-			FROM board.thread_post tp
-			INNER JOIN board.user bu ON tp.UserId = bu.Id
-			WHERE ThreadId = $1 AND PostedAt < $2
-			ORDER BY PostedAt DESC LIMIT $2`, threadID, t, num)
+	baseQuery := `SELECT tp.Id, tp.ThreadId, tp.UserId, tp.Body, tp.PostedAt, bu.Username
+		FROM board.thread_post tp
+		INNER JOIN board.user bu ON tp.UserId = bu.Id
+		WHERE ThreadId = $1`
+
+	if !t.IsZero() && direction == constants.Up {
+		rows, err = DB.Query(`
+			SELECT * FROM (` + baseQuery + ` AND PostedAt < $2
+				ORDER BY PostedAt DESC LIMIT $3
+			) AS a ORDER BY a.PostedAt ASC`, threadID, t, num)
+	} else if !t.IsZero() && direction == constants.Down || direction == constants.None {
+		 statement := baseQuery + ` AND PostedAt >= $2
+			ORDER BY PostedAt ASC LIMIT $3`
+		rows, err = DB.Query(statement, threadID, t, num)
+	} else {
+		// first time visiting the thread, load initial posts
+		rows, err = DB.Query(baseQuery + `ORDER BY tp.PostedAt ASC LIMIT $2`, threadID, num)
+	}
 
 	if err != nil {
 		return nil, err
-	}
-
-	if since != "" {
-		d.setLastViewedTime(userID, threadID, since)
 	}
 
 	defer rows.Close()
@@ -264,6 +275,10 @@ func (d *Database) GetPosts(threadID string, num int, since string, userID strin
 			return nil, err
 		}
 		posts = append(posts, p)
+	}
+
+	if since != "" && len(posts) > 0 {
+		d.setLastViewedTime(userID, threadID, since)
 	}
 
 	if rows.Err() != nil {
@@ -564,7 +579,7 @@ func (d *Database) openConnection(psqlInfo string) error {
 func (d *Database) getLastViewedTime(userID string, threadID string) (lastViewed int64, err error) {
 	sqlStatement := `
 		SELECT LastViewedPostUnixTime
-		FROM board.message_post
+		FROM board.thread_member
 		WHERE UserId = $1 AND threadID = $2`
 
 	err = DB.QueryRow(sqlStatement,
@@ -573,22 +588,23 @@ func (d *Database) getLastViewedTime(userID string, threadID string) (lastViewed
 		Scan(&lastViewed)
 
 	if err != nil {
-		return -1, err
+		return 0, err
 	}
 
 	return lastViewed, nil
 }
 
 func (d *Database) setLastViewedTime(userID string, threadID string, since string) error {
+
 	sqlStatement := `
-		UPDATE board.message_post
-		SET LastViewedPostUnixTime = $1
-		WHERE UserId = $2 AND threadID = $3`
+		INSERT INTO board.thread_member (UserID, ThreadID, LastViewedPostUnixTime)
+		VALUES ($1, $2, $3)
+		ON CONFLICT (UserID, ThreadID) DO UPDATE SET LastViewedPostUnixTime = $3`
 
 	res, _ := DB.Exec(sqlStatement,
 		userID,
 		threadID,
-		since)
+		d.stringToInt64(since))
 
 	rows, err := res.RowsAffected()
 
