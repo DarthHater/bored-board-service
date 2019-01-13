@@ -19,6 +19,7 @@ import (
 type IDatabase interface {
 	InitDb(s string, e string) error
 	CreateUser(u *model.User) (string, error)
+	PutUser(u *model.User) (string, error)
 	GetUser(s string) (model.User, error)
 	GetUsers(s string) ([]model.User, error)
 	GetThread(s string) (model.Thread, error)
@@ -134,9 +135,10 @@ func (d *Database) GetPost(postID string) (post model.Post, err error) {
 // GetUser retrieves a given user.
 func (d *Database) GetUser(username string) (user model.User, err error) {
 	user = model.User{}
-	err = DB.QueryRow("SELECT Id, Username, EmailAddress, UserPassword, UserRole FROM board.user WHERE Username = $1", username).
-		Scan(&user.ID, &user.Username, &user.EmailAddress, &user.Password, &user.UserRole)
+	err = DB.QueryRow("SELECT Id, Username, EmailAddress, UserPassword, UserRole, UserPasswordMD5 FROM board.user WHERE Username = $1", username).
+		Scan(&user.ID, &user.Username, &user.EmailAddress, &user.Password, &user.UserRole, &user.UserPasswordMd5)
 	if err != nil {
+		log.Print(err)
 		return user, err
 	}
 
@@ -494,6 +496,25 @@ func (d *Database) CreateUser(user *model.User) (userid string, err error) {
 	}
 
 	return id, nil
+}
+
+// PutUser updates an existing user.
+func (d *Database) PutUser(user *model.User) (err error) {
+	var id string
+	sqlStatement := `
+		UPDATE board.user
+		SET UserPassword = $1
+		WHERE id = $2`
+
+	err = DB.QueryRow(sqlStatement,
+		user.Password,
+		user.Id)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // Internal methods

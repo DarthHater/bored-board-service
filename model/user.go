@@ -1,7 +1,9 @@
 package model
 
 import (
+	"database/sql"
 	"golang.org/x/crypto/bcrypt"
+	"crypto/md5"
 )
 
 type User struct {
@@ -10,6 +12,7 @@ type User struct {
 	EmailAddress string
 	Password []byte
 	UserRole      int
+	UserPasswordMd5	sql.NullString
 }
 
 type Registration struct {
@@ -25,4 +28,9 @@ func (u *User) HashPassword(password string) (err error) {
 	}
 
 	return nil
+}
+
+func (u *User) HashPasswordMd5(password string) (hash [16]byte) {
+	data := []byte(password)
+	return md5.Sum(data)
 }

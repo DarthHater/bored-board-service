@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"os"
+	"encoding/hex"
 	"time"
 
 	"github.com/DarthHater/bored-board-service/auth"
@@ -531,9 +532,27 @@ func checkCredentials(c *gin.Context, d database.IDatabase) {
 
 	err = bcrypt.CompareHashAndPassword(user.Password, []byte(credentials.Password))
 	if err != nil {
-		log.WithFields(log.Fields{"username": user.Username}).Error("Wrong password")
-		c.JSON(http.StatusUnauthorized, gin.H{"err": "Wrong password"})
-		return
+		if user.UserPasswordMd5.Valid {
+			hashed := user.HashPasswordMd5(credentials.Password)
+
+			decoded, _ := hex.DecodeString(user.UserPasswordMd5.String)
+
+			var ret [16]byte
+			copy(ret[:], decoded)
+
+			if hashed == ret {
+				user.HashPassword(credentials.Password)
+				d.PutUser(&user)
+			} else {
+				log.WithFields(log.Fields{"username": user.Username}).Error("Wrong password")
+				c.JSON(http.StatusUnauthorized, gin.H{"err": "Wrong password"})
+				return
+			}
+		} else {
+			log.WithFields(log.Fields{"username": user.Username}).Error("Wrong password")
+			c.JSON(http.StatusUnauthorized, gin.H{"err": "Wrong password"})
+			return
+		}
 	}
 
 	tokenString, err := a.CreateToken(user);
