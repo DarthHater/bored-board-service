@@ -1,0 +1,37 @@
+module github.com/DarthHater/bored-board-service
+
+require (
+	github.com/DavidHuie/gomigrate v0.0.0-20160809001028-4004e6142040
+	github.com/davecgh/go-spew v1.1.0
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/fsnotify/fsnotify v1.4.7
+	github.com/garyburd/redigo v1.6.0
+	github.com/gin-contrib/cors v0.0.0-20170318125340-cf4846e6a636
+	github.com/gin-contrib/sse v0.0.0-20170109093832-22d885f9ecc7
+	github.com/gin-gonic/gin v0.0.0-20170702092826-d459835d2b07
+	github.com/golang/protobuf v1.1.0
+	github.com/gorilla/websocket v1.2.0
+	github.com/hashicorp/hcl v0.0.0-20180404174102-ef8a98b0bbce
+	github.com/lib/pq v0.0.0-20180523175426-90697d60dd84
+	github.com/magiconair/properties v1.8.0
+	github.com/mattn/go-isatty v0.0.3
+	github.com/mitchellh/mapstructure v0.0.0-20180511142126-bb74f1db0675
+	github.com/pelletier/go-toml v1.2.0
+	github.com/pmezard/go-difflib v1.0.0
+	github.com/satori/go.uuid v1.2.0
+	github.com/sirupsen/logrus v1.0.5
+	github.com/spf13/afero v1.1.1
+	github.com/spf13/cast v1.2.0
+	github.com/spf13/jwalterweatherman v0.0.0-20180109140146-7c0cea34c8ec
+	github.com/spf13/pflag v1.0.1
+	github.com/spf13/viper v1.0.2
+	github.com/stretchr/testify v1.2.2
+	github.com/toorop/gin-logrus v0.0.0-20170702172939-fd3afab50f4f
+	github.com/ugorji/go v1.1.1
+	golang.org/x/crypto v0.0.0-20180621125126-a49355c7e3f8
+	golang.org/x/sys v0.0.0-20180627142611-7138fd3d9dc8
+	golang.org/x/text v0.3.0
+	gopkg.in/DATA-DOG/go-sqlmock.v1 v1.3.0
+	gopkg.in/go-playground/validator.v8 v8.18.2
+	gopkg.in/yaml.v2 v2.2.1
+)
