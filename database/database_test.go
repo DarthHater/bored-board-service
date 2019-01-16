@@ -1,6 +1,7 @@
 package database
 
 import (
+	"database/sql/driver"
 	"os"
 	"testing"
 
@@ -10,6 +11,14 @@ import (
 	"github.com/stretchr/testify/assert"
 	sqlmock "gopkg.in/DATA-DOG/go-sqlmock.v1"
 )
+
+type AnyInt struct{}
+
+// Match satisfies sqlmock.Argument interface
+func (a AnyInt) Match(v driver.Value) bool {
+	_, ok := v.(int64)
+	return ok
+}
 
 func TestInitDb(t *testing.T) {
 	m := MockDatabase{}
@@ -470,8 +479,8 @@ func TestGetUsers(t *testing.T) {
 	result, err := d.GetUsers("coolguy")
 
 	expected := []model.User{
-		{ID: "1", Username: "CoolGuy420" },
-		{ID: "2", Username: "CoolGuyChiller" },
+		{ID: "1", Username: "CoolGuy420"},
+		{ID: "2", Username: "CoolGuyChiller"},
 	}
 
 	assert.Equal(t, result, expected)
@@ -496,13 +505,14 @@ func TestCreateUser(t *testing.T) {
 		user.Username,
 		user.EmailAddress,
 		user.Password,
-		constants.User).
+		constants.User,
+		AnyInt{}).
 		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow("1"))
 
-	if id, err := d.CreateUser(&user); err != nil {
+	if id, confirmCode, err := d.CreateUser(&user); err != nil {
 		t.Errorf("Error was not expected while inserting user: %s", err)
 	} else {
-		t.Logf("User inserted with id: %s", id)
+		t.Logf("User inserted with id: %s and confirmCode: %d", id, confirmCode)
 	}
 
 	if err = mock.ExpectationsWereMet(); err != nil {
