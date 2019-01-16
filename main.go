@@ -16,31 +16,38 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 	"time"
 
 	"github.com/DarthHater/bored-board-service/auth"
 	"github.com/DarthHater/bored-board-service/constants"
+	"github.com/DarthHater/bored-board-service/database"
+	"github.com/DarthHater/bored-board-service/mail"
 	"github.com/DarthHater/bored-board-service/model"
 	"github.com/garyburd/redigo/redis"
-	"golang.org/x/crypto/bcrypt"
-	"github.com/DarthHater/bored-board-service/database"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	uuid "github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	ginlogrus "github.com/toorop/gin-logrus"
+	"golang.org/x/crypto/bcrypt"
 )
 
 const (
-	redisURL = "redis_db:6379"
+	redisURL                                              = "redis_db:6379"
+	BOARD_URL_VERIFY_ENV_VARIABLE                  string = "BOARD_URL_VERIFY"
+	BOARD_URL_DONATE_ENV_VARIABLE                  string = "BOARD_URL_DONATE"
+	BOARD_URL_CORS_ENV_VARIABLE                    string = "BOARD_URL_CORS"
+	BOARD_SEND_NEW_USER_EMAIL_SUBJECT_ENV_VARIABLE string = "BOARD_SEND_NEW_USER_EMAIL_SUBJECT"
 )
 
 var (
-	db         database.IDatabase
-	a		auth.IAuth
+	db          database.IDatabase
+	a           auth.IAuth
 	gPubSubConn *redis.PubSubConn
 	gRedisConn  = func() (redis.Conn, error) {
 		redisURL := os.Getenv("REDIS_URL")
@@ -77,7 +84,7 @@ func (manager *clientManager) start() {
 		select {
 		case conn := <-manager.register:
 			manager.clients[conn] = true
-			log.Print("New connection registered")
+			log.Debug("New connection registered")
 		case conn := <-manager.unregister:
 			if _, ok := manager.clients[conn]; ok {
 				close(conn.send)
@@ -149,7 +156,20 @@ func init() {
 	au := auth.Auth{}
 	a = &au
 
-	a.ReadAndSetKeys();
+	a.ReadAndSetKeys()
+	setupViper()
+}
+
+func setupViper() {
+	log.WithFields(log.Fields{
+		"package": "main",
+	}).Debug("Setting up Viper")
+
+	viper.SetEnvPrefix("BBS")
+	viper.BindEnv(BOARD_URL_VERIFY_ENV_VARIABLE)
+	viper.BindEnv(BOARD_URL_DONATE_ENV_VARIABLE)
+	viper.BindEnv(BOARD_URL_CORS_ENV_VARIABLE)
+	viper.BindEnv(BOARD_SEND_NEW_USER_EMAIL_SUBJECT_ENV_VARIABLE)
 }
 
 func main() {
@@ -307,10 +327,10 @@ func allowedCorsOrigins() []string {
 		return []string{"http://localhost:8090",
 			"http://127.0.0.1:8090",
 			"http://0.0.0.0:8090",
-			"https://vivalavinyl-webapp.herokuapp.com"}
+			viper.GetString(BOARD_URL_CORS_ENV_VARIABLE)}
 	}
 	return []string{
-		"https://vivalavinyl-webapp.herokuapp.com"}
+		viper.GetString(BOARD_URL_CORS_ENV_VARIABLE)}
 }
 
 // Websocket Handler
@@ -377,7 +397,6 @@ func getUserInfo(c *gin.Context, d database.IDatabase, userID string) {
 		c.JSON(http.StatusOK, userInfo)
 	}
 }
-
 
 func getUsers(c *gin.Context, d database.IDatabase, search string) {
 	userInfo, err := d.GetUsers(search)
@@ -536,7 +555,7 @@ func checkCredentials(c *gin.Context, d database.IDatabase) {
 		return
 	}
 
-	tokenString, err := a.CreateToken(user);
+	tokenString, err := a.CreateToken(user)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
@@ -553,10 +572,17 @@ func createUser(c *gin.Context, d database.IDatabase) {
 
 	user := model.User{Username: registration.Username, EmailAddress: registration.EmailAddress}
 	_ = user.HashPassword(registration.Password)
-	id, err := d.CreateUser(&user)
+	id, confirmCode, err := d.CreateUser(&user)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
 	} else {
+		mail.SendEmail(
+			registration.EmailAddress,
+			viper.GetString(BOARD_SEND_NEW_USER_EMAIL_SUBJECT_ENV_VARIABLE),
+			registration.Username,
+			fmt.Sprintf(viper.GetString(BOARD_URL_VERIFY_ENV_VARIABLE), id, confirmCode),
+			viper.GetString(BOARD_URL_DONATE_ENV_VARIABLE),
+		)
 		c.JSON(http.StatusCreated, id)
 	}
 }

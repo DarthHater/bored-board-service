@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"math/rand"
 	"os"
 	"strconv"
 	"time"
@@ -18,7 +19,7 @@ import (
 
 type IDatabase interface {
 	InitDb(s string, e string) error
-	CreateUser(u *model.User) (string, error)
+	CreateUser(u *model.User) (string, int, error)
 	GetUser(s string) (model.User, error)
 	GetUsers(s string) ([]model.User, error)
 	GetThread(s string) (model.Thread, error)
@@ -152,7 +153,7 @@ func (d *Database) GetUsers(search string) ([]model.User, error) {
 				FROM board.user) doc
 		WHERE doc.lex @@ to_tsquery($1) AND UserRole != $2`
 
-	rows, err := DB.Query(sqlStatement, search + ":*", constants.Banned)
+	rows, err := DB.Query(sqlStatement, search+":*", constants.Banned)
 
 	if err != nil {
 		return nil, err
@@ -477,23 +478,25 @@ func (d *Database) PostMessagePost(message *model.MessagePost) (newMessage model
 }
 
 // CreateUser creates a new user.
-func (d *Database) CreateUser(user *model.User) (userid string, err error) {
+func (d *Database) CreateUser(user *model.User) (userid string, confirm int, err error) {
 	var id string
+	confirmCode := rand.Int()
 	sqlStatement := `
 		INSERT INTO board.user
-		(Username, EmailAddress, UserPassword, UserRole)
-		VALUES ($1, $2, $3, $4)
+		(Username, EmailAddress, UserPassword, UserRole, ConfirmCode)
+		VALUES ($1, $2, $3, $4, $5)
 		RETURNING Id`
 	err = DB.QueryRow(sqlStatement,
 		user.Username,
 		user.EmailAddress,
 		user.Password,
-		constants.User).Scan(&id)
+		constants.User,
+		confirmCode).Scan(&id)
 	if err != nil {
-		return "", err
+		return "", 0, err
 	}
 
-	return id, nil
+	return id, confirmCode, nil
 }
 
 // Internal methods

@@ -26,6 +26,8 @@ require (
 	github.com/pelletier/go-toml v1.2.0
 	github.com/pmezard/go-difflib v1.0.0
 	github.com/satori/go.uuid v1.2.0
+	github.com/sendgrid/rest v2.4.1+incompatible // indirect
+	github.com/sendgrid/sendgrid-go v3.4.2-0.20181118153001-fa0fdeebdcf8+incompatible
 	github.com/sirupsen/logrus v1.0.5
 	github.com/spf13/afero v1.1.1
 	github.com/spf13/cast v1.2.0
