@@ -1,21 +1,26 @@
+/* Copyright 2017 Jeffry Hesse
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License. */
 package mail
 
 import (
+	"github.com/DarthHater/bored-board-service/constants"
 	"github.com/sendgrid/sendgrid-go"
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"strconv"
 	"time"
-)
-
-const (
-	sendgridSendMailAPIPathV3    string = "/v3/mail/send"
-	sendGridAPIBasePath          string = "https://api.sendgrid.com"
-	registrationEmailEnvVariable string = "REGISTRATION_EMAIL_TEMPLATE_ID"
-	sendGridAPIKeyEnvVariable    string = "SENDGRID_API_KEY"
-	emailFromAddressEnvVariable  string = "EMAIL_FROM_ADDRESS"
-	emailFromNameEnvVariable     string = "EMAIL_FROM_NAME"
 )
 
 func init() {
@@ -27,11 +32,11 @@ func setupViper() {
 		"package": "mail",
 	}).Debug("Setting up Viper")
 
-	viper.SetEnvPrefix("BBS")
-	viper.BindEnv(registrationEmailEnvVariable)
-	viper.BindEnv(sendGridAPIKeyEnvVariable)
-	viper.BindEnv(emailFromAddressEnvVariable)
-	viper.BindEnv(emailFromNameEnvVariable)
+	viper.SetEnvPrefix(constants.EnvironmentVariablePrefix)
+	viper.BindEnv(constants.RegistrationEmailEnvVariable)
+	viper.BindEnv(constants.SendGridAPIKeyEnvVariable)
+	viper.BindEnv(constants.EmailFromAddressEnvVariable)
+	viper.BindEnv(constants.EmailFromNameEnvVariable)
 }
 
 // SendNewUserEmail function to send a new user registration email
@@ -42,18 +47,18 @@ func SendNewUserEmail(recipient string, subject string, userName string, boardUR
 
 	to := mail.NewEmail(userName, recipient)
 	log.WithFields(log.Fields{
-		"emailFromName":    viper.GetString(emailFromNameEnvVariable),
-		"emailFromAddress": viper.GetString(emailFromAddressEnvVariable),
+		"emailFromName":    viper.GetString(constants.EmailFromNameEnvVariable),
+		"emailFromAddress": viper.GetString(constants.EmailFromAddressEnvVariable),
 	}).Info("Attempting to send New User email")
 	p.AddTos(to)
 
 	from := mail.NewEmail(
-		viper.GetString(emailFromNameEnvVariable),
-		viper.GetString(emailFromAddressEnvVariable),
+		viper.GetString(constants.EmailFromNameEnvVariable),
+		viper.GetString(constants.EmailFromAddressEnvVariable),
 	)
 	m.SetFrom(from)
 
-	m.SetTemplateID(viper.GetString(registrationEmailEnvVariable))
+	m.SetTemplateID(viper.GetString(constants.RegistrationEmailEnvVariable))
 
 	t := time.Now()
 
@@ -65,9 +70,9 @@ func SendNewUserEmail(recipient string, subject string, userName string, boardUR
 	m.AddPersonalizations(p)
 
 	request := sendgrid.GetRequest(
-		viper.GetString(sendGridAPIKeyEnvVariable),
-		sendgridSendMailAPIPathV3,
-		sendGridAPIBasePath,
+		viper.GetString(constants.SendGridAPIKeyEnvVariable),
+		constants.SendgridSendMailAPIPathV3,
+		constants.SendGridAPIBasePath,
 	)
 	request.Method = "POST"
 	request.Body = mail.GetRequestBody(m)

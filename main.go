@@ -37,14 +37,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-const (
-	redisURL                                              = "redis_db:6379"
-	BOARD_URL_VERIFY_ENV_VARIABLE                  string = "BOARD_URL_VERIFY"
-	BOARD_URL_DONATE_ENV_VARIABLE                  string = "BOARD_URL_DONATE"
-	BOARD_URL_CORS_ENV_VARIABLE                    string = "BOARD_URL_CORS"
-	BOARD_SEND_NEW_USER_EMAIL_SUBJECT_ENV_VARIABLE string = "BOARD_SEND_NEW_USER_EMAIL_SUBJECT"
-)
-
 var (
 	db          database.IDatabase
 	a           auth.IAuth
@@ -55,7 +47,7 @@ var (
 			return redis.DialURL(redisURL)
 		}
 
-		return redis.Dial("tcp", "redis_db:6379")
+		return redis.Dial("tcp", constants.RedisURL)
 	}
 )
 
@@ -165,11 +157,11 @@ func setupViper() {
 		"package": "main",
 	}).Debug("Setting up Viper")
 
-	viper.SetEnvPrefix("BBS")
-	viper.BindEnv(BOARD_URL_VERIFY_ENV_VARIABLE)
-	viper.BindEnv(BOARD_URL_DONATE_ENV_VARIABLE)
-	viper.BindEnv(BOARD_URL_CORS_ENV_VARIABLE)
-	viper.BindEnv(BOARD_SEND_NEW_USER_EMAIL_SUBJECT_ENV_VARIABLE)
+	viper.SetEnvPrefix(constants.EnvironmentVariablePrefix)
+	viper.BindEnv(constants.BoardUrlVerifyEnvVariable)
+	viper.BindEnv(constants.BoardUrlDonateEnvVariable)
+	viper.BindEnv(constants.BoardUrlCorsEnvVariable)
+	viper.BindEnv(constants.BoardSendNewUserEmailSubject)
 }
 
 func main() {
@@ -327,10 +319,10 @@ func allowedCorsOrigins() []string {
 		return []string{"http://localhost:8090",
 			"http://127.0.0.1:8090",
 			"http://0.0.0.0:8090",
-			viper.GetString(BOARD_URL_CORS_ENV_VARIABLE)}
+			viper.GetString(constants.BoardUrlCorsEnvVariable)}
 	}
 	return []string{
-		viper.GetString(BOARD_URL_CORS_ENV_VARIABLE)}
+		viper.GetString(constants.BoardUrlCorsEnvVariable)}
 }
 
 // Websocket Handler
@@ -578,10 +570,10 @@ func createUser(c *gin.Context, d database.IDatabase) {
 	} else {
 		mail.SendNewUserEmail(
 			registration.EmailAddress,
-			viper.GetString(BOARD_SEND_NEW_USER_EMAIL_SUBJECT_ENV_VARIABLE),
+			viper.GetString(constants.BoardSendNewUserEmailSubject),
 			registration.Username,
-			fmt.Sprintf(viper.GetString(BOARD_URL_VERIFY_ENV_VARIABLE), id, confirmCode),
-			viper.GetString(BOARD_URL_DONATE_ENV_VARIABLE),
+			fmt.Sprintf(viper.GetString(constants.BoardUrlVerifyEnvVariable), id, confirmCode),
+			viper.GetString(constants.BoardUrlDonateEnvVariable),
 		)
 		c.JSON(http.StatusCreated, id)
 	}
