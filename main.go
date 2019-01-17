@@ -11,7 +11,6 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License. */
-
 package main
 
 import (
@@ -42,7 +41,7 @@ var (
 	a           auth.IAuth
 	gPubSubConn *redis.PubSubConn
 	gRedisConn  = func() (redis.Conn, error) {
-		redisURL := os.Getenv("REDIS_URL")
+		redisURL := os.Getenv(constants.RedisURLEnvVariable)
 		if redisURL != "" {
 			return redis.DialURL(redisURL)
 		}
@@ -158,9 +157,9 @@ func setupViper() {
 	}).Debug("Setting up Viper")
 
 	viper.SetEnvPrefix(constants.EnvironmentVariablePrefix)
-	viper.BindEnv(constants.BoardUrlVerifyEnvVariable)
-	viper.BindEnv(constants.BoardUrlDonateEnvVariable)
-	viper.BindEnv(constants.BoardUrlCorsEnvVariable)
+	viper.BindEnv(constants.BoardURLVerifyEnvVariable)
+	viper.BindEnv(constants.BoardURLDonateEnvVariable)
+	viper.BindEnv(constants.BoardURLCorsEnvVariable)
 	viper.BindEnv(constants.BoardSendNewUserEmailSubject)
 }
 
@@ -319,10 +318,10 @@ func allowedCorsOrigins() []string {
 		return []string{"http://localhost:8090",
 			"http://127.0.0.1:8090",
 			"http://0.0.0.0:8090",
-			viper.GetString(constants.BoardUrlCorsEnvVariable)}
+			viper.GetString(constants.BoardURLCorsEnvVariable)}
 	}
 	return []string{
-		viper.GetString(constants.BoardUrlCorsEnvVariable)}
+		viper.GetString(constants.BoardURLCorsEnvVariable)}
 }
 
 // Websocket Handler
@@ -572,8 +571,8 @@ func createUser(c *gin.Context, d database.IDatabase) {
 			registration.EmailAddress,
 			viper.GetString(constants.BoardSendNewUserEmailSubject),
 			registration.Username,
-			fmt.Sprintf(viper.GetString(constants.BoardUrlVerifyEnvVariable), id, confirmCode),
-			viper.GetString(constants.BoardUrlDonateEnvVariable),
+			fmt.Sprintf(viper.GetString(constants.BoardURLVerifyEnvVariable), id, confirmCode),
+			viper.GetString(constants.BoardURLDonateEnvVariable),
 		)
 		c.JSON(http.StatusCreated, id)
 	}

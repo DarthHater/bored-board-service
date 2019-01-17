@@ -19,8 +19,9 @@ const (
 	SendGridAPIKeyEnvVariable    string = "SENDGRID_API_KEY"
 	EmailFromAddressEnvVariable  string = "EMAIL_FROM_ADDRESS"
 	EmailFromNameEnvVariable     string = "EMAIL_FROM_NAME"
-	BoardUrlVerifyEnvVariable    string = "BOARD_URL_VERIFY"
-	BoardUrlDonateEnvVariable    string = "BOARD_URL_DONATE"
-	BoardUrlCorsEnvVariable      string = "BOARD_URL_CORS"
+	BoardURLVerifyEnvVariable    string = "BOARD_URL_VERIFY"
+	BoardURLDonateEnvVariable    string = "BOARD_URL_DONATE"
+	BoardURLCorsEnvVariable      string = "BOARD_URL_CORS"
 	BoardSendNewUserEmailSubject string = "BOARD_SEND_NEW_USER_EMAIL_SUBJECT"
+	RedisURLEnvVariable          string = "REDIS_URL"
 )
