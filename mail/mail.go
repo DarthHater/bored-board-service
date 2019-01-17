@@ -10,12 +10,12 @@ import (
 )
 
 const (
-	SENDGRID_SEND_MAIL_API_PATH_V3  string = "/v3/mail/send"
-	SENDGRID_API_BASE_PATH          string = "https://api.sendgrid.com"
-	REGISTRATION_EMAIL_ENV_VARIABLE string = "REGISTRATION_EMAIL_TEMPLATE_ID"
-	SENDGRID_API_KEY_ENV_VARIABLE   string = "SENDGRID_API_KEY"
-	EMAIL_FROM_ADDRESS_ENV_VARIABLE string = "EMAIL_FROM_ADDRESS"
-	EMAIL_FROM_NAME_ENV_VARIABLE    string = "EMAIL_FROM_NAME"
+	sendgridSendMailAPIPathV3    string = "/v3/mail/send"
+	sendGridAPIBasePath          string = "https://api.sendgrid.com"
+	registrationEmailEnvVariable string = "REGISTRATION_EMAIL_TEMPLATE_ID"
+	sendGridAPIKeyEnvVariable    string = "SENDGRID_API_KEY"
+	emailFromAddressEnvVariable  string = "EMAIL_FROM_ADDRESS"
+	emailFromNameEnvVariable     string = "EMAIL_FROM_NAME"
 )
 
 func init() {
@@ -28,45 +28,46 @@ func setupViper() {
 	}).Debug("Setting up Viper")
 
 	viper.SetEnvPrefix("BBS")
-	viper.BindEnv(REGISTRATION_EMAIL_ENV_VARIABLE)
-	viper.BindEnv(SENDGRID_API_KEY_ENV_VARIABLE)
-	viper.BindEnv(EMAIL_FROM_ADDRESS_ENV_VARIABLE)
-	viper.BindEnv(EMAIL_FROM_NAME_ENV_VARIABLE)
+	viper.BindEnv(registrationEmailEnvVariable)
+	viper.BindEnv(sendGridAPIKeyEnvVariable)
+	viper.BindEnv(emailFromAddressEnvVariable)
+	viper.BindEnv(emailFromNameEnvVariable)
 }
 
-func SendEmail(recipient string, subject string, userName string, boardUrlVerify string, donateUrl string) {
+// SendEmail function to send a new user registration email
+func SendEmail(recipient string, subject string, userName string, boardURLVerify string, donateURL string) {
 	m := mail.NewV3Mail()
 	m.Subject = subject
 	p := mail.NewPersonalization()
 
 	to := mail.NewEmail(userName, recipient)
 	log.WithFields(log.Fields{
-		"emailFromName":    viper.GetString(EMAIL_FROM_NAME_ENV_VARIABLE),
-		"emailFromAddress": viper.GetString(EMAIL_FROM_ADDRESS_ENV_VARIABLE),
+		"emailFromName":    viper.GetString(emailFromNameEnvVariable),
+		"emailFromAddress": viper.GetString(emailFromAddressEnvVariable),
 	}).Info("Attempting to send New User email")
 	p.AddTos(to)
 
 	from := mail.NewEmail(
-		viper.GetString(EMAIL_FROM_NAME_ENV_VARIABLE),
-		viper.GetString(EMAIL_FROM_ADDRESS_ENV_VARIABLE),
+		viper.GetString(emailFromNameEnvVariable),
+		viper.GetString(emailFromAddressEnvVariable),
 	)
 	m.SetFrom(from)
 
-	m.SetTemplateID(viper.GetString(REGISTRATION_EMAIL_ENV_VARIABLE))
+	m.SetTemplateID(viper.GetString(registrationEmailEnvVariable))
 
 	t := time.Now()
 
 	p.SetDynamicTemplateData("userName", userName)
-	p.SetDynamicTemplateData("boardUrlVerify", boardUrlVerify)
-	p.SetDynamicTemplateData("donateUrl", donateUrl)
+	p.SetDynamicTemplateData("boardURLVerify", boardURLVerify)
+	p.SetDynamicTemplateData("donateURL", donateURL)
 	p.SetDynamicTemplateData("year", strconv.Itoa(t.Year()))
 
 	m.AddPersonalizations(p)
 
 	request := sendgrid.GetRequest(
-		viper.GetString(SENDGRID_API_KEY_ENV_VARIABLE),
-		SENDGRID_SEND_MAIL_API_PATH_V3,
-		SENDGRID_API_BASE_PATH,
+		viper.GetString(sendGridAPIKeyEnvVariable),
+		sendgridSendMailAPIPathV3,
+		sendGridAPIBasePath,
 	)
 	request.Method = "POST"
 	request.Body = mail.GetRequestBody(m)
