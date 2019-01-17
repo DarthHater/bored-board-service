@@ -34,8 +34,8 @@ func setupViper() {
 	viper.BindEnv(emailFromNameEnvVariable)
 }
 
-// SendEmail function to send a new user registration email
-func SendEmail(recipient string, subject string, userName string, boardURLVerify string, donateURL string) {
+// SendNewUserEmail function to send a new user registration email
+func SendNewUserEmail(recipient string, subject string, userName string, boardURLVerify string, donateURL string) {
 	m := mail.NewV3Mail()
 	m.Subject = subject
 	p := mail.NewPersonalization()

@@ -576,7 +576,7 @@ func createUser(c *gin.Context, d database.IDatabase) {
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
 	} else {
-		mail.SendEmail(
+		mail.SendNewUserEmail(
 			registration.EmailAddress,
 			viper.GetString(BOARD_SEND_NEW_USER_EMAIL_SUBJECT_ENV_VARIABLE),
 			registration.Username,
