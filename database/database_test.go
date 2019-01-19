@@ -1,6 +1,7 @@
 package database
 
 import (
+	"database/sql"
 	"os"
 	"testing"
 
@@ -470,8 +471,8 @@ func TestGetUsers(t *testing.T) {
 	result, err := d.GetUsers("coolguy")
 
 	expected := []model.User{
-		{ID: "1", Username: "CoolGuy420" },
-		{ID: "2", Username: "CoolGuyChiller" },
+		{ID: "1", Username: "CoolGuy420"},
+		{ID: "2", Username: "CoolGuyChiller"},
 	}
 
 	assert.Equal(t, result, expected)
@@ -507,5 +508,51 @@ func TestCreateUser(t *testing.T) {
 
 	if err = mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("There were unfulfilled expectations: %s", err)
+	}
+}
+
+func TestHandleDatabaseMigration_md5_exists(t *testing.T) {
+	d := Database{}
+	var mock sqlmock.Sqlmock
+	var err error
+
+	DB, mock, err = sqlmock.New()
+	if err != nil {
+		t.Fatalf("An error %s occurred when opening stub database connection", err)
+	}
+	defer DB.Close()
+
+	user := model.User{
+		Username: "hi",
+		UserPasswordMd5: sql.NullString{
+			String: "E10ADC3949BA59ABBE56E057F20F883E", // "123456"
+			Valid:  true,
+		},
+		Password: nil,
+		ID:       "1",
+	}
+
+	credentials := model.Credentials{
+		Username: "hi",
+		Password: "123456",
+	}
+
+	mock.ExpectExec(`UPDATE board.user`).WithArgs(
+		user.Password,
+		// sql.NullString{},
+		"1").WillReturnResult(sqlmock.NewResult(1, 1))
+
+	err = d.HandlePasswordMigration(&user, &credentials)
+
+	if err != nil {
+		t.Fatalf("Error was not expected migrating passwords: %s", err)
+	} else {
+		t.Log("Password migrated")
+	}
+
+	if err = mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("User was not updated: %s", err)
+	} else {
+		t.Log("User updated")
 	}
 }

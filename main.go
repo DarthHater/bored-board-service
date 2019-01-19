@@ -18,21 +18,20 @@ import (
 	"encoding/json"
 	"net/http"
 	"os"
-	"encoding/hex"
 	"time"
 
 	"github.com/DarthHater/bored-board-service/auth"
 	"github.com/DarthHater/bored-board-service/constants"
+	"github.com/DarthHater/bored-board-service/database"
 	"github.com/DarthHater/bored-board-service/model"
 	"github.com/garyburd/redigo/redis"
-	"golang.org/x/crypto/bcrypt"
-	"github.com/DarthHater/bored-board-service/database"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	uuid "github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
 	ginlogrus "github.com/toorop/gin-logrus"
+	"golang.org/x/crypto/bcrypt"
 )
 
 const (
@@ -40,8 +39,8 @@ const (
 )
 
 var (
-	db         database.IDatabase
-	a		auth.IAuth
+	db          database.IDatabase
+	a           auth.IAuth
 	gPubSubConn *redis.PubSubConn
 	gRedisConn  = func() (redis.Conn, error) {
 		redisURL := os.Getenv("REDIS_URL")
@@ -150,7 +149,7 @@ func init() {
 	au := auth.Auth{}
 	a = &au
 
-	a.ReadAndSetKeys();
+	a.ReadAndSetKeys()
 }
 
 func main() {
@@ -379,7 +378,6 @@ func getUserInfo(c *gin.Context, d database.IDatabase, userID string) {
 	}
 }
 
-
 func getUsers(c *gin.Context, d database.IDatabase, search string) {
 	userInfo, err := d.GetUsers(search)
 	if err != nil {
@@ -533,17 +531,7 @@ func checkCredentials(c *gin.Context, d database.IDatabase) {
 	err = bcrypt.CompareHashAndPassword(user.Password, []byte(credentials.Password))
 	if err != nil {
 		if user.UserPasswordMd5.Valid {
-			hashed := user.HashPasswordMd5(credentials.Password)
-
-			decoded, _ := hex.DecodeString(user.UserPasswordMd5.String)
-
-			var ret [16]byte
-			copy(ret[:], decoded)
-
-			if hashed == ret {
-				user.HashPassword(credentials.Password)
-				d.PutUser(&user)
-			} else {
+			if err = d.HandlePasswordMigration(&user, &credentials); err != nil {
 				log.WithFields(log.Fields{"username": user.Username}).Error("Wrong password")
 				c.JSON(http.StatusUnauthorized, gin.H{"err": "Wrong password"})
 				return
@@ -555,7 +543,7 @@ func checkCredentials(c *gin.Context, d database.IDatabase) {
 		}
 	}
 
-	tokenString, err := a.CreateToken(user);
+	tokenString, err := a.CreateToken(user)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
@@ -571,7 +559,7 @@ func createUser(c *gin.Context, d database.IDatabase) {
 	c.BindJSON(&registration)
 
 	user := model.User{Username: registration.Username, EmailAddress: registration.EmailAddress}
-	_ = user.HashPassword(registration.Password)
+	user.HashPassword(registration.Password)
 	id, err := d.CreateUser(&user)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})

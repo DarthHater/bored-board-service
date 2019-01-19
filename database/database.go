@@ -2,6 +2,7 @@ package database
 
 import (
 	"database/sql"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"log"
@@ -19,7 +20,7 @@ import (
 type IDatabase interface {
 	InitDb(s string, e string) error
 	CreateUser(u *model.User) (string, error)
-	PutUser(u *model.User) (string, error)
+	PutUser(u *model.User) error
 	GetUser(s string) (model.User, error)
 	GetUsers(s string) ([]model.User, error)
 	GetThread(s string) (model.Thread, error)
@@ -30,6 +31,7 @@ type IDatabase interface {
 	GetPosts(s string) ([]model.Post, error)
 	GetThreads(i int, since string) ([]model.Thread, error)
 	GetUserInfo(userID string) (model.UserInfo, error)
+	HandlePasswordMigration(u *model.User, c *model.Credentials) error
 	PostThread(t *model.NewThread) (model.NewThread, error)
 	PostPost(p *model.Post) (model.Post, error)
 	PostMessage(t *model.NewMessage) (model.NewMessage, error)
@@ -154,7 +156,7 @@ func (d *Database) GetUsers(search string) ([]model.User, error) {
 				FROM board.user) doc
 		WHERE doc.lex @@ to_tsquery($1) AND UserRole != $2`
 
-	rows, err := DB.Query(sqlStatement, search + ":*", constants.Banned)
+	rows, err := DB.Query(sqlStatement, search+":*", constants.Banned)
 
 	if err != nil {
 		return nil, err
@@ -500,21 +502,46 @@ func (d *Database) CreateUser(user *model.User) (userid string, err error) {
 
 // PutUser updates an existing user.
 func (d *Database) PutUser(user *model.User) (err error) {
-	var id string
 	sqlStatement := `
 		UPDATE board.user
 		SET UserPassword = $1
-		WHERE id = $2`
+		WHERE Id = $2`
 
-	err = DB.QueryRow(sqlStatement,
+	_, err = DB.Exec(sqlStatement,
 		user.Password,
-		user.Id)
+		user.ID)
+
+	if err != nil {
+		log.Print(err)
+		return err
+	}
+
+	return nil
+}
+
+// HandlePasswordMigration will check a user's password against their hashed MD5 password from the legacy site. If
+// it's a match, it will encrypt their password with bcrypt and delete the hashed password.
+func (d *Database) HandlePasswordMigration(user *model.User, credentials *model.Credentials) error {
+	hashed := user.HashPasswordMd5(credentials.Password)
+	decoded, err := hex.DecodeString(user.UserPasswordMd5.String)
 
 	if err != nil {
 		return err
 	}
 
-	return nil
+	var ret [16]byte
+	copy(ret[:], decoded)
+
+	if hashed == ret {
+		user.HashPassword(credentials.Password)
+		user.UserPasswordMd5 = sql.NullString{}
+		if err = d.PutUser(user); err != nil {
+			return err
+		}
+		return nil
+	}
+
+	return ErrWrongPassword
 }
 
 // Internal methods
