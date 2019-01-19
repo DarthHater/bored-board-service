@@ -26,12 +26,12 @@ It's written in Golang, so here is some handy setup instructions:
 
 ### Local Dev Sans Docker (EXPERT MODE)
 
-* Install Golang
+* Install Golang (greater than 1.11.4)
+* Set an envirnonment variable of `GO111MODULE=on` 
 * Setup a GOPATH that makes sense, and get this project setup there
-* Install `dep` to manage Golang dependencies
 * Install `openssl` if you don't have it and in the project root run:
   * `mkdir .keys && openssl genrsa -out .keys/app.rsa 1024 && openssl rsa -in .keys/app.rsa -pubout > .keys/app.rsa.pub`
-* Run `dep ensure` from the root to get necessary dependencies setup
+* Run `go mod download` from the root to get necessary dependencies setup
 * Run `go run main.go` and the app should start
 * Using Postman, etc... you can send a `GET` request to `http://localhost:8000/thread` and you'll get a test response if everything is working
 
