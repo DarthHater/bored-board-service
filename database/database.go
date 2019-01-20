@@ -22,6 +22,7 @@ type IDatabase interface {
 	InitDb(s string, e string) error
 	EditUser(u *model.User) error
 	CreateUser(u *model.User) (string, int, error)
+	ConfirmUser(s string, i int) (bool, error)
 	GetUser(s string) (model.User, error)
 	GetUsers(s string) ([]model.User, error)
 	GetThread(s string) (model.Thread, error)
