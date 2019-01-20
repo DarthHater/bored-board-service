@@ -1,2 +1,2 @@
 ALTER TABLE "board"."user"
-DROP COLUMN UserPasswordMD5;
+DROP COLUMN IF EXISTS UserPasswordMD5;
