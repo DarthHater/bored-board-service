@@ -11,44 +11,43 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License. */
-
 package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/DarthHater/bored-board-service/auth"
 	"github.com/DarthHater/bored-board-service/constants"
+	"github.com/DarthHater/bored-board-service/database"
+	"github.com/DarthHater/bored-board-service/mail"
 	"github.com/DarthHater/bored-board-service/model"
 	"github.com/garyburd/redigo/redis"
-	"golang.org/x/crypto/bcrypt"
-	"github.com/DarthHater/bored-board-service/database"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	uuid "github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	ginlogrus "github.com/toorop/gin-logrus"
-)
-
-const (
-	redisURL = "redis_db:6379"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var (
-	db         database.IDatabase
-	a		auth.IAuth
+	db          database.IDatabase
+	a           auth.IAuth
 	gPubSubConn *redis.PubSubConn
 	gRedisConn  = func() (redis.Conn, error) {
-		redisURL := os.Getenv("REDIS_URL")
+		redisURL := os.Getenv(constants.RedisURLEnvVariable)
 		if redisURL != "" {
 			return redis.DialURL(redisURL)
 		}
 
-		return redis.Dial("tcp", "redis_db:6379")
+		return redis.Dial("tcp", constants.RedisURL)
 	}
 )
 
@@ -77,7 +76,7 @@ func (manager *clientManager) start() {
 		select {
 		case conn := <-manager.register:
 			manager.clients[conn] = true
-			log.Print("New connection registered")
+			log.Debug("New connection registered")
 		case conn := <-manager.unregister:
 			if _, ok := manager.clients[conn]; ok {
 				close(conn.send)
@@ -149,7 +148,20 @@ func init() {
 	au := auth.Auth{}
 	a = &au
 
-	a.ReadAndSetKeys();
+	a.ReadAndSetKeys()
+	setupViper()
+}
+
+func setupViper() {
+	log.WithFields(log.Fields{
+		"package": "main",
+	}).Debug("Setting up Viper")
+
+	viper.SetEnvPrefix(constants.EnvironmentVariablePrefix)
+	viper.BindEnv(constants.BoardURLVerifyEnvVariable)
+	viper.BindEnv(constants.BoardURLDonateEnvVariable)
+	viper.BindEnv(constants.BoardURLCorsEnvVariable)
+	viper.BindEnv(constants.BoardSendNewUserEmailSubject)
 }
 
 func main() {
@@ -213,6 +225,12 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 
 	r.POST("/register", func(c *gin.Context) {
 		createUser(c, d)
+	})
+
+	r.GET("/confirm/:userid/:confirmcode", func(c *gin.Context) {
+		userID := c.Param("userid")
+		confirmCode := c.Param("confirmcode")
+		confirmUser(c, d, userID, confirmCode)
 	})
 
 	r.GET("/ws", func(c *gin.Context) {
@@ -307,10 +325,10 @@ func allowedCorsOrigins() []string {
 		return []string{"http://localhost:8090",
 			"http://127.0.0.1:8090",
 			"http://0.0.0.0:8090",
-			"https://vivalavinyl-webapp.herokuapp.com"}
+			viper.GetString(constants.BoardURLCorsEnvVariable)}
 	}
 	return []string{
-		"https://vivalavinyl-webapp.herokuapp.com"}
+		viper.GetString(constants.BoardURLCorsEnvVariable)}
 }
 
 // Websocket Handler
@@ -377,7 +395,6 @@ func getUserInfo(c *gin.Context, d database.IDatabase, userID string) {
 		c.JSON(http.StatusOK, userInfo)
 	}
 }
-
 
 func getUsers(c *gin.Context, d database.IDatabase, search string) {
 	userInfo, err := d.GetUsers(search)
@@ -529,6 +546,15 @@ func checkCredentials(c *gin.Context, d database.IDatabase) {
 		return
 	}
 
+	if user.UserRole == int(constants.NeedsConfirmation) {
+		log.WithFields(log.Fields{
+			"username": credentials.Username,
+		}).Error("User account needs verified")
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"err": "User account needs verified",
+		})
+	}
+
 	err = bcrypt.CompareHashAndPassword(user.Password, []byte(credentials.Password))
 	if err != nil {
 		log.WithFields(log.Fields{"username": user.Username}).Error("Wrong password")
@@ -536,7 +562,7 @@ func checkCredentials(c *gin.Context, d database.IDatabase) {
 		return
 	}
 
-	tokenString, err := a.CreateToken(user);
+	tokenString, err := a.CreateToken(user)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
@@ -553,10 +579,54 @@ func createUser(c *gin.Context, d database.IDatabase) {
 
 	user := model.User{Username: registration.Username, EmailAddress: registration.EmailAddress}
 	_ = user.HashPassword(registration.Password)
-	id, err := d.CreateUser(&user)
+	id, confirmCode, err := d.CreateUser(&user)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
 	} else {
+		mail.SendNewUserEmail(
+			registration.EmailAddress,
+			viper.GetString(constants.BoardSendNewUserEmailSubject),
+			registration.Username,
+			fmt.Sprintf(viper.GetString(constants.BoardURLVerifyEnvVariable), id, confirmCode),
+			viper.GetString(constants.BoardURLDonateEnvVariable),
+		)
 		c.JSON(http.StatusCreated, id)
+	}
+}
+
+func confirmUser(c *gin.Context, d database.IDatabase, userID string, confirmCode string) {
+	confirm, err := strconv.Atoi(confirmCode)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"userID":      userID,
+			"confirmCode": confirm,
+		}).Error("Invalid confirmation code, not integer")
+
+		c.JSON(http.StatusBadRequest, confirmCode)
+	}
+	valid, err := d.ConfirmUser(userID, confirm)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"userID":      userID,
+			"confirmCode": confirm,
+		}).Error(err)
+
+		c.JSON(http.StatusForbidden, err)
+	} else {
+		if valid {
+			log.WithFields(log.Fields{
+				"userID":      userID,
+				"confirmCode": confirm,
+			}).Debug("Successfully confirmed user account")
+
+			c.Redirect(http.StatusTemporaryRedirect, viper.GetString(constants.BoardURLCorsEnvVariable))
+		} else {
+			log.WithFields(log.Fields{
+				"userID":      userID,
+				"confirmCode": confirm,
+			}).Debug("Unable to confirm user account")
+
+			c.JSON(http.StatusForbidden, valid)
+		}
 	}
 }

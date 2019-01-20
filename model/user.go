@@ -8,14 +8,16 @@ type User struct {
 	ID           string
 	Username     string
 	EmailAddress string
-	Password []byte
-	UserRole      int
+	Password     []byte
+	ConfirmCode  string
+	UserRole     int
+	Active       bool
 }
 
 type Registration struct {
 	Username     string
 	EmailAddress string
-	Password string
+	Password     string
 }
 
 func (u *User) HashPassword(password string) (err error) {
