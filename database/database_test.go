@@ -593,10 +593,10 @@ func TestHandleDatabaseMigrationMd5DoesntExist(t *testing.T) {
 	var err error
 
 	user := model.User{
-		Username:        "hi",
+		Username: "hi",
 		UserPasswordMd5: sql.NullString{},
-		Password:        nil,
-		ID:              "1",
+		Password: nil,
+		ID:       "1",
 	}
 
 	credentials := model.Credentials{
