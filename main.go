@@ -584,8 +584,8 @@ func createUser(c *gin.Context, d database.IDatabase) {
 	c.BindJSON(&registration)
 
 	user := model.User{Username: registration.Username, EmailAddress: registration.EmailAddress}
-	user.HashPassword(registration.Password)
-	id, err := d.CreateUser(&user)
+	_ = user.HashPassword(registration.Password)
+	id, confirmCode, err := d.CreateUser(&user)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
 	} else {
