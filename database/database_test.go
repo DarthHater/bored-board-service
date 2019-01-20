@@ -519,3 +519,32 @@ func TestCreateUser(t *testing.T) {
 		t.Errorf("There were unfulfilled expectations: %s", err)
 	}
 }
+
+func TestConfirmUser(t *testing.T) {
+	d := Database{}
+	var mock sqlmock.Sqlmock
+	var err error
+	userID := "FakeID"
+	confirmCode := 0
+	DB, mock, err = sqlmock.New()
+	if err != nil {
+		t.Fatalf("An error %s occurred when opening stub database connection", err)
+	}
+	defer DB.Close()
+
+	mock.ExpectExec("UPDATE board.user").WillReturnResult(sqlmock.NewResult(1, 1))
+
+	valid, err := d.ConfirmUser(userID, confirmCode)
+
+	if err != nil {
+		t.Errorf("Error was not expected while confirming user: %s", err)
+	} else {
+		t.Log("User confirmation updated")
+	}
+
+	assert.Equal(t, true, valid)
+
+	if err = mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("There were unfulfilled expectations: %s", err)
+	}
+}
