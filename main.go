@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/DarthHater/bored-board-service/auth"
@@ -224,6 +225,12 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 
 	r.POST("/register", func(c *gin.Context) {
 		createUser(c, d)
+	})
+
+	r.GET("/confirm/:userid/:confirmcode", func(c *gin.Context) {
+		userID := c.Param("userid")
+		confirmCode := c.Param("confirmcode")
+		confirmUser(c, d, userID, confirmCode)
 	})
 
 	r.GET("/ws", func(c *gin.Context) {
@@ -539,6 +546,15 @@ func checkCredentials(c *gin.Context, d database.IDatabase) {
 		return
 	}
 
+	if user.UserRole == int(constants.NeedsConfirmation) {
+		log.WithFields(log.Fields{
+			"username": credentials.Username,
+		}).Error("User account needs verified")
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"err": "User account needs verified",
+		})
+	}
+
 	err = bcrypt.CompareHashAndPassword(user.Password, []byte(credentials.Password))
 	if err != nil {
 		log.WithFields(log.Fields{"username": user.Username}).Error("Wrong password")
@@ -575,5 +591,42 @@ func createUser(c *gin.Context, d database.IDatabase) {
 			viper.GetString(constants.BoardURLDonateEnvVariable),
 		)
 		c.JSON(http.StatusCreated, id)
+	}
+}
+
+func confirmUser(c *gin.Context, d database.IDatabase, userID string, confirmCode string) {
+	confirm, err := strconv.Atoi(confirmCode)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"userID":      userID,
+			"confirmCode": confirm,
+		}).Error("Invalid confirmation code, not integer")
+
+		c.JSON(http.StatusBadRequest, confirmCode)
+	}
+	valid, err := d.ConfirmUser(userID, confirm)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"userID":      userID,
+			"confirmCode": confirm,
+		}).Error(err)
+
+		c.JSON(http.StatusForbidden, err)
+	} else {
+		if valid {
+			log.WithFields(log.Fields{
+				"userID":      userID,
+				"confirmCode": confirm,
+			}).Debug("Successfully confirmed user account")
+
+			c.Redirect(http.StatusTemporaryRedirect, viper.GetString(constants.BoardURLCorsEnvVariable))
+		} else {
+			log.WithFields(log.Fields{
+				"userID":      userID,
+				"confirmCode": confirm,
+			}).Debug("Unable to confirm user account")
+
+			c.JSON(http.StatusForbidden, valid)
+		}
 	}
 }

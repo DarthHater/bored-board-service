@@ -20,6 +20,7 @@ import (
 type IDatabase interface {
 	InitDb(s string, e string) error
 	CreateUser(u *model.User) (string, int, error)
+	ConfirmUser(s string, i int) (bool, error)
 	GetUser(s string) (model.User, error)
 	GetUsers(s string) ([]model.User, error)
 	GetThread(s string) (model.Thread, error)
@@ -490,13 +491,33 @@ func (d *Database) CreateUser(user *model.User) (userid string, confirm int, err
 		user.Username,
 		user.EmailAddress,
 		user.Password,
-		constants.User,
+		constants.NeedsConfirmation,
 		confirmCode).Scan(&id)
 	if err != nil {
 		return "", 0, err
 	}
 
 	return id, confirmCode, nil
+}
+
+// ConfirmUser sets a user to active in the database
+func (d *Database) ConfirmUser(userID string, confirmCode int) (confirmed bool, err error) {
+	sqlStatement := `
+		UPDATE board.user
+		SET UserRole = 3, ConfirmCode = NULL
+		WHERE ID = $1 AND ConfirmCode = $2 AND UserRole = 6`
+	res, err := DB.Exec(sqlStatement, userID, confirmCode)
+	if err != nil {
+		return false, err
+	}
+
+	rows, _ := res.RowsAffected()
+
+	if rows > 0 {
+		return true, nil
+	} else {
+		return false, nil
+	}
 }
 
 // Internal methods
