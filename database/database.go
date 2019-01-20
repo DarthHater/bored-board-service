@@ -20,7 +20,7 @@ import (
 type IDatabase interface {
 	InitDb(s string, e string) error
 	CreateUser(u *model.User) (string, error)
-	PutUser(u *model.User) error
+	EditUser(u *model.User) error
 	GetUser(s string) (model.User, error)
 	GetUsers(s string) ([]model.User, error)
 	GetThread(s string) (model.Thread, error)
@@ -500,8 +500,8 @@ func (d *Database) CreateUser(user *model.User) (userid string, err error) {
 	return id, nil
 }
 
-// PutUser updates an existing user.
-func (d *Database) PutUser(user *model.User) (err error) {
+// EditUser updates an existing user.
+func (d *Database) EditUser(user *model.User) (err error) {
 	sqlStatement := `
 		UPDATE board.user
 		SET UserPassword = $1, UserPasswordMd5 = $2
@@ -537,7 +537,7 @@ func (d *Database) HandlePasswordMigration(user *model.User, credentials *model.
 		if hashed == ret {
 			user.HashPassword(credentials.Password)
 			user.UserPasswordMd5 = sql.NullString{}
-			if err = d.PutUser(user); err != nil {
+			if err = d.EditUser(user); err != nil {
 				return err
 			}
 			return nil
