@@ -1,6 +1,7 @@
 package database
 
 import (
+	"database/sql"
 	"database/sql/driver"
 	"os"
 	"testing"
@@ -444,14 +445,14 @@ func TestGetUser(t *testing.T) {
 	}
 	defer DB.Close()
 
-	row := sqlmock.NewRows([]string{"id", "username", "emailaddress", "userpassword", "isadmin"}).
-		AddRow("1", "CoolGuy420", "hsimpson@springfield.org", []byte("fake password"), false)
+	row := sqlmock.NewRows([]string{"id", "username", "emailaddress", "userpassword", "isadmin", "userpasswordmd5"}).
+		AddRow("1", "CoolGuy420", "hsimpson@springfield.org", []byte("fake password"), false, sql.NullString{})
 
 	mock.ExpectQuery("SELECT (.+) FROM board.user").WillReturnRows(row)
 
 	result, err := d.GetUser("CoolGuy420")
 
-	expected := model.User{ID: "1", Username: "CoolGuy420", EmailAddress: "hsimpson@springfield.org", Password: []byte("fake password")}
+	expected := model.User{ID: "1", Username: "CoolGuy420", EmailAddress: "hsimpson@springfield.org", Password: []byte("fake password"), UserPasswordMd5: sql.NullString{}}
 
 	assert.Equal(t, result, expected)
 
@@ -547,4 +548,113 @@ func TestConfirmUser(t *testing.T) {
 	if err = mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("There were unfulfilled expectations: %s", err)
 	}
+}
+
+func TestHandleDatabaseMigrationMd5Exists(t *testing.T) {
+	d := Database{}
+	var mock sqlmock.Sqlmock
+	var err error
+
+	DB, mock, err = sqlmock.New()
+	if err != nil {
+		t.Fatalf("An error %s occurred when opening stub database connection", err)
+	}
+	defer DB.Close()
+
+	user := model.User{
+		Username: "hi",
+		UserPasswordMd5: sql.NullString{
+			String: "E10ADC3949BA59ABBE56E057F20F883E", // "123456"
+			Valid:  true,
+		},
+		Password: nil,
+		ID:       "1",
+	}
+
+	credentials := model.Credentials{
+		Username: "hi",
+		Password: "123456",
+	}
+
+	user.HashPassword(credentials.Password)
+
+	mock.ExpectExec(`UPDATE board.user`).WithArgs(
+		AnyByte{},
+		sql.NullString{},
+		"1").WillReturnResult(sqlmock.NewResult(1, 1))
+
+	err = d.HandlePasswordMigration(&user, &credentials)
+
+	if err != nil {
+		t.Fatalf("Error was not expected migrating passwords: %s", err)
+	} else {
+		t.Log("Password migrated")
+	}
+
+	if err = mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("User was not updated: %s", err)
+	} else {
+		t.Log("User updated")
+	}
+}
+
+func TestHandleDatabaseMigrationMd5DoesntMatch(t *testing.T) {
+	d := Database{}
+	var err error
+
+	user := model.User{
+		Username: "hi",
+		UserPasswordMd5: sql.NullString{
+			String: "E10ADC3949BA59ABBE56E057F20F883E", // "123456"
+			Valid:  true,
+		},
+		Password: nil,
+		ID:       "1",
+	}
+
+	credentials := model.Credentials{
+		Username: "hi",
+		Password: "123",
+	}
+
+	err = d.HandlePasswordMigration(&user, &credentials)
+
+	if err != nil && err == ErrWrongPassword {
+		t.Log("MD5 hashes do not match")
+	} else {
+		t.Fatal("MD5 hashes match")
+	}
+}
+
+func TestHandleDatabaseMigrationMd5DoesntExist(t *testing.T) {
+	d := Database{}
+	var err error
+
+	user := model.User{
+		Username:        "hi",
+		UserPasswordMd5: sql.NullString{},
+		Password:        nil,
+		ID:              "1",
+	}
+
+	credentials := model.Credentials{
+		Username: "hi",
+		Password: "123",
+	}
+
+	err = d.HandlePasswordMigration(&user, &credentials)
+
+	if err != nil && err == ErrWrongPassword {
+		t.Log("MD5 hashes do not match")
+	} else {
+		t.Fatal("MD5 hashes match")
+	}
+}
+
+type AnyByte struct{}
+
+// Match satisfies sqlmock.Argument interface
+func (a AnyByte) Match(v driver.Value) bool {
+	_, ok := v.([]byte)
+	return ok
 }

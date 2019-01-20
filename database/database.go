@@ -2,6 +2,7 @@ package database
 
 import (
 	"database/sql"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"log"
@@ -19,6 +20,7 @@ import (
 
 type IDatabase interface {
 	InitDb(s string, e string) error
+	EditUser(u *model.User) error
 	CreateUser(u *model.User) (string, int, error)
 	ConfirmUser(s string, i int) (bool, error)
 	GetUser(s string) (model.User, error)
@@ -31,6 +33,7 @@ type IDatabase interface {
 	GetPosts(s string) ([]model.Post, error)
 	GetThreads(i int, since string) ([]model.Thread, error)
 	GetUserInfo(userID string) (model.UserInfo, error)
+	HandlePasswordMigration(u *model.User, c *model.Credentials) error
 	PostThread(t *model.NewThread) (model.NewThread, error)
 	PostPost(p *model.Post) (model.Post, error)
 	PostMessage(t *model.NewMessage) (model.NewMessage, error)
@@ -136,9 +139,10 @@ func (d *Database) GetPost(postID string) (post model.Post, err error) {
 // GetUser retrieves a given user.
 func (d *Database) GetUser(username string) (user model.User, err error) {
 	user = model.User{}
-	err = DB.QueryRow("SELECT Id, Username, EmailAddress, UserPassword, UserRole FROM board.user WHERE Username = $1", username).
-		Scan(&user.ID, &user.Username, &user.EmailAddress, &user.Password, &user.UserRole)
+	err = DB.QueryRow("SELECT Id, Username, EmailAddress, UserPassword, UserRole, UserPasswordMD5 FROM board.user WHERE Username = $1", username).
+		Scan(&user.ID, &user.Username, &user.EmailAddress, &user.Password, &user.UserRole, &user.UserPasswordMd5)
 	if err != nil {
+		log.Print(err)
 		return user, err
 	}
 
@@ -518,6 +522,52 @@ func (d *Database) ConfirmUser(userID string, confirmCode int) (confirmed bool, 
 	} else {
 		return false, nil
 	}
+}
+
+// EditUser updates an existing user.
+func (d *Database) EditUser(user *model.User) (err error) {
+	sqlStatement := `
+		UPDATE board.user
+		SET UserPassword = $1, UserPasswordMd5 = $2
+		WHERE Id = $3`
+
+	_, err = DB.Exec(sqlStatement,
+		user.Password,
+		user.UserPasswordMd5,
+		user.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// HandlePasswordMigration will check a user's password against their hashed MD5 password from the legacy site. If
+// it's a match, it will encrypt their password with bcrypt and delete the hashed password.
+func (d *Database) HandlePasswordMigration(user *model.User, credentials *model.Credentials) error {
+	if user.UserPasswordMd5.Valid {
+		hashed := user.HashPasswordMd5(credentials.Password)
+		decoded, err := hex.DecodeString(user.UserPasswordMd5.String)
+
+		if err != nil {
+			return err
+		}
+
+		var ret [16]byte
+		copy(ret[:], decoded)
+
+		if hashed == ret {
+			user.HashPassword(credentials.Password)
+			user.UserPasswordMd5 = sql.NullString{}
+			if err = d.EditUser(user); err != nil {
+				return err
+			}
+			return nil
+		}
+	}
+
+	return ErrWrongPassword
 }
 
 // Internal methods

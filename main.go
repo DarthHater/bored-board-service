@@ -37,6 +37,10 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+const (
+	redisURL = "redis_db:6379"
+)
+
 var (
 	db          database.IDatabase
 	a           auth.IAuth
@@ -557,9 +561,11 @@ func checkCredentials(c *gin.Context, d database.IDatabase) {
 
 	err = bcrypt.CompareHashAndPassword(user.Password, []byte(credentials.Password))
 	if err != nil {
-		log.WithFields(log.Fields{"username": user.Username}).Error("Wrong password")
-		c.JSON(http.StatusUnauthorized, gin.H{"err": "Wrong password"})
-		return
+		if err = d.HandlePasswordMigration(&user, &credentials); err != nil {
+			log.WithFields(log.Fields{"username": user.Username}).Error("Wrong password")
+			c.JSON(http.StatusUnauthorized, gin.H{"err": "Wrong password"})
+			return
+		}
 	}
 
 	tokenString, err := a.CreateToken(user)
