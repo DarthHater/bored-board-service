@@ -504,11 +504,12 @@ func (d *Database) CreateUser(user *model.User) (userid string, err error) {
 func (d *Database) PutUser(user *model.User) (err error) {
 	sqlStatement := `
 		UPDATE board.user
-		SET UserPassword = $1
-		WHERE Id = $2`
+		SET UserPassword = $1, UserPasswordMd5 = $2
+		WHERE Id = $3`
 
 	_, err = DB.Exec(sqlStatement,
 		user.Password,
+		user.UserPasswordMd5,
 		user.ID)
 
 	if err != nil {
@@ -522,23 +523,25 @@ func (d *Database) PutUser(user *model.User) (err error) {
 // HandlePasswordMigration will check a user's password against their hashed MD5 password from the legacy site. If
 // it's a match, it will encrypt their password with bcrypt and delete the hashed password.
 func (d *Database) HandlePasswordMigration(user *model.User, credentials *model.Credentials) error {
-	hashed := user.HashPasswordMd5(credentials.Password)
-	decoded, err := hex.DecodeString(user.UserPasswordMd5.String)
+	if user.UserPasswordMd5.Valid {
+		hashed := user.HashPasswordMd5(credentials.Password)
+		decoded, err := hex.DecodeString(user.UserPasswordMd5.String)
 
-	if err != nil {
-		return err
-	}
-
-	var ret [16]byte
-	copy(ret[:], decoded)
-
-	if hashed == ret {
-		user.HashPassword(credentials.Password)
-		user.UserPasswordMd5 = sql.NullString{}
-		if err = d.PutUser(user); err != nil {
+		if err != nil {
 			return err
 		}
-		return nil
+
+		var ret [16]byte
+		copy(ret[:], decoded)
+
+		if hashed == ret {
+			user.HashPassword(credentials.Password)
+			user.UserPasswordMd5 = sql.NullString{}
+			if err = d.PutUser(user); err != nil {
+				return err
+			}
+			return nil
+		}
 	}
 
 	return ErrWrongPassword

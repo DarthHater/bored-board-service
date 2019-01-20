@@ -530,13 +530,7 @@ func checkCredentials(c *gin.Context, d database.IDatabase) {
 
 	err = bcrypt.CompareHashAndPassword(user.Password, []byte(credentials.Password))
 	if err != nil {
-		if user.UserPasswordMd5.Valid {
-			if err = d.HandlePasswordMigration(&user, &credentials); err != nil {
-				log.WithFields(log.Fields{"username": user.Username}).Error("Wrong password")
-				c.JSON(http.StatusUnauthorized, gin.H{"err": "Wrong password"})
-				return
-			}
-		} else {
+		if err = d.HandlePasswordMigration(&user, &credentials); err != nil {
 			log.WithFields(log.Fields{"username": user.Username}).Error("Wrong password")
 			c.JSON(http.StatusUnauthorized, gin.H{"err": "Wrong password"})
 			return
