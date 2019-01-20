@@ -24,7 +24,6 @@ import (
 	"github.com/DarthHater/bored-board-service/auth"
 	"github.com/DarthHater/bored-board-service/constants"
 	"github.com/DarthHater/bored-board-service/database"
-	"github.com/DarthHater/bored-board-service/database"
 	"github.com/DarthHater/bored-board-service/mail"
 	"github.com/DarthHater/bored-board-service/model"
 	"github.com/garyburd/redigo/redis"
@@ -40,7 +39,6 @@ import (
 
 const (
 	redisURL = "redis_db:6379"
-	"golang.org/x/crypto/bcrypt"
 )
 
 var (
