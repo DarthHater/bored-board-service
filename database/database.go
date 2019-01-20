@@ -20,7 +20,6 @@ import (
 
 type IDatabase interface {
 	InitDb(s string, e string) error
-	CreateUser(u *model.User) (string, error)
 	EditUser(u *model.User) error
 	CreateUser(u *model.User) (string, int, error)
 	GetUser(s string) (model.User, error)
