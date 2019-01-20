@@ -505,7 +505,7 @@ func TestCreateUser(t *testing.T) {
 		user.Username,
 		user.EmailAddress,
 		user.Password,
-		constants.User,
+		constants.NeedsConfirmation,
 		AnyInt{}).
 		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow("1"))
 
