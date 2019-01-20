@@ -19,4 +19,4 @@ env:
   - BBS_DATABASE=database BBS_DATABASE_PORT=5432 BBS_DATABASE_USER=admin BBS_DATABASE_PASSWORD=admin123 BBS_DATABASE_DATABASE=db PRIVATE_KEY_PATH=.keys/app.rsa PUBLIC_KEY_PATH=.keys/app.rsa.pub SECRET_KEY=vivalavinyl GO111MODULE=on
 
 after_success:
-  - ./deploy.sh
+  - test $TRAVIS_BRANCH = "master" && test $TRAVIS_PULL_REQUEST = "false" && ./deploy.sh
