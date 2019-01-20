@@ -513,7 +513,6 @@ func (d *Database) EditUser(user *model.User) (err error) {
 		user.ID)
 
 	if err != nil {
-		log.Print(err)
 		return err
 	}
 
