@@ -14,6 +14,8 @@ type User struct {
 	Password        []byte
 	UserRole        int
 	UserPasswordMd5 sql.NullString
+	ConfirmCode     string
+	Active          bool
 }
 
 type Registration struct {

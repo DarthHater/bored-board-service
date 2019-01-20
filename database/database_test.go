@@ -13,6 +13,14 @@ import (
 	sqlmock "gopkg.in/DATA-DOG/go-sqlmock.v1"
 )
 
+type AnyInt struct{}
+
+// Match satisfies sqlmock.Argument interface
+func (a AnyInt) Match(v driver.Value) bool {
+	_, ok := v.(int64)
+	return ok
+}
+
 func TestInitDb(t *testing.T) {
 	m := MockDatabase{}
 	err := m.InitDb("development", "../.environment")
@@ -498,14 +506,44 @@ func TestCreateUser(t *testing.T) {
 		user.Username,
 		user.EmailAddress,
 		user.Password,
-		constants.User).
+		constants.NeedsConfirmation,
+		AnyInt{}).
 		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow("1"))
 
-	if id, err := d.CreateUser(&user); err != nil {
+	if id, confirmCode, err := d.CreateUser(&user); err != nil {
 		t.Errorf("Error was not expected while inserting user: %s", err)
 	} else {
-		t.Logf("User inserted with id: %s", id)
+		t.Logf("User inserted with id: %s and confirmCode: %d", id, confirmCode)
 	}
+
+	if err = mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("There were unfulfilled expectations: %s", err)
+	}
+}
+
+func TestConfirmUser(t *testing.T) {
+	d := Database{}
+	var mock sqlmock.Sqlmock
+	var err error
+	userID := "FakeID"
+	confirmCode := 0
+	DB, mock, err = sqlmock.New()
+	if err != nil {
+		t.Fatalf("An error %s occurred when opening stub database connection", err)
+	}
+	defer DB.Close()
+
+	mock.ExpectExec("UPDATE board.user").WillReturnResult(sqlmock.NewResult(1, 1))
+
+	valid, err := d.ConfirmUser(userID, confirmCode)
+
+	if err != nil {
+		t.Errorf("Error was not expected while confirming user: %s", err)
+	} else {
+		t.Log("User confirmation updated")
+	}
+
+	assert.Equal(t, true, valid)
 
 	if err = mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("There were unfulfilled expectations: %s", err)
@@ -593,10 +631,10 @@ func TestHandleDatabaseMigrationMd5DoesntExist(t *testing.T) {
 	var err error
 
 	user := model.User{
-		Username: "hi",
+		Username:        "hi",
 		UserPasswordMd5: sql.NullString{},
-		Password: nil,
-		ID:       "1",
+		Password:        nil,
+		ID:              "1",
 	}
 
 	credentials := model.Credentials{
