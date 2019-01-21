@@ -238,7 +238,8 @@ func (d *Database) GetPosts(threadId string) ([]model.Post, error) {
 	rows, err := DB.Query(`SELECT tp.Id, tp.ThreadId, tp.UserId, tp.Body, tp.PostedAt, bu.Username
 			FROM board.thread_post tp
 			INNER JOIN board.user bu ON tp.UserId = bu.Id
-			WHERE ThreadId = $1`, threadId)
+			WHERE ThreadId = $1
+			ORDER BY tp.PostedAt`, threadId)
 	if err != nil {
 		return nil, err
 	}
