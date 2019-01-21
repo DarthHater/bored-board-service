@@ -135,17 +135,17 @@ func TestGetThreads(t *testing.T) {
 	}
 	defer DB.Close()
 
-	row := sqlmock.NewRows([]string{"id", "userId", "title", "postedat", "username"}).
-		AddRow("", "admin", "What the heck", "A time", "admin").
-		AddRow("", "admin", "DJ Khaled", "A time", "admin")
+	row := sqlmock.NewRows([]string{"id", "userId", "title", "postedat", "username", "lastpostedat"}).
+		AddRow("", "admin", "What the heck", "A time", "admin", "A time").
+		AddRow("", "admin", "DJ Khaled", "A time", "admin", "A time")
 
 	mock.ExpectQuery("SELECT (.+) FROM board.thread").WillReturnRows(row)
 
 	result, err := d.GetThreads(20, "")
 
 	expected := []model.Thread{
-		{Id: "", UserId: "admin", Title: "What the heck", PostedAt: "A time", UserName: "admin"},
-		{Id: "", UserId: "admin", Title: "DJ Khaled", PostedAt: "A time", UserName: "admin"},
+		{Id: "", UserId: "admin", Title: "What the heck", PostedAt: "A time", UserName: "admin", LastPostedAt: "A time"},
+		{Id: "", UserId: "admin", Title: "DJ Khaled", PostedAt: "A time", UserName: "admin", LastPostedAt: "A time"},
 	}
 
 	assert.Equal(t, result, expected)

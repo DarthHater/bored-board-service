@@ -1,9 +1,10 @@
 package model
 
 type Thread struct {
-	Id       string
-	UserId   string
-	Title    string
-	PostedAt string
-	UserName string
+	Id           string
+	UserId       string
+	Title        string
+	PostedAt     string
+	UserName     string
+	LastPostedAt string
 }
