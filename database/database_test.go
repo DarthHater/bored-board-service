@@ -360,7 +360,16 @@ func TestPostPost(t *testing.T) {
 		post.ThreadId,
 		post.UserId,
 		post.Body).
-		WillReturnRows(sqlmock.NewRows([]string{"id", "threadid", "userid", "body", "postedat", "username"}).AddRow("1", "3", "4", "I'm Posting", "datetime", "andy"))
+		WillReturnRows(
+			sqlmock.NewRows(
+				[]string{"id", "threadid", "userid", "body", "postedat", "username"},
+			).AddRow("1", "3", "4", "I'm Posting", "datetime", "andy"),
+		)
+
+	mock.ExpectExec("UPDATE board.thread").WithArgs(
+		"datetime",
+		"3",
+	).WillReturnResult(sqlmock.NewResult(1, 1))
 
 	if post, err := d.PostPost(&post); err != nil {
 		t.Errorf("Error was not expected while inserting post: %s", err)

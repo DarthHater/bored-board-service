@@ -5,7 +5,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"math/rand"
 	"os"
 	"strconv"
@@ -306,6 +306,30 @@ func (d *Database) PostPost(post *model.Post) (newPost model.Post, err error) {
 			&newPost.Body, &newPost.PostedAt, &newPost.UserName)
 	if err != nil {
 		return newPost, err
+	}
+
+	sqlStatement = `
+		UPDATE board.thread 
+		SET PostedAt = $1
+		WHERE ID = $2`
+
+	res, err := DB.Exec(sqlStatement, newPost.PostedAt, newPost.ThreadId)
+
+	if err != nil {
+		return newPost, err
+	}
+
+	count, err := res.RowsAffected()
+
+	if err != nil {
+		return newPost, err
+	}
+
+	if count == 0 {
+		log.WithFields(log.Fields{
+			"threadID": newPost.ThreadId,
+			"postedAt": newPost.PostedAt,
+		}).Error("Couldn't update thread posted time")
 	}
 
 	return newPost, nil
