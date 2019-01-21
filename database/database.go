@@ -207,11 +207,11 @@ func (d *Database) GetThreads(num int, since string) ([]model.Thread, error) {
 
 	t := time.Unix(0, i*int64(time.Millisecond))
 
-	rows, err := DB.Query(`SELECT bt.Id, bt.UserId, bt.Title, bt.PostedAt, bu.Username
+	rows, err := DB.Query(`SELECT bt.Id, bt.UserId, bt.Title, bt.PostedAt, bt.LastPostedAt, bu.Username
 		FROM board.thread bt
 		INNER JOIN board.user bu ON bt.UserId = bu.Id
 		WHERE Deleted != true AND PostedAt < $1
-		ORDER BY PostedAt DESC LIMIT $2`, t, num)
+		ORDER BY LastPostedAt DESC LIMIT $2`, t, num)
 
 	if err != nil {
 		return nil, err
@@ -220,7 +220,7 @@ func (d *Database) GetThreads(num int, since string) ([]model.Thread, error) {
 
 	for rows.Next() {
 		t := model.Thread{}
-		if err := rows.Scan(&t.Id, &t.UserId, &t.Title, &t.PostedAt, &t.UserName); err != nil {
+		if err := rows.Scan(&t.Id, &t.UserId, &t.Title, &t.PostedAt, &t.UserName, &t.LastPostedAt); err != nil {
 			return nil, err
 		}
 		threads = append(threads, t)
@@ -310,7 +310,7 @@ func (d *Database) PostPost(post *model.Post) (newPost model.Post, err error) {
 
 	sqlStatement = `
 		UPDATE board.thread 
-		SET PostedAt = $1
+		SET LastPostedAt = $1
 		WHERE ID = $2`
 
 	res, err := DB.Exec(sqlStatement, newPost.PostedAt, newPost.ThreadId)
