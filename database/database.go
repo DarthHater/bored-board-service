@@ -315,7 +315,7 @@ func (d *Database) PostPost(post *model.Post) (newPost model.Post, err error) {
 	}
 
 	sqlStatement = `
-		UPDATE board.thread 
+		UPDATE board.thread
 		SET LastPostedAt = $1
 		WHERE ID = $2`
 
@@ -618,7 +618,7 @@ func (d *Database) setupViper() {
 }
 
 func (d *Database) connectionString() (connectionString string) {
-	var environment = os.Getenv("ENVIRONMENT")
+	var environment = os.Getenv("APP_ENV")
 	var string = fmt.Sprintf("postgres://%s:%s@%s:%d/%s",
 		viper.GetString("DATABASE_USER"),
 		viper.GetString("DATABASE_PASSWORD"),
