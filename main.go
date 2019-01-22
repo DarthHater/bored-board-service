@@ -324,7 +324,7 @@ func setupRouter(d database.IDatabase) *gin.Engine {
 }
 
 func allowedCorsOrigins() []string {
-	var environment = os.Getenv("ENVIRONMENT")
+	var environment = os.Getenv("APP_ENV")
 	if environment == "development" {
 		return []string{"http://localhost:8090",
 			"http://127.0.0.1:8090",

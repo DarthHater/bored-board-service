@@ -29,7 +29,7 @@ func TestInitDb(t *testing.T) {
 
 func TestConnectionStringDevelopment(t *testing.T) {
 	d := Database{}
-	os.Setenv("ENVIRONMENT", "development")
+	os.Setenv("APP_ENV", "development")
 	d.setupViper()
 	assert.Equal(t,
 		"postgres://admin:admin123@database:5432/db?sslmode=disable",
@@ -39,7 +39,7 @@ func TestConnectionStringDevelopment(t *testing.T) {
 
 func TestConnectionStringProduction(t *testing.T) {
 	d := Database{}
-	os.Setenv("ENVIRONMENT", "production")
+	os.Setenv("APP_ENV", "production")
 	d.setupViper()
 	assert.Equal(t,
 		"postgres://admin:admin123@database:5432/db",
