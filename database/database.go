@@ -211,7 +211,7 @@ func (d *Database) GetThreads(num int, since string) ([]model.Thread, error) {
 		"convertedTime": t,
 		"since":         since,
 		"number":        num,
-	}).Info("Getting threads with gusto")
+	}).Debug("Attempting To Get Thread List")
 
 	rows, err := DB.Query(`SELECT bt.Id, bt.UserId, bt.Title, bt.PostedAt, bu.Username, bt.LastPostedAt
 		FROM board.thread bt
