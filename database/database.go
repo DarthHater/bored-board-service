@@ -4,13 +4,12 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"errors"
+	log "github.com/sirupsen/logrus"
 	"fmt"
 	"math/rand"
 	"os"
 	"strconv"
 	"time"
-
-	log "github.com/sirupsen/logrus"
 
 	"github.com/DarthHater/bored-board-service/constants"
 	"github.com/DarthHater/bored-board-service/model"
