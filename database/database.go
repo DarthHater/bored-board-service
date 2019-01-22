@@ -208,8 +208,9 @@ func (d *Database) GetThreads(num int, since string) ([]model.Thread, error) {
 	t := time.Unix(0, i*int64(time.Millisecond))
 
 	log.WithFields(log.Fields{
-		"time":   t,
-		"number": num,
+		"convertedTime": t,
+		"since":         since,
+		"number":        num,
 	}).Info("Getting threads with gusto")
 
 	rows, err := DB.Query(`SELECT bt.Id, bt.UserId, bt.Title, bt.PostedAt, bu.Username, bt.LastPostedAt
